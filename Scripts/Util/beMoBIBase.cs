@@ -1,32 +1,34 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-
+using System.Linq;
 
 public abstract class beMoBIBase : MonoBehaviour {
-    
-    public void Reset()
-    {
-        Initialize();
-    }
 
-    protected IMarkerStream markerStreamInstance;
-    private List<Component> markerStreams;
+    protected AMarkerStream markerStreamInstance;
+    private List<AMarkerStream> markerStreams;
 
     protected void Initialize()
     {
-        markerStreams = new List<Component>(GetComponents(typeof(IMarkerStream)));
+        var availableMarkerStreams = (IEnumerable<AMarkerStream>)GameObject.FindObjectsOfType<AMarkerStream>();
 
-        if (markerStreams.Count > 0)
+        if (availableMarkerStreams.Any())
         {
-            markerStreamInstance = markerStreams[0] as IMarkerStream;
+            markerStreamInstance = availableMarkerStreams.First();
         }
         else
         {
-            Debug.LogWarning("No instance implementating IMarkerStream found! \n creating Debug.Log MarkerStream instance");
+            Debug.LogWarning("No instance implementing IMarkerStream found! \n creating Debug.Log MarkerStream instance");
             GameObject DebugMarkerStreamHost = new GameObject();
             DebugMarkerStreamHost.AddComponent(typeof(DebugMarkerStream));
             DebugMarkerStreamHost.name = DebugMarkerStream.Instance.StreamName;
+            markerStreamInstance = DebugMarkerStream.Instance;
+            
+            if (markerStreams == null) 
+                markerStreams = new List<AMarkerStream>();
+
+            
+            markerStreams.Add(markerStreamInstance);
         }
     }
 
@@ -39,6 +41,12 @@ public abstract class beMoBIBase : MonoBehaviour {
     {
         markerStreamInstance.Write(name, customTimeStamp);
     }
+
+    public void Reset()
+    {
+        Initialize();
+    }
+
 }
  
 public interface IMarkerStream
@@ -50,22 +58,38 @@ public interface IMarkerStream
     void Write(string name);
 }
 
-public class DebugMarkerStream : Singleton<DebugMarkerStream>, IMarkerStream
+public abstract class AMarkerStream : Singleton<AMarkerStream>, IMarkerStream
 { 
-    private const string streamName = "DebugMarkerStream";
-    public string StreamName
+    public virtual string StreamName
     {
-        get { return streamName; }
+        get { return string.Empty; }
     }
 
-    private const string logWithTimeStampPattern = "Marker {0} at {1}"; 
+    public abstract void Write(string name, float customTimeStamp);
 
-    public void Write(string name, float customTimeStamp)
+    public abstract void Write(string name);
+}
+
+//public class DebugMarkerStream : Singleton<DebugMarkerStream>, IMarkerStream
+public class DebugMarkerStream : AMarkerStream
+{
+    private const string streamName = "DebugMarkerStream";
+    private const string logWithTimeStampPattern = "Marker {0} at {1}";
+
+    public override string StreamName
+    {
+        get
+        {
+            return streamName;
+        }
+    } 
+
+    public override void Write(string name, float customTimeStamp)
     {
         Debug.Log(string.Format(logWithTimeStampPattern, name, customTimeStamp));
     }
 
-    public void Write(string name)
+    public override void Write(string name)
     {
         Debug.Log(string.Format(logWithTimeStampPattern, name, Time.realtimeSinceStartup));
     }
