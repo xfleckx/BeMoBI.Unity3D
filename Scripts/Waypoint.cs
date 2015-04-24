@@ -8,6 +8,8 @@ public class Waypoint : beMoBIBase, IEventSystemHandler {
     [SerializeField]
     public UnityEvent m_OnWaypointReached = new UnityEvent();
 
+    public bool Active = false;
+
 	void Awake()
 	{
 
@@ -25,13 +27,19 @@ public class Waypoint : beMoBIBase, IEventSystemHandler {
 
 	public void OnTriggerEnter(Collider other)
 	{
+        if (!Active)
+            return;
+
 		WriteMarker("Way point entered");
 
         m_OnWaypointReached.Invoke();
 	}
 
 	public void OnTriggerExit(Collider other)
-	{ 
+	{
+        if (!Active)
+            return;
+
 		WriteMarker("Way point exit");
 
         SendMessageUpwards("RecieveWaypointEvent", name);
@@ -42,8 +50,7 @@ public class Waypoint : beMoBIBase, IEventSystemHandler {
 
 	void OnDrawGizmos()
 	{
-		Gizmos.DrawWireSphere(transform.position, 0.1f);
-		Gizmos.DrawCube(transform.position, gizmoSize);
+		Gizmos.DrawWireSphere(transform.position, 0.1f); 
 	}
 }
  
