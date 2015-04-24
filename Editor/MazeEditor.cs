@@ -434,6 +434,16 @@ public class MazeEditor : Editor
         if (!currentSelection.Any())
             return;
 
+
+        if (currentSelection.Count == 1)
+        {
+            var unit = currentSelection.First().GetComponent<MazeUnit>();
+            unit.Close(MazeUnit.NORTH);
+            unit.Close(MazeUnit.SOUTH);
+            unit.Close(MazeUnit.WEST);
+            unit.Close(MazeUnit.EAST);
+        }
+
         var iterator = currentSelection.GetEnumerator();
 
         MazeUnit last = null;
