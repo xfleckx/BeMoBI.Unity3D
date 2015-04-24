@@ -11,16 +11,20 @@ public class MazeEditor : Editor
     private beMobileMaze focusedMaze;
     public string UnitNamePattern = "Unit_{0}_{1}";
     public float unitFloorOffset = 0f;
+     
+    public Vector3 MarkerPosition;
 
     private List<GameObject> currentSelection;
 
-    public bool EditingModeEnabled = true;
+    public bool SelectionModeEnabled = false;
+    public bool EditingModeEnabled = false;
     public bool modeAddEnabled = false;
     public bool modeRemoveEnabled = false;
 
     private Vector3 draggingStart;
-     
+    private Vector2 currentTilePosition;
     private Vector3 mouseHitPos;
+
     private MazeUnit lastAddedUnit;
 
     private GUIStyle sceneViewEditorStyle;
@@ -33,12 +37,16 @@ public class MazeEditor : Editor
         MazeSceneViewEditor.Enable();
         sceneViewEditorStyle = new GUIStyle();
 
-        
+        if(focusedMaze)
+            focusedMaze.EditorGizmoCallbacks += RenderEditorGizmos;
     }
 
     public void OnDisable()
     {
         MazeSceneViewEditor.Disable();
+
+        if (focusedMaze)
+            focusedMaze.EditorGizmoCallbacks -= RenderEditorGizmos;
     }
 
     protected override void OnHeaderGUI()
@@ -92,7 +100,12 @@ public class MazeEditor : Editor
         {
             GameObject.Instantiate(focusedMaze);
         }
-         
+
+        if (GUILayout.Button("Create Maze Prefab"))
+        {
+
+        }
+
         GUILayout.EndVertical();
 
     }
@@ -103,6 +116,8 @@ public class MazeEditor : Editor
         if (this.UpdateHitPosition())
         { 
             this.RecalculateMarkerPosition();
+
+            currentTilePosition = this.GetTilePositionFromMouseLocation();
 
             focusedMaze.drawEditingHelper = true;
             
@@ -150,20 +165,46 @@ public class MazeEditor : Editor
 
     private void SelectionMode(Event _ce)
     {
+        int controlId = GUIUtility.GetControlID(FocusType.Passive);
 
+        if (_ce.type == EventType.MouseDown || _ce.type == EventType.MouseDrag) {
+
+            var unitHost = GameObject.Find(string.Format(UnitNamePattern, currentTilePosition.x, currentTilePosition.y));
+
+            //! Don't use Selection... a manual selection process necessary
+            //if (unitHost && _ce.shift)
+            //{
+            //    currentSelection = new List<GameObject>(Selection.gameObjects);
+            //    currentSelection.Add(unitHost);
+            //    Selection.objects = currentSelection.ToArray();
+            //}
+            //else if (unitHost)
+            //{
+            //    Selection.activeGameObject = unitHost;
+            //}
+
+            GUIUtility.hotControl = controlId;
+            _ce.Use();
+        }
+        
+    }
+
+
+    private void RenderEditorGizmos()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireCube(MarkerPosition + new Vector3(0, focusedMaze.RoomHigthInMeter / 2, 0), new Vector3(focusedMaze.RoomDimension.x, focusedMaze.RoomHigthInMeter, focusedMaze.RoomDimension.z) * 1.1f);
     }
 
     private void RenderInfoGUI()
-    { 
-        // draw a UI tip in scene view informing user how to draw & erase tiles
+    {  
         Handles.BeginGUI();
+
         GUILayout.BeginVertical();
-        GUILayout.Label("Ctrl + LMB: Draw or Select");
-        GUILayout.Label("Shit + RMB: Erase");
         GUILayout.Space(10f);
         GUILayout.Label("Mouse position in local Space of the maze");
         GUILayout.Label(string.Format("{0} {1} {2}", this.mouseHitPos.x, this.mouseHitPos.y, this.mouseHitPos.z));
-        GUILayout.Label(string.Format("Marker: {0} {1} {2}", focusedMaze.MarkerPosition.x, focusedMaze.MarkerPosition.y, focusedMaze.MarkerPosition.z));
+        GUILayout.Label(string.Format("Marker: {0} {1} {2}", MarkerPosition.x, MarkerPosition.y, MarkerPosition.z));
 
         GUILayout.Space(10f);
         
@@ -206,64 +247,6 @@ public class MazeEditor : Editor
         Handles.EndGUI();
     }
 
-    public void OldBehaviour()
-    {
-
-        // get a reference to the current event
-        Event current = Event.current;
-        //current.type == EventType.
-        focusedMaze.drawEditingHelper = false;
-
-        // if the mouse is positioned over the layer allow drawing actions to occur
-        if (this.IsMouseOnLayer() && EditingModeEnabled)
-        {
-            HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
-            // Calculate the location of the marker based on the location of the mouse
-            this.RecalculateMarkerPosition();
-
-            focusedMaze.drawEditingHelper = true;
-
-            // if mouse down or mouse drag event occurred
-            if (current.type == EventType.MouseDown || current.type == EventType.MouseDrag)
-            {
-                if (current.button == 1)
-                {
-                    if (modeAddEnabled)
-                        this.Draw();
-                    else if (modeRemoveEnabled)
-                        this.Erase();
-
-                    currentSelection = null;
-
-                    Selection.activeObject = focusedMaze.gameObject;
-
-                }
-                else if (current.button == 0)
-                {
-                    Vector2 unitPosition = GetTilePositionFromMouseLocation();
-
-                    string selectionTargetName = String.Format(UnitNamePattern, unitPosition.x, unitPosition.y);
-                    var existingUnit = GameObject.Find(selectionTargetName);
-
-                    if (existingUnit && current.shift)
-                    {
-                        currentSelection = new List<GameObject>(Selection.gameObjects);
-                        currentSelection.Add(existingUnit);
-                        Selection.objects = currentSelection.ToArray();
-                    }
-                    else if (existingUnit)
-                    {
-                        Selection.activeGameObject = existingUnit;
-                    }
-                }
-            }
-            else
-            {
-                Selection.activeObject = focusedMaze.gameObject;
-            }
-        }
-    }
-
     private void renderEmptyMazeGUI()
     {
         GUILayout.BeginVertical();
@@ -278,17 +261,12 @@ public class MazeEditor : Editor
 
     private void Draw()
     {
-        // get reference to the TileMap component
-        var map = (beMobileMaze)this.target;
-
-        // Calculate the position of the mouse over the tile layer
-        var tilePos = this.GetTilePositionFromMouseLocation();
-
+         
         // Given the tile position check to see if a tile has already been created at that location
-        var unitHost = GameObject.Find(string.Format(UnitNamePattern, tilePos.x, tilePos.y));
+        var unitHost = GameObject.Find(string.Format(UnitNamePattern, currentTilePosition.x, currentTilePosition.y));
 
         // if there is already a tile present and it is not a child of the game object we can just exit.
-        if (unitHost != null && unitHost.transform.parent != map.transform)
+        if (unitHost != null && unitHost.transform.parent != focusedMaze.transform)
         {
             return;
         }
@@ -306,8 +284,8 @@ public class MazeEditor : Editor
                 return;
             }
         }
-       
-        var unit = this.CreateUnit(map, tilePos, unitHost);
+
+        var unit = this.CreateUnit(focusedMaze, currentTilePosition, unitHost);
        
         focusedMaze.Units.Add(unit);
         
@@ -342,15 +320,8 @@ public class MazeEditor : Editor
     /// Erases a block at the pre-calculated mouse hit position
     /// </summary>
     private void Erase()
-    {
-        // get reference to the TileMap component
-        var map = (beMobileMaze)this.target;
-
-        // Calculate the position of the mouse over the tile layer
-        var tilePos = this.GetTilePositionFromMouseLocation();
-
-        // Given the tile position check to see if a tile has already been created at that location
-        var unitHost = GameObject.Find(string.Format(UnitNamePattern, tilePos.x, tilePos.y));
+    {  
+        var unitHost = GameObject.Find(string.Format(UnitNamePattern, currentTilePosition.x, currentTilePosition.y));
 
         if (!unitHost)
         {
@@ -361,7 +332,7 @@ public class MazeEditor : Editor
         var unit = unitHost.GetComponent<MazeUnit>();
 
         // if a game object was found with the same assetName and it is a child we just destroy it immediately
-        if (unit != null && unit.transform.parent == map.transform)
+        if (unit != null && unit.transform.parent == focusedMaze.transform)
         {
             focusedMaze.Units.Remove(unit);
             DestroyImmediate(unit.gameObject);
@@ -374,11 +345,8 @@ public class MazeEditor : Editor
     /// <returns>Returns a <see cref="Vector2"/> type representing the Column and Row where the mouse of positioned over.</returns>
     private Vector2 GetTilePositionFromMouseLocation()
     {
-        // get reference to the tile mazeHost component
-        var map = focusedMaze;
-
         // calculate column and row location from mouse hit location
-        var pos = new Vector3(this.mouseHitPos.x / map.RoomDimension.x, this.mouseHitPos.y / map.transform.position.y, this.mouseHitPos.z / map.RoomDimension.z);
+        var pos = new Vector3(this.mouseHitPos.x / focusedMaze.RoomDimension.x, this.mouseHitPos.y / focusedMaze.transform.position.y, this.mouseHitPos.z / focusedMaze.RoomDimension.z);
 
         // round the numbers to the nearest whole number using 5 decimal place precision
         pos = new Vector3((int)Math.Round(pos.x, 5, MidpointRounding.ToEven), (int)Math.Round(pos.y, 5, MidpointRounding.ToEven), (int)Math.Round(pos.z, 5, MidpointRounding.ToEven));
@@ -390,9 +358,9 @@ public class MazeEditor : Editor
             row = 0;
         }
 
-        if (row > map.Rows - 1)
+        if (row > focusedMaze.Rows - 1)
         {
-            row = map.Rows - 1;
+            row = focusedMaze.Rows - 1;
         }
 
         if (col < 0)
@@ -400,9 +368,9 @@ public class MazeEditor : Editor
             col = 0;
         }
 
-        if (col > map.Columns - 1)
+        if (col > focusedMaze.Columns - 1)
         {
-            col = map.Columns - 1;
+            col = focusedMaze.Columns - 1;
         }
 
         // return the column and row values
@@ -410,43 +378,15 @@ public class MazeEditor : Editor
     }
 
     /// <summary>
-    /// Returns true or false depending if the mouse is positioned over the tile mazeHost.
-    /// </summary>
-    /// <returns>Will return true if the mouse is positioned over the tile mazeHost.</returns>
-    private bool IsMouseOnLayer()
-    {
-        // get reference to the tile mazeHost component
-        var map = (beMobileMaze)this.target;
-
-        // return true or false depending if the mouse is positioned over the mazeHost
-        return this.mouseHitPos.x > 0 && this.mouseHitPos.x < map.MazeWidthInMeter &&
-               this.mouseHitPos.z > 0 && this.mouseHitPos.z < map.MazeLengthInMeter;
-
-        //float mapDimX = map.Columns * map.RoomDimension.x;
-        //float mapDimZ = map.Rows * map.RoomDimension.y;
-
-        //bool isInXspace = this.mouseHitPos.x > map.transform.position.x && this.mouseHitPos.x < mapDimX;
-        //bool isInZspace = this.mouseHitPos.z > map.transform.position.z && this.mouseHitPos.z < mapDimZ;
-
-        //return isInXspace && isInZspace;
-    }
-
-    /// <summary>
     /// Recalculates the position of the marker based on the location of the mouse pointer.
     /// </summary>
     private void RecalculateMarkerPosition()
-    {
-        // get reference to the tile mazeHost component
-        var map = focusedMaze;
-
-        // store the tile location (Column/Row) based on the current location of the mouse pointer
-        var tilepos = this.GetTilePositionFromMouseLocation();
-
+    {  
         // store the tile position in world space
-        var pos = new Vector3(tilepos.x * map.RoomDimension.x, 0, tilepos.y * map.RoomDimension.z);
+        var pos = new Vector3(currentTilePosition.x * focusedMaze.RoomDimension.x, 0, currentTilePosition.y * focusedMaze.RoomDimension.z);
         
         // set the TileMap.MarkerPosition value
-        map.MarkerPosition = map.transform.position + new Vector3(pos.x + (map.RoomDimension.x / 2), pos.y, pos.z + (map.RoomDimension.z / 2));
+        MarkerPosition = focusedMaze.transform.position + new Vector3(pos.x + (focusedMaze.RoomDimension.x / 2), pos.y, pos.z + (focusedMaze.RoomDimension.z / 2));
     }
 
     /// <summary>
@@ -455,11 +395,8 @@ public class MazeEditor : Editor
     /// <returns>Returns true if the mouse is over the tile mazeHost.</returns>
     private bool UpdateHitPosition()
     {
-        // get reference to the tile mazeHost component
-        var map = focusedMaze;
-
         // build a plane object that 
-        var p = new Plane(map.transform.TransformDirection(map.transform.up), map.transform.position);
+        var p = new Plane(focusedMaze.transform.TransformDirection(focusedMaze.transform.up), focusedMaze.transform.position);
         
         // build a ray type from the current mouse position
         var ray = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
@@ -478,7 +415,7 @@ public class MazeEditor : Editor
         }
 
         // convert the hit location from world space to local space
-        var value = map.transform.InverseTransformPoint(hit);
+        var value = focusedMaze.transform.InverseTransformPoint(hit);
 
         // if the value is different then the current mouse hit location set the 
         // new mouse hit location and return true indicating a successful hit test
@@ -492,5 +429,4 @@ public class MazeEditor : Editor
         return false;
     }
 
-    public bool SelectionModeEnabled { get; set; }
 }
