@@ -109,7 +109,7 @@ public class MazeEditor : Editor
             GameObject.Instantiate(focusedMaze);
         }
 
-        if (GUILayout.Button("Create Maze Prefab"))
+        if (GUILayout.Button("Create Maze Prefab", GUILayout.Width(255)))
         {
 
         }
@@ -139,6 +139,8 @@ public class MazeEditor : Editor
         if(EditorModeProcessEvent != null)
             EditorModeProcessEvent(_ce);
     }
+
+    #region Editor Modes
 
     private void EditingMode(Event _ce)
     {
@@ -171,6 +173,87 @@ public class MazeEditor : Editor
         }
     }
 
+    private void Draw()
+    { 
+        // Given the tile position check to see if a tile has already been created at that location
+        var unitHost = GameObject.Find(string.Format(UnitNamePattern, currentTilePosition.x, currentTilePosition.y));
+
+        // if there is already a tile present and it is not a child of the game object we can just exit.
+        if (unitHost != null && unitHost.transform.parent != focusedMaze.transform)
+        {
+            return;
+        }
+
+        // if no game object was found create the unitHost prefab
+        if (unitHost == null)
+        {
+            var obj = Resources.Load(unitPrefabName);
+
+            if (obj)
+            {
+                unitHost = (GameObject)GameObject.Instantiate(obj);
+            }
+            else
+            {
+                Debug.LogError(string.Format("Prefab \"{0}\" not found in resources", unitPrefabName));
+                return;
+            }
+        }
+
+        var unit = this.CreateUnit(focusedMaze, currentTilePosition, unitHost);
+
+        focusedMaze.Units.Add(unit);
+
+    }
+
+    private MazeUnit CreateUnit(beMobileMaze mazeHost, Vector2 tilePos, GameObject unit)
+    {
+        var tilePositionInLocalSpace = new Vector3(
+            (tilePos.x * mazeHost.RoomDimension.x) + (mazeHost.RoomDimension.x / 2f),
+            unitFloorOffset,
+            (tilePos.y * mazeHost.RoomDimension.z) + (mazeHost.RoomDimension.z / 2f));
+
+        unit.transform.position = mazeHost.transform.position + tilePositionInLocalSpace;
+
+        // we scale the unit to the tile size defined by the TileMap.TileWidth and TileMap.TileHeight fields 
+        unit.transform.localScale = new Vector3(mazeHost.RoomDimension.x, mazeHost.RoomDimension.y, mazeHost.RoomDimension.z);
+
+        // set the cubes parent to the game object for organizational purposes
+        unit.transform.parent = mazeHost.transform;
+
+        // give the unit a assetName that represents it's location within the tile mazeHost
+        unit.name = string.Format(UnitNamePattern, tilePos.x, tilePos.y);
+
+        MazeUnit mazeUnit = unit.GetComponent<MazeUnit>();
+
+        mazeUnit.Initialize(tilePos);
+
+        return mazeUnit;
+    }
+
+    /// <summary>
+    /// Erases a block at the pre-calculated mouse hit position
+    /// </summary>
+    private void Erase()
+    {
+        var unitHost = GameObject.Find(string.Format(UnitNamePattern, currentTilePosition.x, currentTilePosition.y));
+
+        if (!unitHost)
+        {
+            Debug.Log("Nothing to erase!");
+            return;
+        }
+
+        var unit = unitHost.GetComponent<MazeUnit>();
+
+        // if a game object was found with the same assetName and it is a child we just destroy it immediately
+        if (unit != null && unit.transform.parent == focusedMaze.transform)
+        {
+            focusedMaze.Units.Remove(unit);
+            DestroyImmediate(unit.gameObject);
+        }
+    }
+
     private void SelectionMode(Event _ce)
     {
         int controlId = GUIUtility.GetControlID(FocusType.Passive);
@@ -193,6 +276,114 @@ public class MazeEditor : Editor
             _ce.Use();
         }
         
+    }
+
+    private void TryConnectingCurrentSelection()
+    {
+        if (currentSelection == null)
+            return;
+
+        if (!currentSelection.Any())
+            return;
+
+        var iterator = currentSelection.GetEnumerator();
+
+        MazeUnit last = null;
+
+        while (iterator.MoveNext())
+        {
+            var current = iterator.Current.GetComponent<MazeUnit>();
+
+            if (!last)
+            {
+                last = current;
+                continue;
+            }
+
+            if (current.GridID.x - 1 == last.GridID.x)
+            {
+                last.Open(MazeUnit.EAST);
+                current.Open(MazeUnit.WEST);
+            }
+            else if (current.GridID.x + 1 == last.GridID.x)
+            {
+                last.Open(MazeUnit.WEST);
+                current.Open(MazeUnit.EAST);
+            }
+
+            if (current.GridID.y - 1 == last.GridID.y)
+            {
+                last.Open(MazeUnit.NORTH);
+                current.Open(MazeUnit.SOUTH);
+            }
+            else if (current.GridID.y + 1 == last.GridID.y)
+            {
+                last.Open(MazeUnit.SOUTH);
+                current.Open(MazeUnit.NORTH);
+            }
+
+
+
+            last = current;
+        }
+    }
+
+    private void TryDisconnectingCurrentSelection()
+    {
+        if (currentSelection == null)
+            return;
+
+        if (!currentSelection.Any())
+            return;
+
+
+        if (currentSelection.Count == 1)
+        {
+            var unit = currentSelection.First().GetComponent<MazeUnit>();
+            unit.Close(MazeUnit.NORTH);
+            unit.Close(MazeUnit.SOUTH);
+            unit.Close(MazeUnit.WEST);
+            unit.Close(MazeUnit.EAST);
+        }
+
+        var iterator = currentSelection.GetEnumerator();
+
+        MazeUnit last = null;
+
+        while (iterator.MoveNext())
+        {
+            var current = iterator.Current.GetComponent<MazeUnit>();
+
+            if (!last)
+            {
+                last = current;
+                continue;
+            }
+
+            if (current.GridID.x - 1 == last.GridID.x)
+            {
+                last.Close(MazeUnit.EAST);
+                current.Close(MazeUnit.WEST);
+            }
+            else if (current.GridID.x + 1 == last.GridID.x)
+            {
+                last.Close(MazeUnit.WEST);
+                current.Close(MazeUnit.EAST);
+            }
+
+            if (current.GridID.y - 1 == last.GridID.y)
+            {
+                last.Close(MazeUnit.NORTH);
+                current.Close(MazeUnit.SOUTH);
+            }
+            else if (current.GridID.y + 1 == last.GridID.y)
+            {
+                last.Close(MazeUnit.SOUTH);
+                current.Close(MazeUnit.NORTH);
+            }
+
+            last = current;
+        }
     }
 
     private void PathCreationMode(Event _ce)
@@ -228,6 +419,8 @@ public class MazeEditor : Editor
             _ce.Use();
         }
     }
+
+    #endregion
 
     private void RenderEditorGizmos()
     {
@@ -376,114 +569,7 @@ public class MazeEditor : Editor
 
         Handles.EndGUI();
     }
-
-    private void TryConnectingCurrentSelection()
-    {
-        if (currentSelection == null)
-            return;
-
-        if (!currentSelection.Any())
-            return;
-
-        var iterator = currentSelection.GetEnumerator();
-
-        MazeUnit last = null;
-
-        while (iterator.MoveNext())
-        {
-            var current = iterator.Current.GetComponent<MazeUnit>();
-            
-            if (!last) {
-                last = current;
-                continue;
-            }
-
-            if (current.GridID.x - 1 == last.GridID.x)
-            {
-                last.Open(MazeUnit.EAST);
-                current.Open(MazeUnit.WEST);
-            }
-            else if (current.GridID.x + 1 == last.GridID.x)
-            {
-                last.Open(MazeUnit.WEST);
-                current.Open(MazeUnit.EAST);
-            }
-
-            if (current.GridID.y - 1 == last.GridID.y)
-            {
-                last.Open(MazeUnit.NORTH);
-                current.Open(MazeUnit.SOUTH);
-            }
-            else if (current.GridID.y + 1 == last.GridID.y)
-            {
-                last.Open(MazeUnit.SOUTH);
-                current.Open(MazeUnit.NORTH);
-            }
-
-
-
-            last = current; 
-        }
-    }
-
-    private void TryDisconnectingCurrentSelection()
-    {
-        if (currentSelection == null)
-            return;
-
-        if (!currentSelection.Any())
-            return;
-
-
-        if (currentSelection.Count == 1)
-        {
-            var unit = currentSelection.First().GetComponent<MazeUnit>();
-            unit.Close(MazeUnit.NORTH);
-            unit.Close(MazeUnit.SOUTH);
-            unit.Close(MazeUnit.WEST);
-            unit.Close(MazeUnit.EAST);
-        }
-
-        var iterator = currentSelection.GetEnumerator();
-
-        MazeUnit last = null;
-
-        while (iterator.MoveNext())
-        {
-            var current = iterator.Current.GetComponent<MazeUnit>();
-
-            if (!last)
-            {
-                last = current;
-                continue;
-            }
-
-            if (current.GridID.x - 1 == last.GridID.x)
-            {
-                last.Close(MazeUnit.EAST);
-                current.Close(MazeUnit.WEST);
-            }
-            else if (current.GridID.x + 1 == last.GridID.x)
-            {
-                last.Close(MazeUnit.WEST);
-                current.Close(MazeUnit.EAST);
-            }
-
-            if (current.GridID.y - 1 == last.GridID.y)
-            {
-                last.Close(MazeUnit.NORTH);
-                current.Close(MazeUnit.SOUTH);
-            }
-            else if (current.GridID.y + 1 == last.GridID.y)
-            {
-                last.Close(MazeUnit.SOUTH);
-                current.Close(MazeUnit.NORTH);
-            }
-            
-            last = current;
-        }
-    }
-
+    
     private void renderEmptyMazeGUI()
     {
         GUILayout.BeginVertical();
@@ -496,85 +582,7 @@ public class MazeEditor : Editor
         GUILayout.EndVertical();
     }
 
-    private void Draw()
-    {
-         
-        // Given the tile position check to see if a tile has already been created at that location
-        var unitHost = GameObject.Find(string.Format(UnitNamePattern, currentTilePosition.x, currentTilePosition.y));
-
-        // if there is already a tile present and it is not a child of the game object we can just exit.
-        if (unitHost != null && unitHost.transform.parent != focusedMaze.transform)
-        {
-            return;
-        }
-
-        // if no game object was found create the unitHost prefab
-        if (unitHost == null)
-        {
-            var obj = Resources.Load(unitPrefabName);
-
-            if (obj){
-                unitHost = (GameObject)GameObject.Instantiate(obj);
-            }
-            else { 
-                Debug.LogError(string.Format("Prefab \"{0}\" not found in resources", unitPrefabName));
-                return;
-            }
-        }
-
-        var unit = this.CreateUnit(focusedMaze, currentTilePosition, unitHost);
-       
-        focusedMaze.Units.Add(unit);
-        
-     }
-
-    private MazeUnit CreateUnit(beMobileMaze mazeHost, Vector2 tilePos, GameObject unit)
-    {
-        var tilePositionInLocalSpace = new Vector3(
-            (tilePos.x * mazeHost.RoomDimension.x) + (mazeHost.RoomDimension.x / 2f),
-            unitFloorOffset,
-            (tilePos.y * mazeHost.RoomDimension.z) + (mazeHost.RoomDimension.z / 2f));
-
-        unit.transform.position = mazeHost.transform.position + tilePositionInLocalSpace;
-
-        // we scale the unit to the tile size defined by the TileMap.TileWidth and TileMap.TileHeight fields 
-        unit.transform.localScale = new Vector3(mazeHost.RoomDimension.x, mazeHost.RoomDimension.y, mazeHost.RoomDimension.z);
-
-        // set the cubes parent to the game object for organizational purposes
-        unit.transform.parent = mazeHost.transform;
-
-        // give the unit a assetName that represents it's location within the tile mazeHost
-        unit.name = string.Format(UnitNamePattern, tilePos.x, tilePos.y);
-
-        MazeUnit mazeUnit = unit.GetComponent<MazeUnit>();
-
-        mazeUnit.Initialize(tilePos);
-
-        return mazeUnit;
-    }
-    
-    /// <summary>
-    /// Erases a block at the pre-calculated mouse hit position
-    /// </summary>
-    private void Erase()
-    {  
-        var unitHost = GameObject.Find(string.Format(UnitNamePattern, currentTilePosition.x, currentTilePosition.y));
-
-        if (!unitHost)
-        {
-            Debug.Log("Nothing to erase!");
-            return;
-        }
-
-        var unit = unitHost.GetComponent<MazeUnit>();
-
-        // if a game object was found with the same assetName and it is a child we just destroy it immediately
-        if (unit != null && unit.transform.parent == focusedMaze.transform)
-        {
-            focusedMaze.Units.Remove(unit);
-            DestroyImmediate(unit.gameObject);
-        }
-    }
+    #region General calculations based on tile editor 
 
     /// <summary>
     /// Calculates the location in tile coordinates (Column/Row) of the mouse position
@@ -666,4 +674,5 @@ public class MazeEditor : Editor
         return false;
     }
 
+    #endregion
 }
