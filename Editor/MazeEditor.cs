@@ -23,10 +23,17 @@ public class MazeEditor : Editor
     private Vector3 mouseHitPos;
     private MazeUnit lastAddedUnit;
 
+    private GUIStyle sceneViewEditorStyle;
+
+    Action<Event> EditorModeProcessEvent;
+
     public void OnEnable()
     { 
         focusedMaze = (beMobileMaze)target;
         MazeSceneViewEditor.Enable();
+        sceneViewEditorStyle = new GUIStyle();
+
+        
     }
 
     public void OnDisable()
@@ -75,20 +82,6 @@ public class MazeEditor : Editor
 
         GUILayout.BeginVertical();
 
-        EditingModeEnabled = EditorGUILayout.BeginToggleGroup("Editing Mode", EditingModeEnabled);
-
-        modeAddEnabled = EditorGUILayout.Toggle("Add", modeAddEnabled);
-
-        if (modeAddEnabled)
-            modeRemoveEnabled = false;
-
-        modeRemoveEnabled = EditorGUILayout.Toggle("Remove", modeRemoveEnabled);
-
-        if (modeRemoveEnabled)
-            modeAddEnabled = false;  
-
-        EditorGUILayout.EndToggleGroup();
-
         if (GUILayout.Button("Open Maze Editor", GUILayout.Width(255)))
         {
             MazeEditorWindow window = (MazeEditorWindow)EditorWindow.GetWindow(typeof(MazeEditorWindow));
@@ -108,15 +101,119 @@ public class MazeEditor : Editor
     {
         // if UpdateHitPosition return true we should update the scene views so that the marker will update in real time
         if (this.UpdateHitPosition())
-        {
-            SceneView.RepaintAll();
+        { 
+            this.RecalculateMarkerPosition();
+
+            focusedMaze.drawEditingHelper = true;
+            
+            SceneView.currentDrawingSceneView.Repaint();
         }
+
+        RenderInfoGUI();
+
+        var _ce = Event.current;
+
+        if(EditorModeProcessEvent != null)
+            EditorModeProcessEvent(_ce);
+    }
+
+    private void EditingMode(Event _ce)
+    {
+        int controlId = GUIUtility.GetControlID(FocusType.Passive);
+        // Before repaint
+        if (_ce.type == EventType.Layout || _ce.type == EventType.layout)
+        {
+
+        }
+
+
+        if (_ce.type == EventType.Repaint || _ce.type == EventType.repaint)
+        {
+        }
+
+
+
+        if (_ce.type == EventType.MouseDown || _ce.type == EventType.MouseDrag)
+        {
+            Debug.Log("MouseDown");
+            if (EditingModeEnabled)
+            {
+                if (modeAddEnabled)
+                    Draw();
+                else if (modeRemoveEnabled)
+                    Erase();
+            }
+            GUIUtility.hotControl = controlId;
+            _ce.Use();
+        }
+    }
+
+    private void SelectionMode(Event _ce)
+    {
+
+    }
+
+    private void RenderInfoGUI()
+    { 
+        // draw a UI tip in scene view informing user how to draw & erase tiles
+        Handles.BeginGUI();
+        GUILayout.BeginVertical();
+        GUILayout.Label("Ctrl + LMB: Draw or Select");
+        GUILayout.Label("Shit + RMB: Erase");
+        GUILayout.Space(10f);
+        GUILayout.Label("Mouse position in local Space of the maze");
+        GUILayout.Label(string.Format("{0} {1} {2}", this.mouseHitPos.x, this.mouseHitPos.y, this.mouseHitPos.z));
+        GUILayout.Label(string.Format("Marker: {0} {1} {2}", focusedMaze.MarkerPosition.x, focusedMaze.MarkerPosition.y, focusedMaze.MarkerPosition.z));
+
+        GUILayout.Space(10f);
+        
+        EditingModeEnabled = GUILayout.Toggle(EditingModeEnabled, "Editing Mode");
+
+        if (EditingModeEnabled)
+        {
+            EditorModeProcessEvent = null;
+            EditorModeProcessEvent += EditingMode;
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(15f);
+            GUILayout.BeginVertical();
+            modeAddEnabled = GUILayout.Toggle(!modeRemoveEnabled, "Adding Cells");
+            modeRemoveEnabled = GUILayout.Toggle(!modeAddEnabled, "Erasing Cells");
+            GUILayout.EndVertical();
+            GUILayout.EndHorizontal();
+        }
+        else
+        {
+            modeRemoveEnabled = false;
+            modeAddEnabled = false;
+            EditorModeProcessEvent -= EditingMode;
+        }
+
+        GUILayout.Space(10f);
+
+        SelectionModeEnabled = GUILayout.Toggle(SelectionModeEnabled, "Selection Mode");
+
+        if (SelectionModeEnabled) { 
+            EditorModeProcessEvent = null;
+            EditorModeProcessEvent += SelectionMode;
+        }
+        else
+        {
+            EditorModeProcessEvent -= SelectionMode;
+        }
+
+        GUILayout.EndVertical();
+        Handles.EndGUI();
+    }
+
+    public void OldBehaviour()
+    {
 
         // get a reference to the current event
         Event current = Event.current;
-
+        //current.type == EventType.
         focusedMaze.drawEditingHelper = false;
-        
+
         // if the mouse is positioned over the layer allow drawing actions to occur
         if (this.IsMouseOnLayer() && EditingModeEnabled)
         {
@@ -130,8 +227,8 @@ public class MazeEditor : Editor
             if (current.type == EventType.MouseDown || current.type == EventType.MouseDrag)
             {
                 if (current.button == 1)
-                { 
-                    if(modeAddEnabled)
+                {
+                    if (modeAddEnabled)
                         this.Draw();
                     else if (modeRemoveEnabled)
                         this.Erase();
@@ -144,7 +241,7 @@ public class MazeEditor : Editor
                 else if (current.button == 0)
                 {
                     Vector2 unitPosition = GetTilePositionFromMouseLocation();
-                    
+
                     string selectionTargetName = String.Format(UnitNamePattern, unitPosition.x, unitPosition.y);
                     var existingUnit = GameObject.Find(selectionTargetName);
 
@@ -154,31 +251,19 @@ public class MazeEditor : Editor
                         currentSelection.Add(existingUnit);
                         Selection.objects = currentSelection.ToArray();
                     }
-                    else if(existingUnit)
+                    else if (existingUnit)
                     {
                         Selection.activeGameObject = existingUnit;
                     }
                 }
-            } 
+            }
             else
             {
                 Selection.activeObject = focusedMaze.gameObject;
             }
-
-            current.Use();
         }
-
-        // draw a UI tip in scene view informing user how to draw & erase tiles
-        Handles.BeginGUI();
-            GUILayout.BeginVertical();
-            GUILayout.Label("Ctrl + LMB: Draw or Select");
-            GUILayout.Label("Shit + RMB: Erase");
-            GUILayout.Label(string.Format("Marker: {0} {1} {2}", focusedMaze.MarkerPosition.x, focusedMaze.MarkerPosition.y, focusedMaze.MarkerPosition.z));
-            GUILayout.Label(string.Format("Marker: {0} {1} {2}", focusedMaze.MarkerPosition.x, focusedMaze.MarkerPosition.y, focusedMaze.MarkerPosition.z));
-            GUILayout.EndVertical();
-        Handles.EndGUI();
     }
-     
+
     private void renderEmptyMazeGUI()
     {
         GUILayout.BeginVertical();
@@ -290,7 +375,7 @@ public class MazeEditor : Editor
     private Vector2 GetTilePositionFromMouseLocation()
     {
         // get reference to the tile mazeHost component
-        var map = (beMobileMaze)this.target;
+        var map = focusedMaze;
 
         // calculate column and row location from mouse hit location
         var pos = new Vector3(this.mouseHitPos.x / map.RoomDimension.x, this.mouseHitPos.y / map.transform.position.y, this.mouseHitPos.z / map.RoomDimension.z);
@@ -334,16 +419,16 @@ public class MazeEditor : Editor
         var map = (beMobileMaze)this.target;
 
         // return true or false depending if the mouse is positioned over the mazeHost
-        //return this.mouseHitPos.x > 0 && this.mouseHitPos.x < (map.Columns * map.RoomDimension.x) &&
-        //       this.mouseHitPos.z > 0 && this.mouseHitPos.z < (map.Rows * map.RoomDimension.z);
+        return this.mouseHitPos.x > 0 && this.mouseHitPos.x < map.MazeWidthInMeter &&
+               this.mouseHitPos.z > 0 && this.mouseHitPos.z < map.MazeLengthInMeter;
 
-        float mapDimX = map.Columns * map.RoomDimension.x;
-        float mapDimZ = map.Rows * map.RoomDimension.y;
+        //float mapDimX = map.Columns * map.RoomDimension.x;
+        //float mapDimZ = map.Rows * map.RoomDimension.y;
 
-        bool isInXspace = this.mouseHitPos.x > map.transform.position.x && this.mouseHitPos.x < mapDimX;
-        bool isInZspace = this.mouseHitPos.z > map.transform.position.z && this.mouseHitPos.z < mapDimZ;
+        //bool isInXspace = this.mouseHitPos.x > map.transform.position.x && this.mouseHitPos.x < mapDimX;
+        //bool isInZspace = this.mouseHitPos.z > map.transform.position.z && this.mouseHitPos.z < mapDimZ;
 
-        return isInXspace && isInZspace;
+        //return isInXspace && isInZspace;
     }
 
     /// <summary>
@@ -352,7 +437,7 @@ public class MazeEditor : Editor
     private void RecalculateMarkerPosition()
     {
         // get reference to the tile mazeHost component
-        var map = (beMobileMaze)this.target;
+        var map = focusedMaze;
 
         // store the tile location (Column/Row) based on the current location of the mouse pointer
         var tilepos = this.GetTilePositionFromMouseLocation();
@@ -371,7 +456,7 @@ public class MazeEditor : Editor
     private bool UpdateHitPosition()
     {
         // get reference to the tile mazeHost component
-        var map = (beMobileMaze)this.target;
+        var map = focusedMaze;
 
         // build a plane object that 
         var p = new Plane(map.transform.TransformDirection(map.transform.up), map.transform.position);
@@ -406,4 +491,6 @@ public class MazeEditor : Editor
         // return false if the hit test failed
         return false;
     }
+
+    public bool SelectionModeEnabled { get; set; }
 }
