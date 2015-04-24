@@ -2,6 +2,7 @@
 using UnityEditor;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 [CustomEditor(typeof(beMobileMaze))]
 public class MazeEditor : Editor
@@ -171,17 +172,13 @@ public class MazeEditor : Editor
 
             var unitHost = GameObject.Find(string.Format(UnitNamePattern, currentTilePosition.x, currentTilePosition.y));
 
-            //! Don't use Selection... a manual selection process necessary
-            //if (unitHost && _ce.shift)
-            //{
-            //    currentSelection = new List<GameObject>(Selection.gameObjects);
-            //    currentSelection.Add(unitHost);
-            //    Selection.objects = currentSelection.ToArray();
-            //}
-            //else if (unitHost)
-            //{
-            //    Selection.activeGameObject = unitHost;
-            //}
+            if (unitHost)
+            {
+                if (currentSelection.Any((i) => i.Equals(unitHost)))
+                    currentSelection.Remove(unitHost);
+                else
+                    currentSelection.Add(unitHost);
+            } 
 
             GUIUtility.hotControl = controlId;
             _ce.Use();
@@ -194,6 +191,14 @@ public class MazeEditor : Editor
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireCube(MarkerPosition + new Vector3(0, focusedMaze.RoomHigthInMeter / 2, 0), new Vector3(focusedMaze.RoomDimension.x, focusedMaze.RoomHigthInMeter, focusedMaze.RoomDimension.z) * 1.1f);
+
+        Gizmos.color = Color.blue;
+
+        if(currentSelection != null)
+            foreach (var item in currentSelection)
+            {
+                Gizmos.DrawWireCube(item.transform.position + new Vector3(0, focusedMaze.RoomHigthInMeter / 2, 0), new Vector3(focusedMaze.RoomDimension.x, focusedMaze.RoomHigthInMeter, focusedMaze.RoomDimension.z));    
+            }
     }
 
     private void RenderInfoGUI()
@@ -241,6 +246,7 @@ public class MazeEditor : Editor
         else
         {
             EditorModeProcessEvent -= SelectionMode;
+            currentSelection.Clear();
         }
 
         GUILayout.EndVertical();
