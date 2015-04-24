@@ -263,8 +263,6 @@ public class MazeEditor : Editor
                 last = iterator.Current;
             }
         }
-        else
-            Debug.Log("Path empty");
     }
 
     private void RenderSceneViewGUI()
@@ -281,7 +279,7 @@ public class MazeEditor : Editor
         
         EditingModeEnabled = GUILayout.Toggle(EditingModeEnabled, "Editing Mode");
 
-#region Editing Mode UI
+        #region Editing Mode UI
 
         if (EditingModeEnabled)
         {
@@ -304,13 +302,13 @@ public class MazeEditor : Editor
             modeAddEnabled = false;
             EditorModeProcessEvent -= EditingMode;
         }
-#endregion
+        #endregion
 
         GUILayout.Space(10f);
 
         SelectionModeEnabled = GUILayout.Toggle(SelectionModeEnabled, "Selection Mode");
 
-#region Selection Mode UI
+        #region Selection Mode UI
         if (SelectionModeEnabled) {
 
             if (ActiveMode != MazeEditorMode.SELECTION) { 
@@ -322,6 +320,16 @@ public class MazeEditor : Editor
 
                 ActiveMode = MazeEditorMode.SELECTION;
             }
+
+            if (GUILayout.Button("Connect"))
+            {
+                TryConnectingCurrentSelection();
+            }
+
+            if (GUILayout.Button("Disconnect"))
+            {
+                TryDisconnectingCurrentSelection();
+            }
         }
         else
         {
@@ -330,7 +338,7 @@ public class MazeEditor : Editor
             if(currentSelection != null)
                 currentSelection.Clear();
         }
-#endregion
+        #endregion
 
         GUILayout.Space(10f);
 
@@ -367,6 +375,103 @@ public class MazeEditor : Editor
         
 
         Handles.EndGUI();
+    }
+
+    private void TryConnectingCurrentSelection()
+    {
+        if (currentSelection == null)
+            return;
+
+        if (!currentSelection.Any())
+            return;
+
+        var iterator = currentSelection.GetEnumerator();
+
+        MazeUnit last = null;
+
+        while (iterator.MoveNext())
+        {
+            var current = iterator.Current.GetComponent<MazeUnit>();
+            
+            if (!last) {
+                last = current;
+                continue;
+            }
+
+            if (current.GridID.x - 1 == last.GridID.x)
+            {
+                last.Open(MazeUnit.EAST);
+                current.Open(MazeUnit.WEST);
+            }
+            else if (current.GridID.x + 1 == last.GridID.x)
+            {
+                last.Open(MazeUnit.WEST);
+                current.Open(MazeUnit.EAST);
+            }
+
+            if (current.GridID.y - 1 == last.GridID.y)
+            {
+                last.Open(MazeUnit.NORTH);
+                current.Open(MazeUnit.SOUTH);
+            }
+            else if (current.GridID.y + 1 == last.GridID.y)
+            {
+                last.Open(MazeUnit.SOUTH);
+                current.Open(MazeUnit.NORTH);
+            }
+
+
+
+            last = current; 
+        }
+    }
+
+    private void TryDisconnectingCurrentSelection()
+    {
+        if (currentSelection == null)
+            return;
+
+        if (!currentSelection.Any())
+            return;
+
+        var iterator = currentSelection.GetEnumerator();
+
+        MazeUnit last = null;
+
+        while (iterator.MoveNext())
+        {
+            var current = iterator.Current.GetComponent<MazeUnit>();
+
+            if (!last)
+            {
+                last = current;
+                continue;
+            }
+
+            if (current.GridID.x - 1 == last.GridID.x)
+            {
+                last.Close(MazeUnit.EAST);
+                current.Close(MazeUnit.WEST);
+            }
+            else if (current.GridID.x + 1 == last.GridID.x)
+            {
+                last.Close(MazeUnit.WEST);
+                current.Close(MazeUnit.EAST);
+            }
+
+            if (current.GridID.y - 1 == last.GridID.y)
+            {
+                last.Close(MazeUnit.NORTH);
+                current.Close(MazeUnit.SOUTH);
+            }
+            else if (current.GridID.y + 1 == last.GridID.y)
+            {
+                last.Close(MazeUnit.SOUTH);
+                current.Close(MazeUnit.NORTH);
+            }
+            
+            last = current;
+        }
     }
 
     private void renderEmptyMazeGUI()
