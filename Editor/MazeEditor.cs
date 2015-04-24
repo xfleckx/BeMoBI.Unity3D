@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+public enum MazeEditorMode {NONE, EDITING, SELECTION, PATH_CREATION}
+
 [CustomEditor(typeof(beMobileMaze))]
 public class MazeEditor : Editor
 {
@@ -15,12 +17,17 @@ public class MazeEditor : Editor
      
     public Vector3 MarkerPosition;
 
-    private List<GameObject> currentSelection;
+    private HashSet<GameObject> currentSelection;
+    private LinkedList<MazeUnit> pathInSelection;
 
-    public bool SelectionModeEnabled = false;
-    public bool EditingModeEnabled = false;
-    public bool modeAddEnabled = false;
-    public bool modeRemoveEnabled = false;
+    private bool SelectionModeEnabled = false;
+    private bool PathCreationEnabled = false;
+
+    private bool EditingModeEnabled = false;
+    private bool modeAddEnabled = false;
+    private bool modeRemoveEnabled = false;
+
+    private MazeEditorMode ActiveMode = MazeEditorMode.NONE;
 
     private Vector3 draggingStart;
     private Vector2 currentTilePosition;
@@ -125,7 +132,7 @@ public class MazeEditor : Editor
             SceneView.currentDrawingSceneView.Repaint();
         }
 
-        RenderInfoGUI();
+        RenderSceneViewGUI();
 
         var _ce = Event.current;
 
@@ -174,10 +181,12 @@ public class MazeEditor : Editor
 
             if (unitHost)
             {
-                if (currentSelection.Any((i) => i.Equals(unitHost)))
+                if(currentSelection.Contains(unitHost)){
                     currentSelection.Remove(unitHost);
-                else
+                }
+                else { 
                     currentSelection.Add(unitHost);
+                }
             } 
 
             GUIUtility.hotControl = controlId;
@@ -186,6 +195,39 @@ public class MazeEditor : Editor
         
     }
 
+    private void PathCreationMode(Event _ce)
+    {
+        int controlId = GUIUtility.GetControlID(FocusType.Passive);
+
+        if (_ce.type == EventType.MouseDown || _ce.type == EventType.MouseDrag)
+        {
+            var unitHost = GameObject.Find(string.Format(UnitNamePattern, currentTilePosition.x, currentTilePosition.y));
+           
+            if (unitHost != null)
+            {
+                var unit = unitHost.GetComponent<MazeUnit>();
+
+                if (unit)
+                {
+                    Debug.Log(string.Format("add {0} to path", unit.name));
+                    pathInSelection.AddLast(unit);
+                }
+
+                if (unit && _ce.shift && pathInSelection.Any())
+                {
+                    pathInSelection.Remove(unit);
+                }
+            }
+            else {
+                Debug.Log("no element added");
+            }
+
+            
+
+            GUIUtility.hotControl = controlId;
+            _ce.Use();
+        }
+    }
 
     private void RenderEditorGizmos()
     {
@@ -194,20 +236,44 @@ public class MazeEditor : Editor
 
         Gizmos.color = Color.blue;
 
-        if(currentSelection != null)
+        if (currentSelection != null) { 
             foreach (var item in currentSelection)
             {
                 Gizmos.DrawWireCube(item.transform.position + new Vector3(0, focusedMaze.RoomHigthInMeter / 2, 0), new Vector3(focusedMaze.RoomDimension.x, focusedMaze.RoomHigthInMeter, focusedMaze.RoomDimension.z));    
             }
+        }
+
+        if (pathInSelection != null)
+        {
+            var iterator = pathInSelection.GetEnumerator();
+            MazeUnit last = null;
+
+            while (iterator.MoveNext())
+            {
+                if (!last)
+                {
+                    last = iterator.Current;
+                    continue;
+                }
+
+                var hoveringDistance = new Vector3(0f, focusedMaze.RoomHigthInMeter, 0f);
+
+                Gizmos.DrawLine(last.transform.position + hoveringDistance, iterator.Current.transform.position + hoveringDistance);
+
+                last = iterator.Current;
+            }
+        }
+        else
+            Debug.Log("Path empty");
     }
 
-    private void RenderInfoGUI()
+    private void RenderSceneViewGUI()
     {  
         Handles.BeginGUI();
 
-        GUILayout.BeginVertical();
-        GUILayout.Space(10f);
-        GUILayout.Label("Mouse position in local Space of the maze");
+        GUILayout.BeginVertical(GUILayout.Width(200f));
+
+        GUILayout.Label("Position in local Space of the maze");
         GUILayout.Label(string.Format("{0} {1} {2}", this.mouseHitPos.x, this.mouseHitPos.y, this.mouseHitPos.z));
         GUILayout.Label(string.Format("Marker: {0} {1} {2}", MarkerPosition.x, MarkerPosition.y, MarkerPosition.z));
 
@@ -215,11 +281,15 @@ public class MazeEditor : Editor
         
         EditingModeEnabled = GUILayout.Toggle(EditingModeEnabled, "Editing Mode");
 
+#region Editing Mode UI
+
         if (EditingModeEnabled)
         {
-            EditorModeProcessEvent = null;
-            EditorModeProcessEvent += EditingMode;
-
+            if (ActiveMode != MazeEditorMode.EDITING) { 
+                EditorModeProcessEvent = null;
+                EditorModeProcessEvent += EditingMode;
+                ActiveMode = MazeEditorMode.EDITING;
+            }
             GUILayout.BeginHorizontal();
             GUILayout.Space(15f);
             GUILayout.BeginVertical();
@@ -234,22 +304,68 @@ public class MazeEditor : Editor
             modeAddEnabled = false;
             EditorModeProcessEvent -= EditingMode;
         }
+#endregion
 
         GUILayout.Space(10f);
 
         SelectionModeEnabled = GUILayout.Toggle(SelectionModeEnabled, "Selection Mode");
 
-        if (SelectionModeEnabled) { 
-            EditorModeProcessEvent = null;
-            EditorModeProcessEvent += SelectionMode;
+#region Selection Mode UI
+        if (SelectionModeEnabled) {
+
+            if (ActiveMode != MazeEditorMode.SELECTION) { 
+
+                currentSelection = new HashSet<GameObject>();
+            
+                EditorModeProcessEvent = null;
+                EditorModeProcessEvent += SelectionMode;
+
+                ActiveMode = MazeEditorMode.SELECTION;
+            }
         }
         else
         {
-            EditorModeProcessEvent -= SelectionMode;
-            currentSelection.Clear();
+            EditorModeProcessEvent -= SelectionMode; 
+            
+            if(currentSelection != null)
+                currentSelection.Clear();
         }
+#endregion
 
+        GUILayout.Space(10f);
+
+        #region Path creation mode
+
+        PathCreationEnabled = GUILayout.Toggle(PathCreationEnabled, "Path creation");
+
+        if (PathCreationEnabled) {
+            
+            if(ActiveMode != MazeEditorMode.PATH_CREATION){
+            
+                    pathInSelection = new LinkedList<MazeUnit>();
+
+                    EditorModeProcessEvent += PathCreationMode;
+                    ActiveMode = MazeEditorMode.PATH_CREATION;
+                }
+
+            if (GUILayout.Button("Save Path", GUILayout.Width(75f)))
+            {
+
+            }
+        }
+        else
+        {
+            EditorModeProcessEvent -= PathCreationMode;
+
+            if(pathInSelection != null)
+                pathInSelection.Clear();
+
+        }
+        #endregion
+        
         GUILayout.EndVertical();
+        
+
         Handles.EndGUI();
     }
 
