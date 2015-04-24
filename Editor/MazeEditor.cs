@@ -239,7 +239,7 @@ public class MazeEditor : Editor
         if (currentSelection != null) { 
             foreach (var item in currentSelection)
             {
-                Gizmos.DrawWireCube(item.transform.position + new Vector3(0, focusedMaze.RoomHigthInMeter / 2, 0), new Vector3(focusedMaze.RoomDimension.x, focusedMaze.RoomHigthInMeter, focusedMaze.RoomDimension.z));    
+                Gizmos.DrawCube(item.transform.position + new Vector3(0, focusedMaze.RoomHigthInMeter / 2, 0), new Vector3(focusedMaze.RoomDimension.x, focusedMaze.RoomHigthInMeter, focusedMaze.RoomDimension.z));    
             }
         }
 
