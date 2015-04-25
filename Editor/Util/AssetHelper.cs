@@ -4,14 +4,13 @@ using UnityEditor;
 
 public static class AssetHelper {
 
-
     public static string CreateCompanionFolderForPrefab(string prefabPath)
     {
         int indexOfLastSlash = prefabPath.LastIndexOf('/');
         int indexOfFileExtension = prefabPath.LastIndexOf('.');
         string folderForMazeContents = prefabPath.Substring(0, indexOfLastSlash);
 
-        int fileNameLength = prefabPath.Length - indexOfFileExtension - 1;
+        int fileNameLength = prefabPath.Length - indexOfFileExtension;
 
         string prefabName = prefabPath.Substring(indexOfLastSlash, fileNameLength);
 
