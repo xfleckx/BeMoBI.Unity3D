@@ -5,10 +5,10 @@ using System.Linq;
 
 public class MazeUnit : MonoBehaviour {
 
-	private const string NORTH = "North";
-	private const string SOUTH = "South";
-	private const string WEST = "West";
-	private const string EAST = "East";
+	public const string NORTH = "North";
+	public const string SOUTH = "South";
+	public const string WEST = "West";
+	public const string EAST = "East";
 
 	public Vector2 GridID;
 	public Waypoint Waypoint;
@@ -29,7 +29,7 @@ public class MazeUnit : MonoBehaviour {
 
 	void OnDrawGizmos()
 	{
-		if (Waypoint != null && Waypoint.enabled)
+		if (Waypoint != null && Waypoint.enabled && Waypoint.Active)
 		{
 			Gizmos.DrawWireSphere(Waypoint.gameObject.transform.position, 0.2f);
 		}
