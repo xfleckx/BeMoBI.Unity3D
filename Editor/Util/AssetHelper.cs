@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEditor;
 
 public static class AssetHelper {
 
@@ -16,7 +17,7 @@ public static class AssetHelper {
 
         string guid = AssetDatabase.CreateFolder(folderForMazeContents, prefabName);
 
-        return newFolderPath = AssetDatabase.GUIDToAssetPath(guid);
+        return AssetDatabase.GUIDToAssetPath(guid);
     }
 
 }
