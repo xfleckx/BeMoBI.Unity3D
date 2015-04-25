@@ -111,6 +111,20 @@ public class MazeEditor : Editor
 
         if (GUILayout.Button("Create Maze Prefab", GUILayout.Width(255)))
         {
+            string prefabPath = EditorUtility.SaveFilePanelInProject("Save maze", "maze", "prefab", "Save maze as Prefab");
+
+            PrefabUtility.CreatePrefab(prefabPath, focusedMaze.gameObject, ReplacePrefabOptions.Default);
+            
+            int indexOfLastSlash         = prefabPath.LastIndexOf('/');
+            int indexOfFileExtension     = prefabPath.LastIndexOf('.');
+            string folderForMazeContents = prefabPath.Substring(0, indexOfLastSlash);
+
+            int fileNameLength = prefabPath.Length - indexOfFileExtension -1;
+
+            string prefabName = prefabPath.Substring(indexOfLastSlash, fileNameLength);
+
+            string guid = AssetDatabase.CreateFolder(folderForMazeContents, prefabName);
+            string newFolderPath = AssetDatabase.GUIDToAssetPath(guid);
 
         }
 
@@ -563,6 +577,8 @@ public class MazeEditor : Editor
 
         }
         #endregion
+
+        GUILayout.Space(10f);
         
         GUILayout.EndVertical();
         
