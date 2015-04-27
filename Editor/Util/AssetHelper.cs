@@ -12,9 +12,17 @@ public static class AssetHelper {
 
         var prefabName = Path.GetFileNameWithoutExtension(prefabPath);
 
-        string guid = AssetDatabase.CreateFolder(folderForMazeContents, prefabName);
+        var resultingPath = string.Format("{0}/{1}", folderForMazeContents, prefabName);
 
-        return AssetDatabase.GUIDToAssetPath(guid);
+        if (!AssetDatabase.IsValidFolder(resultingPath))
+        {
+            string guid = AssetDatabase.CreateFolder(folderForMazeContents, prefabName);
+            
+            return AssetDatabase.GUIDToAssetPath(guid);
+        }
+
+        return resultingPath;
+
     }
 
 }
