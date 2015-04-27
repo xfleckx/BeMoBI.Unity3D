@@ -6,6 +6,8 @@ public class PathInMaze : ScriptableObject {
 
     [SerializeField]
     public LinkedList<Vector2> GridIDs;
+    [SerializeField]
+    public string PathName = string.Empty;
 
     public void Setup(LinkedList<MazeUnit> pathInSelection)
     {

@@ -595,6 +595,8 @@ public class MazeEditor : Editor
             {
                 var pathInMaze = ScriptableObject.CreateInstance<PathInMaze>();
                 
+                pathInMaze.PathName = currentPathName;
+
                 pathInMaze.Setup(pathInSelection);
 
                 if (PathToMazePrefab == string.Empty && PathToMazeCompanionFolder == string.Empty)
