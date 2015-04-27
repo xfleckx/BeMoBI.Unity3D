@@ -50,6 +50,10 @@ public class MazeEditor : Editor
         focusedMaze = (beMobileMaze)target;
 
         referenceToPrefab = PrefabUtility.GetPrefabParent(focusedMaze.gameObject);
+        
+        PathToMazePrefab = AssetDatabase.GetAssetPath(referenceToPrefab);
+
+        PathToMazeCompanionFolder = AssetHelper.GetOrCreateCompanionFolderForPrefab(PathToMazePrefab);
 
         MazeSceneViewEditor.Enable();
         sceneViewEditorStyle = new GUIStyle();
@@ -125,18 +129,19 @@ public class MazeEditor : Editor
 
         if (referenceToPrefab && GUILayout.Button("Update Prefab"))
         {
-            UpdatePrefabWithCurrentMaze();
+            UpdatePrefabOfCurrentMaze();
         }
 
         if (GUILayout.Button("Show Paths", GUILayout.Width(255)))
         {
+
         }
 
         GUILayout.EndVertical();
 
     }
 
-    private void UpdatePrefabWithCurrentMaze()
+    private void UpdatePrefabOfCurrentMaze()
     {
        referenceToPrefab = PrefabUtility.ReplacePrefab(focusedMaze.gameObject, referenceToPrefab, ReplacePrefabOptions.ConnectToPrefab);
     }
@@ -147,7 +152,8 @@ public class MazeEditor : Editor
         Debug.Log("Saved to " + PathToMazePrefab);
         referenceToPrefab = PrefabUtility.CreatePrefab(PathToMazePrefab, focusedMaze.gameObject, ReplacePrefabOptions.ConnectToPrefab);
 
-        PathToMazeCompanionFolder = AssetHelper.CreateCompanionFolderForPrefab(PathToMazePrefab);
+        PathToMazeCompanionFolder = AssetHelper.GetOrCreateCompanionFolderForPrefab(PathToMazePrefab);
+
         Debug.Log("Create companion folder " + PathToMazePrefab);
     }
 
@@ -159,8 +165,6 @@ public class MazeEditor : Editor
             this.RecalculateMarkerPosition();
 
             currentTilePosition = this.GetTilePositionFromMouseLocation();
-
-            focusedMaze.drawEditingHelper = true;
             
             SceneView.currentDrawingSceneView.Repaint();
         }
@@ -491,6 +495,9 @@ public class MazeEditor : Editor
         }
     }
 
+    PathInMaze pathShouldBeRemoved;
+    string currentPathName = string.Empty;
+
     private void RenderSceneViewGUI()
     {  
         Handles.BeginGUI();
@@ -582,7 +589,9 @@ public class MazeEditor : Editor
                     ActiveMode = MazeEditorMode.PATH_CREATION;
                 }
 
-            if (GUILayout.Button("Save Path", GUILayout.Width(75f)))
+            currentPathName = GUILayout.TextField(currentPathName, GUILayout.Width(80f));
+
+            if (currentPathName != string.Empty && PathIsValid(pathInSelection) && GUILayout.Button("Save Path", GUILayout.Width(75f)))
             {
                 var pathInMaze = ScriptableObject.CreateInstance<PathInMaze>();
                 
@@ -595,22 +604,44 @@ public class MazeEditor : Editor
 
                 if (!AssetDatabase.IsValidFolder(PathToMazeCompanionFolder))
                 {
-                    PathToMazeCompanionFolder = AssetHelper.CreateCompanionFolderForPrefab(PathToMazePrefab);
+                    PathToMazeCompanionFolder = AssetHelper.GetOrCreateCompanionFolderForPrefab(PathToMazePrefab);
                 }
 
-                AssetDatabase.CreateAsset(pathInMaze, string.Format("{0}/{1}", PathToMazeCompanionFolder, "path"));
+                AssetDatabase.CreateAsset(pathInMaze, string.Format("{0}/{1}", PathToMazeCompanionFolder, currentPathName));
 
                 focusedMaze.Paths.Add(pathInMaze);
 
                 PrefabUtility.ReplacePrefab(focusedMaze.gameObject, referenceToPrefab, ReplacePrefabOptions.ConnectToPrefab);
             }
 
+            if (focusedMaze.Paths.Any()) { 
 
-            foreach (var path in focusedMaze.Paths)
-            {
-                if (GUILayout.Button(path.name))
+                GUILayout.Space(4f);
+
+                GUILayout.Label("Existing Paths");
+            
+                GUILayout.Space(2f);
+
+                foreach (var path in focusedMaze.Paths)
                 {
+                    GUILayout.BeginHorizontal(GUILayout.Width(100f));
+                
+                        if (GUILayout.Button(path.name))
+                        {
+                            pathInSelection = focusedMaze.CreatePathFromGridIDs(path.GridIDs);
+                        }
 
+                        if (GUILayout.Button("X", GUILayout.Width(20f)))
+                        {
+                            pathShouldBeRemoved = path;
+                        }
+
+                    GUILayout.EndHorizontal();
+                }
+
+                if (pathShouldBeRemoved != null) { 
+                    focusedMaze.Paths.Remove(pathShouldBeRemoved);
+                    pathShouldBeRemoved = null;
                 }
             }
         }
@@ -628,10 +659,19 @@ public class MazeEditor : Editor
         
         GUILayout.EndVertical();
         
-
         Handles.EndGUI();
     }
-    
+
+    private bool PathIsValid(LinkedList<MazeUnit> path)
+    {
+        if (path == null)
+            return false;
+
+        bool hasEnoughElements = path.Count > 1;
+
+        return hasEnoughElements;
+    }
+
     private void renderEmptyMazeGUI()
     {
         GUILayout.BeginVertical();

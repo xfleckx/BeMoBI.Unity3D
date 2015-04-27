@@ -4,7 +4,7 @@ using UnityEditor;
 using System.IO;
 public static class AssetHelper {
 
-    public static string CreateCompanionFolderForPrefab(string prefabPath)
+    public static string GetOrCreateCompanionFolderForPrefab(string prefabPath)
     {
         int indexOfLastSlash = prefabPath.LastIndexOf('/');
 
@@ -24,5 +24,5 @@ public static class AssetHelper {
         return resultingPath;
 
     }
-
+     
 }

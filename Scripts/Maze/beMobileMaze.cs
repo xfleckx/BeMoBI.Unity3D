@@ -27,8 +27,7 @@ public class beMobileMaze : MonoBehaviour {
 	public List<PathInMaze> Paths = new List<PathInMaze>();
 
 	private Vector3 origin;
-	[HideInInspector]
-	public bool drawEditingHelper = true;
+
 
 #if UNITY_EDITOR
 	public Action EditorGizmoCallbacks;
@@ -86,5 +85,32 @@ public class beMobileMaze : MonoBehaviour {
 		{
 			Gizmos.DrawLine(position + new Vector3(0, 0, i * RoomDimension.z), position + new Vector3(mapWidth, 0, i * RoomDimension.z));
 		}
+
+	}
+
+	public LinkedList<MazeUnit> CreatePathFromGridIDs(LinkedList<Vector2> gridIDs)
+	{
+		var enumerator = gridIDs.GetEnumerator();
+		var units = new LinkedList<MazeUnit>();
+
+		while (enumerator.MoveNext()) {
+
+			var gridField = enumerator.Current;
+
+			var correspondingUnitHost = transform.FindChild(string.Format("Unit_{0}_{1}", gridField.x, gridField.y));
+
+			if (correspondingUnitHost == null)
+				throw new MissingComponentException("It seems, that the path doesn't match the maze! Requested Unit is missing!");
+		
+			var unit = correspondingUnitHost.GetComponent<MazeUnit>();
+
+			if (unit == null)
+				throw new MissingComponentException("Expected Component on Maze Unit is missing!");
+
+			units.AddLast(unit);
+		}
+
+		return units;
+
 	}
 }
