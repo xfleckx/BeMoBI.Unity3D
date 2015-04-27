@@ -19,6 +19,7 @@ public class MazeEditor : Editor
 
     private HashSet<GameObject> currentSelection;
     private LinkedList<MazeUnit> pathInSelection;
+    private string NameOfCurrentPath = String.Empty;
 
     private bool SelectionModeEnabled = false;
     private bool PathCreationEnabled = false;
@@ -26,6 +27,11 @@ public class MazeEditor : Editor
     private bool EditingModeEnabled = false;
     private bool modeAddEnabled = false;
     private bool modeRemoveEnabled = false;
+
+    private UnityEngine.Object referenceToPrefab;
+
+    private string PathToMazePrefab = string.Empty;
+    private string PathToMazeCompanionFolder = string.Empty;
 
     private MazeEditorMode ActiveMode = MazeEditorMode.NONE;
 
@@ -42,6 +48,9 @@ public class MazeEditor : Editor
     public void OnEnable()
     { 
         focusedMaze = (beMobileMaze)target;
+
+        referenceToPrefab = PrefabUtility.GetPrefabParent(focusedMaze.gameObject);
+
         MazeSceneViewEditor.Enable();
         sceneViewEditorStyle = new GUIStyle();
 
@@ -111,16 +120,35 @@ public class MazeEditor : Editor
 
         if (GUILayout.Button("Create Maze Prefab", GUILayout.Width(255)))
         {
-            string prefabPath = EditorUtility.SaveFilePanelInProject("Save maze", "maze", "prefab", "Save maze as Prefab");
+            SavePrefabAndCreateCompanionFolder();
+        }
 
-            PrefabUtility.CreatePrefab(prefabPath, focusedMaze.gameObject, ReplacePrefabOptions.Default);
-            
-            AssetHelper.CreateCompanionFolderForPrefab(prefabPath);
+        if (referenceToPrefab && GUILayout.Button("Update Prefab"))
+        {
+            UpdatePrefabWithCurrentMaze();
+        }
 
+        if (GUILayout.Button("Show Paths", GUILayout.Width(255)))
+        {
         }
 
         GUILayout.EndVertical();
 
+    }
+
+    private void UpdatePrefabWithCurrentMaze()
+    {
+       referenceToPrefab = PrefabUtility.ReplacePrefab(focusedMaze.gameObject, referenceToPrefab, ReplacePrefabOptions.ConnectToPrefab);
+    }
+
+    private void SavePrefabAndCreateCompanionFolder()
+    {
+        PathToMazePrefab = EditorUtility.SaveFilePanelInProject("Save maze", "maze.prefab", "prefab", "Save maze as Prefab");
+        Debug.Log("Saved to " + PathToMazePrefab);
+        referenceToPrefab = PrefabUtility.CreatePrefab(PathToMazePrefab, focusedMaze.gameObject, ReplacePrefabOptions.ConnectToPrefab);
+
+        PathToMazeCompanionFolder = AssetHelper.CreateCompanionFolderForPrefab(PathToMazePrefab);
+        Debug.Log("Create companion folder " + PathToMazePrefab);
     }
 
     private void OnSceneGUI()
@@ -556,7 +584,34 @@ public class MazeEditor : Editor
 
             if (GUILayout.Button("Save Path", GUILayout.Width(75f)))
             {
+                var pathInMaze = ScriptableObject.CreateInstance<PathInMaze>();
+                
+                pathInMaze.Setup(pathInSelection);
 
+                if (PathToMazePrefab == string.Empty && PathToMazeCompanionFolder == string.Empty)
+                {
+                    SavePrefabAndCreateCompanionFolder();
+                }
+
+                if (!AssetDatabase.IsValidFolder(PathToMazeCompanionFolder))
+                {
+                    PathToMazeCompanionFolder = AssetHelper.CreateCompanionFolderForPrefab(PathToMazePrefab);
+                }
+
+                AssetDatabase.CreateAsset(pathInMaze, string.Format("{0}/{1}", PathToMazeCompanionFolder, "path"));
+
+                focusedMaze.Paths.Add(pathInMaze);
+
+                PrefabUtility.ReplacePrefab(focusedMaze.gameObject, referenceToPrefab, ReplacePrefabOptions.ConnectToPrefab);
+            }
+
+
+            foreach (var path in focusedMaze.Paths)
+            {
+                if (GUILayout.Button(path.name))
+                {
+
+                }
             }
         }
         else
