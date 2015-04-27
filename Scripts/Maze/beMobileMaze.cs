@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System;
 
 public class beMobileMaze : MonoBehaviour {
 
@@ -20,15 +21,18 @@ public class beMobileMaze : MonoBehaviour {
 	public List<GameObject> Edges;
 	public List<GameObject> Waypoints;
 
-	[HideInInspector]
-	public Vector3 MarkerPosition;
-
+	[SerializeField]
 	public List<MazeUnit> Units = new List<MazeUnit>();
 
-	 
+	public List<PathInMaze> Paths = new List<PathInMaze>();
+
 	private Vector3 origin;
 	[HideInInspector]
 	public bool drawEditingHelper = true;
+
+#if UNITY_EDITOR
+	public Action EditorGizmoCallbacks;
+#endif
 
 	void OnEnable() 
 	{
@@ -42,18 +46,16 @@ public class beMobileMaze : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-
+		
 	}
 
 	public void OnDrawGizmos()
 	{
 		drawFloorGrid();
- 
-		// Draw marker position
-		if (drawEditingHelper) {  
-			Gizmos.color = Color.red;    
-			Gizmos.DrawWireCube(this.MarkerPosition + new Vector3(0,RoomHigthInMeter / 2,0), new Vector3(RoomDimension.x, RoomHigthInMeter, RoomDimension.z) * 1.1f);
-		}
+#if UNITY_EDITOR
+		if(EditorGizmoCallbacks != null)
+			EditorGizmoCallbacks();
+#endif
 	}
 
 	private void drawFloorGrid() 
