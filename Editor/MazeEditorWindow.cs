@@ -45,7 +45,9 @@ public class MazeEditorWindow : EditorWindow
     }
 
     void OnGUI() 
-    {  
+    {
+        EditorGUILayout.BeginVertical(GUILayout.Width(250));
+
         GUILayout.Label("Base Settings", EditorStyles.boldLabel);
         MazeName = EditorGUILayout.TextField("Name:", selectedMaze.name);
         Description = EditorGUILayout.TextField("Description:", Description);
@@ -53,7 +55,9 @@ public class MazeEditorWindow : EditorWindow
         UnitDimension = EditorGUILayout.Vector2Field("Dimension of Unit", UnitDimension);
         mazeWidth = EditorGUILayout.FloatField("Width in Meter", selectedMaze.MazeWidthInMeter);
         mazeLength = EditorGUILayout.FloatField("Length in Meter", selectedMaze.MazeLengthInMeter);
-  
+
+        EditorGUILayout.EndVertical();
+
         scrollPos =
                 EditorGUILayout.BeginScrollView(scrollPos, GUILayout.Width(this.position.width), GUILayout.Height(250));
 
