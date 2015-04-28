@@ -199,7 +199,6 @@ public class MazeEditor : Editor
 
         if (_ce.type == EventType.MouseDown || _ce.type == EventType.MouseDrag)
         {
-            Debug.Log("MouseDown");
             if (EditingModeEnabled)
             {
                 if (modeAddEnabled)
@@ -231,7 +230,8 @@ public class MazeEditor : Editor
              
             if (obj)
             {
-                unitHost = (GameObject)GameObject.Instantiate(obj);
+                unitHost = PrefabUtility.InstantiatePrefab(obj) as GameObject;
+                PrefabUtility.DisconnectPrefabInstance(unitHost);
             }
             else
             {
@@ -264,7 +264,7 @@ public class MazeEditor : Editor
         // give the unit a assetName that represents it's location within the tile mazeHost
         unit.name = string.Format(UnitNamePattern, tilePos.x, tilePos.y);
 
-        MazeUnit mazeUnit = unit.AddComponent<MazeUnit>();
+        MazeUnit mazeUnit = unit.GetComponent<MazeUnit>();
 
         mazeUnit.Initialize(tilePos);
 
