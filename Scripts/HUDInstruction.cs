@@ -122,10 +122,10 @@ public class HUDInstruction : MonoBehaviour {
 	}
 	
 	void Display(Instruction instruction){
-	 
-			InstructionTextBesideImage.text = instruction.Text;
-			InstructionTextWide.text = string.Empty;
-			InstructionImage.gameObject.SetActive(true); 
+
+		InstructionTextBesideImage.text = string.Empty;
+		InstructionTextWide.text = instruction.Text;
+		InstructionImage.gameObject.SetActive(false); 
 	}
 
 	void Display(InstructionWithImage instruction)
