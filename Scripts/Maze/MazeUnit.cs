@@ -45,6 +45,34 @@ public class MazeUnit : MonoBehaviour {
 		transform.FindChild(directionName).gameObject.SetActive(true);
 	}
 
+
+	void OnTriggerEnter(Collider c)
+	{
+		Debug.Log(string.Format("Entering {0} {1}", GridID.x, GridID.y));
+
+		var evt = new MazeUnitEvent(MazeUnitEventType.Entering, c, this); 
+
+		SendMessageUpwards("RecieveUnitEvent", evt, SendMessageOptions.DontRequireReceiver);
+	}
+
+
+	void OnTriggerStay(Collider c)
+	{
+
+	}
+
+
+	void OnTriggerExit(Collider c)
+	{
+		Debug.Log(string.Format("Leaving {0} {1}", GridID.x, GridID.y));
+
+		var evt = new MazeUnitEvent(MazeUnitEventType.Exiting, c, this); 
+		
+		SendMessageUpwards("RecieveUnitEvent", evt, SendMessageOptions.DontRequireReceiver);
+	} 
+
+
+	#region deprecated
 	public static void Join(IEnumerable<MazeUnit> units)
 	{
 		System.Diagnostics.Debug.Assert(units.Any(), "should never called with empty enumerable");
@@ -172,7 +200,34 @@ public class MazeUnit : MonoBehaviour {
 
 			current = columnStack.Pop();
 		}
-	
+
+	}
+	#endregion
+}
+
+public enum MazeUnitEventType { Entering, Exiting }
+
+public class MazeUnitEvent
+{
+	private MazeUnitEventType mazeUnitEventType;
+	public MazeUnitEventType MazeUnitEventType
+	{
+		get { return mazeUnitEventType; } 
 	}
 
+	private Collider c;
+	private MazeUnit mazeUnit;
+	public Collider Collider
+	{
+		get { return c; } 
+	}
+	 
+	public MazeUnitEvent(global::MazeUnitEventType mazeUnitEventType, UnityEngine.Collider c, MazeUnit mazeUnit)
+	{
+		// TODO: Complete member initialization
+		this.mazeUnitEventType = mazeUnitEventType;
+		this.c = c;
+		this.mazeUnit = mazeUnit;
+	}
+	
 }

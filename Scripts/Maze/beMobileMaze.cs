@@ -2,9 +2,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System;
+using System.Linq;
 
-public class beMobileMaze : MonoBehaviour {
+public class beMobileMaze : MonoBehaviour
+{
 
+	#region replace this with readonly creation model
 	public float MazeWidthInMeter = 6f;
 	public float MazeLengthInMeter = 10f;
 	public float RoomHigthInMeter = 2;
@@ -20,44 +23,66 @@ public class beMobileMaze : MonoBehaviour {
 	public List<GameObject> Walls;
 	public List<GameObject> Edges;
 	public List<GameObject> Waypoints;
+	#endregion
+
+	public event Action<MazeUnitEvent> MazeUnitEventOccured;
 
 	[SerializeField]
 	public List<MazeUnit> Units = new List<MazeUnit>();
 
 	public List<PathInMaze> Paths = new List<PathInMaze>();
+	
+	public PathInMaze RequirePath(string targetPath)
+	{  
+		return Paths.SingleOrDefault((p) => p.PathName.Equals(targetPath));
+	}
+	
+	public LinkedList<MazeUnit> CreatePathFromGridIDs(LinkedList<Vector2> gridIDs)
+	{
+		var enumerator = gridIDs.GetEnumerator();
+		var units = new LinkedList<MazeUnit>();
 
-	private Vector3 origin;
+		while (enumerator.MoveNext()) {
 
+			var gridField = enumerator.Current;
+
+			var correspondingUnitHost = transform.FindChild(string.Format("Unit_{0}_{1}", gridField.x, gridField.y));
+
+			if (correspondingUnitHost == null)
+				throw new MissingComponentException("It seems, that the path doesn't match the maze! Requested Unit is missing!");
+		
+			var unit = correspondingUnitHost.GetComponent<MazeUnit>();
+
+			if (unit == null)
+				throw new MissingComponentException("Expected Component on Maze Unit is missing!");
+
+			units.AddLast(unit);
+		}
+
+		return units;
+
+	}
+
+	public void RecieveUnitEvent(MazeUnitEvent unitEvent)
+	{
+		if (MazeUnitEventOccured != null)
+			MazeUnitEventOccured(unitEvent);
+	}
 
 #if UNITY_EDITOR
 	public Action EditorGizmoCallbacks;
 #endif
 
-	void OnEnable() 
-	{
-		origin = gameObject.transform.position;
-	}
-
-	// Use this for initialization
-	void Start () {
-	
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
-
 	public void OnDrawGizmos()
 	{
 		drawFloorGrid();
 #if UNITY_EDITOR
-		if(EditorGizmoCallbacks != null)
+		if (EditorGizmoCallbacks != null)
 			EditorGizmoCallbacks();
 #endif
 	}
 
-	private void drawFloorGrid() 
+	private void drawFloorGrid()
 	{
 		// store map width, height and position
 		var mapWidth = MazeWidthInMeter;
@@ -88,29 +113,5 @@ public class beMobileMaze : MonoBehaviour {
 
 	}
 
-	public LinkedList<MazeUnit> CreatePathFromGridIDs(LinkedList<Vector2> gridIDs)
-	{
-		var enumerator = gridIDs.GetEnumerator();
-		var units = new LinkedList<MazeUnit>();
 
-		while (enumerator.MoveNext()) {
-
-			var gridField = enumerator.Current;
-
-			var correspondingUnitHost = transform.FindChild(string.Format("Unit_{0}_{1}", gridField.x, gridField.y));
-
-			if (correspondingUnitHost == null)
-				throw new MissingComponentException("It seems, that the path doesn't match the maze! Requested Unit is missing!");
-		
-			var unit = correspondingUnitHost.GetComponent<MazeUnit>();
-
-			if (unit == null)
-				throw new MissingComponentException("Expected Component on Maze Unit is missing!");
-
-			units.AddLast(unit);
-		}
-
-		return units;
-
-	}
 }
