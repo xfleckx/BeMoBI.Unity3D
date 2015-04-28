@@ -50,10 +50,13 @@ public class Training : ITrial {
 
         mazeControl = environment.ActiveEnvironment.GetComponent<beMobileMaze>();
 
+
+
         path = mazeControl.RequirePath(targetPath);
 
         mazeControl.MazeUnitEventOccured += mazeControl_MazeUnitEventOccured;
         
+         
     }
 
     /// <summary>

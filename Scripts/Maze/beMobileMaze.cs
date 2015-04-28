@@ -69,6 +69,15 @@ public class beMobileMaze : MonoBehaviour
 			MazeUnitEventOccured(unitEvent);
 	}
 
+    public IEnumerable<Waypoint> GetActiveWaypoints()
+    {
+        return GetComponentsInChildren<Waypoint>();
+    }
+    public IEnumerable<Waypoint> GetAllWaypoints()
+    {
+        return GetComponentsInChildren<Waypoint>(true);
+    }
+
 #if UNITY_EDITOR
 	public Action EditorGizmoCallbacks;
 #endif
