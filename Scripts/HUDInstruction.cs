@@ -64,11 +64,36 @@ public class HUDInstruction : MonoBehaviour {
 
 		currentInstructionSet = KnownSets[nameOfInstructionSet];
 
-		InstructionTextWide.gameObject.SetActive(true);
-		InstructionTextBesideImage.gameObject.SetActive(true);
-		InstructionImage.gameObject.SetActive(true);
+		ActivateRendering();
 
 		StartCoroutine(StartInstructionRendering());
+	}
+
+	void ActivateRendering()
+	{
+
+		for (int i = 0; i < transform.childCount; i++)
+		{
+			transform.GetChild(i).gameObject.SetActive(true);
+		}
+
+	}
+
+	public void StartDisplaying(InstructionSet set)
+	{
+		currentInstructionSet = set;
+		ActivateRendering();
+		StartCoroutine(StartInstructionRendering());
+	}
+
+	public void StartDisplaying(Instruction instruction)
+	{
+		currentInstructionSet = new InstructionSet();
+		currentInstructionSet.instructions.AddLast(instruction);
+
+		ActivateRendering();
+		StartCoroutine(StartInstructionRendering());
+
 	}
 
 	IEnumerator StartInstructionRendering()
@@ -117,10 +142,11 @@ public class HUDInstruction : MonoBehaviour {
 	void HideInstructionHUD()
 	{
 		Debug.Log("Calling HideInstructionHUD");
-
-		InstructionTextWide.gameObject.SetActive(false);
-		InstructionImage.gameObject.SetActive(false);
-		InstructionTextBesideImage.gameObject.SetActive(false);
+		
+		for (int i = 0; i < transform.childCount; i++)
+		{
+			transform.GetChild(i).gameObject.SetActive(false);    
+		}
 	}
 
 	#region TODO Fluent interface 
