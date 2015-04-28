@@ -11,7 +11,6 @@ public class MazeUnit : MonoBehaviour {
 	public const string EAST = "East";
 
 	public Vector2 GridID;
-	public Waypoint Waypoint;
 	// Use this for initialization
 	void Start () {
 	
@@ -27,13 +26,6 @@ public class MazeUnit : MonoBehaviour {
 		GridID = tilePos;
 	}
 
-	void OnDrawGizmos()
-	{
-		if (Waypoint != null && Waypoint.enabled && Waypoint.Active)
-		{
-			Gizmos.DrawWireSphere(Waypoint.gameObject.transform.position, 0.2f);
-		}
-	}
 
 	public void Open(string directionName)
 	{
