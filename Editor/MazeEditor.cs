@@ -50,10 +50,12 @@ public class MazeEditor : Editor
         focusedMaze = (beMobileMaze)target;
 
         referenceToPrefab = PrefabUtility.GetPrefabParent(focusedMaze.gameObject);
-        
-        PathToMazePrefab = AssetDatabase.GetAssetPath(referenceToPrefab);
 
-        PathToMazeCompanionFolder = AssetHelper.GetOrCreateCompanionFolderForPrefab(PathToMazePrefab);
+        if (referenceToPrefab != null) { 
+            PathToMazePrefab = AssetDatabase.GetAssetPath(referenceToPrefab);
+
+            PathToMazeCompanionFolder = AssetHelper.GetOrCreateCompanionFolderForPrefab(PathToMazePrefab);
+        }
 
         MazeSceneViewEditor.Enable();
         sceneViewEditorStyle = new GUIStyle();
@@ -262,7 +264,7 @@ public class MazeEditor : Editor
         // give the unit a assetName that represents it's location within the tile mazeHost
         unit.name = string.Format(UnitNamePattern, tilePos.x, tilePos.y);
 
-        MazeUnit mazeUnit = unit.GetComponent<MazeUnit>();
+        MazeUnit mazeUnit = unit.AddComponent<MazeUnit>();
 
         mazeUnit.Initialize(tilePos);
 
