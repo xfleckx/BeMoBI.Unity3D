@@ -37,6 +37,8 @@ public class MultiMazePathRetrieval : MonoBehaviour {
 		currentTrial.Initialize();
 
         currentTrial.OnEnd += currentTrial_OnEnd;
+
+        currentTrial.Start();
 	}
 
     void currentTrial_OnEnd()

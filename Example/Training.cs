@@ -6,6 +6,8 @@ public interface ITrial
 {
     void Initialize();
 
+    void Start();
+
     event Action OnStart;
 
     event Action OnEnd;
@@ -59,7 +61,13 @@ public class Training : ITrial {
     /// </summary>
     public void Start()
     {
-        hud.StartDisplaying("TrainingsInstruction");
+        var instruction = new Instruction();
+        
+        instruction.DisplayTime = 30f;
+        instruction.Text = "Remember the given path for this labyrinth";
+
+        if(hud.enabled)
+            hud.StartDisplaying(instruction);
 
         if (OnStart != null)
             OnStart();
