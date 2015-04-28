@@ -224,8 +224,9 @@ public class MazeEditor : Editor
         // if no game object was found create the unitHost prefab
         if (unitHost == null)
         {
-            var obj = Resources.Load(unitPrefabName);
-
+            //var obj = Resources.Load(unitPrefabName); // Load from local asset path 
+            var obj = AssetDatabase.LoadAssetAtPath("Assets/beMobi.Unity3D/Prefabs/MazeUnit.prefab", typeof(GameObject));
+             
             if (obj)
             {
                 unitHost = (GameObject)GameObject.Instantiate(obj);
