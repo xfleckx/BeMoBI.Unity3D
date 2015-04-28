@@ -57,7 +57,6 @@ public class MazeEditor : Editor
             PathToMazeCompanionFolder = AssetHelper.GetOrCreateCompanionFolderForPrefab(PathToMazePrefab);
         }
 
-        MazeSceneViewEditor.Enable();
         sceneViewEditorStyle = new GUIStyle();
 
         if(focusedMaze)
@@ -66,7 +65,6 @@ public class MazeEditor : Editor
 
     public void OnDisable()
     {
-        MazeSceneViewEditor.Disable();
 
         if (focusedMaze)
             focusedMaze.EditorGizmoCallbacks -= RenderEditorGizmos;
