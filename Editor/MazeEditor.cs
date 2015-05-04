@@ -549,7 +549,8 @@ public class MazeEditor : Editor
 
         if (EditingModeEnabled)
         {
-            if (ActiveMode != MazeEditorMode.EDITING) { 
+            if (ActiveMode != MazeEditorMode.EDITING) {
+                DisableModesExcept(MazeEditorMode.EDITING);
                 EditorModeProcessEvent = null;
                 EditorModeProcessEvent += EditingMode;
                 ActiveMode = MazeEditorMode.EDITING;
@@ -577,8 +578,9 @@ public class MazeEditor : Editor
         #region Selection Mode UI
         if (SelectionModeEnabled) {
 
-            if (ActiveMode != MazeEditorMode.SELECTION) { 
-
+            if (ActiveMode != MazeEditorMode.SELECTION) {
+                DisableModesExcept(MazeEditorMode.SELECTION);
+                
                 currentSelection = new HashSet<GameObject>();
             
                 EditorModeProcessEvent = null;
@@ -621,7 +623,7 @@ public class MazeEditor : Editor
         if (PathCreationEnabled) {
             
             if(ActiveMode != MazeEditorMode.PATH_CREATION){
-            
+                    DisableModesExcept(MazeEditorMode.PATH_CREATION);
                     pathInSelection = new LinkedList<MazeUnit>();
 
                     EditorModeProcessEvent += PathCreationMode;
@@ -701,6 +703,32 @@ public class MazeEditor : Editor
         GUILayout.EndVertical();
         
         Handles.EndGUI();
+    }
+
+    private void DisableModesExcept(MazeEditorMode mode)
+    {
+        switch (mode)
+        {
+            case MazeEditorMode.NONE:        
+                EditingModeEnabled = false;
+                PathCreationEnabled= false;
+                SelectionModeEnabled = false;
+                break;
+            case MazeEditorMode.EDITING:
+                PathCreationEnabled= false;
+                SelectionModeEnabled = false;
+                break;
+            case MazeEditorMode.SELECTION:
+                PathCreationEnabled = false;
+                EditingModeEnabled = false;
+                break;
+            case MazeEditorMode.PATH_CREATION:
+                EditingModeEnabled = false;
+                SelectionModeEnabled = false;
+                break;
+            default:
+                break;
+        }
     }
 
     private bool PathIsValid(LinkedList<MazeUnit> path)
