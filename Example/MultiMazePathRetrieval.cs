@@ -36,16 +36,16 @@ public class MultiMazePathRetrieval : MonoBehaviour {
 		currentTrial = new Training(environment, markerStream, instructions);
 		currentTrial.Initialize();
 
-        currentTrial.OnEnd += currentTrial_OnEnd;
+		currentTrial.OnEnd += currentTrial_OnEnd;
 
-        currentTrial.Start();
+		currentTrial.Start();
 	}
 
-    void currentTrial_OnEnd()
-    {
-        
+	void currentTrial_OnEnd()
+	{
+		
 
-    }
+	}
 	
 	// Update is called once per frame
 	void Update () {

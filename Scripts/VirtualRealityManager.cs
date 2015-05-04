@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -17,12 +18,7 @@ public class VirtualRealityManager : MonoBehaviour {
 	public List<EnvironmentController> Environments = new List<EnvironmentController>();
 
 	public EnvironmentController ActiveEnvironment;
-
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
+	 
 	// Update is called once per frame
 	void Update () {
 
@@ -32,7 +28,10 @@ public class VirtualRealityManager : MonoBehaviour {
 		}
 	}
 
-
+   /// <summary>
+   /// Change the whole world to exactly one environment
+   /// </summary>
+   /// <param name="worldName"></param>
 	public void ChangeWorld(string worldName)
 	{
 		if (Environments.Any((i) => i.Title.Equals(worldName))) {
@@ -42,6 +41,20 @@ public class VirtualRealityManager : MonoBehaviour {
 			this.ActiveEnvironment = Environments.First((i) => i.Title.Equals(worldName));
 
 			this.ActiveEnvironment.gameObject.SetActive(true);
+		}
+	}
+
+	/// <summary>
+	/// Combine multiple environments - TODO HalleV and Maze
+	/// </summary>
+	/// <param name="names"></param>
+	public void CombineEnvironments(params string[] names)
+	{
+		throw new NotImplementedException();
+
+		foreach (var item in names)
+		{
+			
 		}
 	}
 
