@@ -3,6 +3,7 @@ using UnityEditor;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 
 public enum MazeEditorMode {NONE, EDITING, SELECTION, PATH_CREATION}
 
@@ -27,6 +28,8 @@ public class MazeEditor : Editor
     private bool EditingModeEnabled = false;
     private bool modeAddEnabled = false;
     private bool modeRemoveEnabled = false;
+
+    private string ObjectFolderName = string.Empty;
 
     private UnityEngine.Object referenceToPrefab;
 
@@ -137,6 +140,16 @@ public class MazeEditor : Editor
 
         }
 
+        GUILayout.Space(5f);
+
+        GUILayout.BeginHorizontal();
+        ObjectFolderName = GUILayout.TextField(ObjectFolderName, GUILayout.Width(150f));
+        
+        if(GUILayout.Button("...")){
+            ObjectFolderName = EditorUtility.OpenFolderPanel("Open folder containing objects", "Assets", "");
+        }
+
+        GUILayout.EndHorizontal();
         GUILayout.EndVertical();
 
     }
@@ -424,6 +437,25 @@ public class MazeEditor : Editor
         }
     }
 
+    private void SetRandomObject()
+    {
+        var folder = string.Format("Assets/{0}", ObjectFolderName);
+         
+        if (AssetDatabase.IsValidFolder(folder))
+        {
+            var files = Directory.GetFiles(folder);
+            foreach (var item in files)
+            {
+                Debug.Log(item);
+            }
+            //var assetImporter = ModelImporter.GetAtPath(fileName)
+        }
+        else
+        {
+            Debug.Log("Object folder not valid");
+        }
+    }
+
     private void PathCreationMode(Event _ce)
     {
         int controlId = GUIUtility.GetControlID(FocusType.Passive);
@@ -555,15 +587,21 @@ public class MazeEditor : Editor
                 ActiveMode = MazeEditorMode.SELECTION;
             }
 
-            if (GUILayout.Button("Connect"))
+            if (GUILayout.Button("Connect", GUILayout.Width(100f)))
             {
                 TryConnectingCurrentSelection();
             }
 
-            if (GUILayout.Button("Disconnect"))
+            if (GUILayout.Button("Disconnect", GUILayout.Width(100f)))
             {
                 TryDisconnectingCurrentSelection();
             }
+
+            if (GUILayout.Button("Set Random Object", GUILayout.Width(100f)))
+            {
+                SetRandomObject();
+            }
+
         }
         else
         {
