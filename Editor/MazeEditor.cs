@@ -15,26 +15,28 @@ public class MazeEditor : Editor
     private beMobileMaze focusedMaze;
     public string UnitNamePattern = "Unit_{0}_{1}";
     public float unitFloorOffset = 0f;
-     
+
+
     public Vector3 MarkerPosition;
 
+    private bool PathCreationEnabled = false;
     private HashSet<GameObject> currentSelection;
     private LinkedList<MazeUnit> pathInSelection;
     private string NameOfCurrentPath = String.Empty;
 
+    private string PathToMazePrefab = string.Empty;
+    private string PathToMazeCompanionFolder = string.Empty;
+
     private bool SelectionModeEnabled = false;
-    private bool PathCreationEnabled = false;
 
     private bool EditingModeEnabled = false;
     private bool modeAddEnabled = false;
     private bool modeRemoveEnabled = false;
+    private bool DisconnectFromUnitPrefab = true;
 
     private string ObjectFolderName = string.Empty;
 
     private UnityEngine.Object referenceToPrefab;
-
-    private string PathToMazePrefab = string.Empty;
-    private string PathToMazeCompanionFolder = string.Empty;
 
     private MazeEditorMode ActiveMode = MazeEditorMode.NONE;
 
@@ -98,7 +100,17 @@ public class MazeEditor : Editor
         GUILayout.Label("m");
         GUILayout.EndHorizontal();
 
-        focusedMaze.RoomDimension = EditorGUILayout.Vector3Field("Room Dimension", focusedMaze.RoomDimension); 
+        GUILayout.BeginHorizontal();
+
+        focusedMaze.RoomDimension = EditorGUILayout.Vector3Field("Room Dimension", focusedMaze.RoomDimension);
+        
+        if (GUILayout.Button("Rescale"))
+        {
+            Rescale(focusedMaze, focusedMaze.RoomDimension);
+        }
+
+        GUILayout.EndHorizontal();
+
 
         GUILayout.BeginHorizontal();
         GUILayout.Label("Height of Rooms");
@@ -152,6 +164,18 @@ public class MazeEditor : Editor
         GUILayout.EndHorizontal();
         GUILayout.EndVertical();
 
+    }
+
+    private void Rescale(beMobileMaze focusedMaze, Vector3 newUnitScale)
+    {
+        var origin = focusedMaze.transform.position;
+
+        foreach (var item in focusedMaze.Units)
+        {
+            item.transform.localScale = newUnitScale;
+
+            InitializeUnit(focusedMaze, item.GridID, item.gameObject); 
+        }
     }
 
     private void UpdatePrefabOfCurrentMaze()
@@ -251,13 +275,13 @@ public class MazeEditor : Editor
             }
         }
 
-        var unit = this.CreateUnit(focusedMaze, currentTilePosition, unitHost);
+        var unit = this.InitializeUnit(focusedMaze, currentTilePosition, unitHost);
 
         focusedMaze.Units.Add(unit);
 
     }
 
-    private MazeUnit CreateUnit(beMobileMaze mazeHost, Vector2 tilePos, GameObject unit)
+    private MazeUnit InitializeUnit(beMobileMaze mazeHost, Vector2 tilePos, GameObject unit)
     {
         var tilePositionInLocalSpace = new Vector3(
             (tilePos.x * mazeHost.RoomDimension.x) + (mazeHost.RoomDimension.x / 2f),
@@ -313,13 +337,15 @@ public class MazeEditor : Editor
 
             var unitHost = GameObject.Find(string.Format(UnitNamePattern, currentTilePosition.x, currentTilePosition.y));
 
-            if (unitHost)
+            if (unitHost != null)
             {
                 if(currentSelection.Contains(unitHost)){
-                    currentSelection.Remove(unitHost);
+                    if (_ce.button == 1)
+                        currentSelection.Remove(unitHost);
                 }
                 else { 
-                    currentSelection.Add(unitHost);
+                    if(_ce.button == 0)
+                        currentSelection.Add(unitHost);
                 }
             } 
 
