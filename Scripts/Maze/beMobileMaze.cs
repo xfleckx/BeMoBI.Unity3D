@@ -6,7 +6,6 @@ using System.Linq;
 
 public class beMobileMaze : MonoBehaviour
 {
-
 	#region replace this with readonly creation model
 	public float MazeWidthInMeter = 6f;
 	public float MazeLengthInMeter = 10f;
@@ -123,5 +122,9 @@ public class beMobileMaze : MonoBehaviour
 
 	}
 
-
+    void Reset()
+    {
+        var existingUnits = GetComponentsInChildren<MazeUnit>();
+        Units.AddRange(existingUnits);
+    }
 }
