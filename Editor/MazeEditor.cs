@@ -87,7 +87,7 @@ public class MazeEditor : Editor
         }
 
         GUILayout.BeginVertical();
-
+        
         GUILayout.BeginHorizontal();
         GUILayout.Label("Length of Maze");
         focusedMaze.MazeLengthInMeter = EditorGUILayout.FloatField(focusedMaze.MazeLengthInMeter, GUILayout.Width(50));
@@ -99,6 +99,11 @@ public class MazeEditor : Editor
         focusedMaze.MazeWidthInMeter = EditorGUILayout.FloatField(focusedMaze.MazeWidthInMeter, GUILayout.Width(50));
         GUILayout.Label("m");
         GUILayout.EndHorizontal();
+
+        if (GUILayout.Button("Configure Grid"))
+        {
+            MazeEditorUtil.ReconfigureGrid(focusedMaze, focusedMaze.MazeLengthInMeter, focusedMaze.MazeWidthInMeter);
+        }
 
         GUILayout.BeginHorizontal();
 
@@ -276,7 +281,7 @@ public class MazeEditor : Editor
         }
 
         var unit = this.InitializeUnit(focusedMaze, currentTilePosition, unitHost);
-
+        focusedMaze.Grid[(int)currentTilePosition.x, (int)currentTilePosition.y] = unit;
         focusedMaze.Units.Add(unit);
 
     }
@@ -325,6 +330,7 @@ public class MazeEditor : Editor
         if (unit != null && unit.transform.parent == focusedMaze.transform)
         {
             focusedMaze.Units.Remove(unit);
+            focusedMaze.Grid[(int)currentTilePosition.x, (int)currentTilePosition.y] = unit;
             DestroyImmediate(unit.gameObject);
         }
     }

@@ -29,6 +29,8 @@ public class beMobileMaze : MonoBehaviour
 	[SerializeField]
 	public List<MazeUnit> Units = new List<MazeUnit>();
 
+    public MazeUnit[,] Grid; 
+
 	public List<PathInMaze> Paths = new List<PathInMaze>();
 	
 	public PathInMaze RequirePath(string targetPath)

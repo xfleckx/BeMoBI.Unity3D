@@ -7,7 +7,8 @@ public class MazeDesignerMenuItems : ScriptableObject
     static void CreateNewMazeInScene()
     {
         GameObject maze = new GameObject("beMobilMaze");
-        maze.AddComponent(typeof(beMobileMaze));
+        var mazeController = maze.AddComponent<beMobileMaze>();
+        mazeController.Grid = MazeEditorUtil.ReconfigureGrid(mazeController, mazeController.MazeLengthInMeter, mazeController.MazeWidthInMeter);
     }
 
     [MenuItem("beMobile/MazeDesigner/Open Editor on new Maze")]
