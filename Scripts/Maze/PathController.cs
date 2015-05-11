@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System;
 
 [RequireComponent(typeof(beMobileMaze))]
 public class PathController : MonoBehaviour {
@@ -13,4 +14,17 @@ public class PathController : MonoBehaviour {
 	void Update () {
 	
 	}
+
+
+#if UNITY_EDITOR
+    public Action EditorGizmoCallbacks;
+#endif
+
+    public void OnDrawGizmos()
+    { 
+#if UNITY_EDITOR
+        if (EditorGizmoCallbacks != null)
+            EditorGizmoCallbacks();
+#endif
+    }
 }

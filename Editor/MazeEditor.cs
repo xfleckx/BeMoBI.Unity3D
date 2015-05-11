@@ -40,9 +40,7 @@ public class MazeEditor : AMazeEditor
     private MazeUnit lastAddedUnit;
 
     private GUIStyle sceneViewEditorStyle;
-
-    Action<Event> EditorModeProcessEvent;
-
+      
     public void OnEnable()
     { 
         maze = (beMobileMaze)target;
@@ -59,15 +57,18 @@ public class MazeEditor : AMazeEditor
 
         sceneViewEditorStyle = new GUIStyle();
 
-        if(maze)
+        if (maze) {
+            maze.EditorGizmoCallbacks += RenderTileHighlighting;
             maze.EditorGizmoCallbacks += RenderEditorGizmos;
+        }
     }
 
     public void OnDisable()
     {
-
-        if (maze)
+        if (maze) {
+            maze.EditorGizmoCallbacks -= RenderTileHighlighting;
             maze.EditorGizmoCallbacks -= RenderEditorGizmos;
+        }
     }
 
     protected override void OnHeaderGUI()
@@ -192,18 +193,6 @@ public class MazeEditor : AMazeEditor
         PathToMazeCompanionFolder = AssetHelper.GetOrCreateCompanionFolderForPrefab(PathToMazePrefab);
 
         Debug.Log("Create companion folder " + PathToMazePrefab);
-    }
-
-    private void OnSceneGUI()
-    {
-        base.TileHighlightingOnMouseCursor();
-
-        RenderSceneViewGUI();
-
-        var _ce = Event.current;
-
-        if(EditorModeProcessEvent != null)
-            EditorModeProcessEvent(_ce);
     }
 
     #region Editor Modes
@@ -511,11 +500,8 @@ public class MazeEditor : AMazeEditor
 
     #endregion
 
-    private void RenderEditorGizmos()
+    protected override void RenderEditorGizmos()
     {
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireCube(MarkerPosition + new Vector3(0, maze.RoomHigthInMeter / 2, 0), new Vector3(maze.RoomDimension.x, maze.RoomHigthInMeter, maze.RoomDimension.z) * 1.1f);
-
         Gizmos.color = Color.blue;
 
         if (currentSelection != null) { 
@@ -550,7 +536,7 @@ public class MazeEditor : AMazeEditor
     PathInMaze pathShouldBeRemoved;
     string currentPathName = string.Empty;
 
-    private void RenderSceneViewGUI()
+    public override void RenderSceneViewUI()
     {  
         Handles.BeginGUI();
 
@@ -799,6 +785,26 @@ public abstract class AMazeEditor : Editor {
         }
 
     }
+
+    protected void RenderTileHighlighting()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireCube(MarkerPosition + new Vector3(0, maze.RoomHigthInMeter / 2, 0), new Vector3(maze.RoomDimension.x, maze.RoomHigthInMeter, maze.RoomDimension.z) * 1.1f);
+    }
+
+    public abstract void RenderSceneViewUI();
+
+    public void OnSceneGUI()
+    {
+        TileHighlightingOnMouseCursor();
+
+        RenderSceneViewUI();
+
+        if (EditorModeProcessEvent != null)
+            EditorModeProcessEvent(Event.current);
+    }
+
+    protected abstract void RenderEditorGizmos();
 
     #region General calculations based on tile editor
 
