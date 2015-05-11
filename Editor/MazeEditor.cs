@@ -56,6 +56,8 @@ public class MazeEditor : Editor
 
         referenceToPrefab = PrefabUtility.GetPrefabParent(focusedMaze.gameObject);
 
+        MazeEditorUtil.ReconfigureGrid(focusedMaze, focusedMaze.MazeWidthInMeter, focusedMaze.MazeLengthInMeter);
+
         if (referenceToPrefab != null) { 
             PathToMazePrefab = AssetDatabase.GetAssetPath(referenceToPrefab);
 
@@ -102,7 +104,7 @@ public class MazeEditor : Editor
 
         if (GUILayout.Button("Configure Grid"))
         {
-            MazeEditorUtil.ReconfigureGrid(focusedMaze, focusedMaze.MazeLengthInMeter, focusedMaze.MazeWidthInMeter);
+            MazeEditorUtil.ReconfigureGrid(focusedMaze, focusedMaze.MazeWidthInMeter, focusedMaze.MazeLengthInMeter);
         }
 
         GUILayout.BeginHorizontal();
@@ -330,7 +332,7 @@ public class MazeEditor : Editor
         if (unit != null && unit.transform.parent == focusedMaze.transform)
         {
             focusedMaze.Units.Remove(unit);
-            focusedMaze.Grid[(int)currentTilePosition.x, (int)currentTilePosition.y] = unit;
+            focusedMaze.Grid[(int)currentTilePosition.x, (int)currentTilePosition.y] = null;
             DestroyImmediate(unit.gameObject);
         }
     }

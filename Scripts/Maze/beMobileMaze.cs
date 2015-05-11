@@ -12,8 +12,7 @@ public class beMobileMaze : MonoBehaviour
 	public float RoomHigthInMeter = 2;
 	
 	public Vector3 RoomDimension = new Vector3(1.3f, 2, 1.3f);
-	public Vector2 EdgeDimension = new Vector2(0.1f, 0.1f);
-
+	public Vector2 EdgeDimension = new Vector2(0.1f, 0.1f); 
 	public float WallThicknessInMeter = 0.1f;
 
 	public int Rows;
@@ -28,7 +27,8 @@ public class beMobileMaze : MonoBehaviour
 
 	[SerializeField]
 	public List<MazeUnit> Units = new List<MazeUnit>();
-
+    
+    [SerializeField]
     public MazeUnit[,] Grid; 
 
 	public List<PathInMaze> Paths = new List<PathInMaze>();
@@ -127,6 +127,19 @@ public class beMobileMaze : MonoBehaviour
     void Reset()
     {
         var existingUnits = GetComponentsInChildren<MazeUnit>();
+        
         Units.AddRange(existingUnits);
+
+        Columns = Mathf.FloorToInt(MazeWidthInMeter / RoomDimension.x);
+        Rows = Mathf.FloorToInt(MazeLengthInMeter / RoomDimension.z);
+
+        Grid = new MazeUnit[Columns, Rows];
+
+        foreach (var unit in Units)
+        {
+            var x = Mathf.FloorToInt(unit.GridID.x);
+            var y = Mathf.FloorToInt(unit.GridID.y);
+            Grid[x, y] = unit;
+        }
     }
 }

@@ -6,17 +6,44 @@ using UnityEngine;
 
 public static class MazeEditorUtil
 {
-    public static MazeUnit[,] ReconfigureGrid(beMobileMaze maze, int rows, int columns)
+    public static MazeUnit[,] ReconfigureGrid(beMobileMaze maze,  int newColumns, int newRows)
     {
-        MazeUnit[,] newGrid = new MazeUnit[rows, columns];
+        if (maze.Grid != null) { 
 
-        maze.Grid.CopyTo(newGrid, 0);
+            MazeUnit[,] newGrid = new MazeUnit[newColumns, newRows];
+            
+            var existingCols = maze.Grid.GetUpperBound(0);
+            var existingRows = maze.Grid.GetUpperBound(1);
 
+            for (int col = 0; col <= existingCols; col++)
+            {
+                for (int row = 0; row <= existingRows; row++)
+                {
+                    if (row >= newRows || col >= newColumns) {
+
+                        if (maze.Grid[col, row] != null)
+                            GameObject.DestroyImmediate(maze.Grid[col, row].gameObject);
+   
+                        continue;
+                    }
+
+                    newGrid[col, row] = maze.Grid[col, row];
+                }
+            }
+
+            maze.Grid = newGrid;
+            
+            return maze.Grid;
+
+        } 
+        
+        maze.Grid = new MazeUnit[newColumns, newRows];
+        
         return maze.Grid;
     }
 
-    public static MazeUnit[,] ReconfigureGrid(beMobileMaze maze, float rows, float columns)
+    public static MazeUnit[,] ReconfigureGrid(beMobileMaze maze,  float columns, float rows)
     {
-        return ReconfigureGrid(maze, Mathf.FloorToInt(rows), Mathf.FloorToInt(columns));
+        return ReconfigureGrid(maze,Mathf.FloorToInt(columns), Mathf.FloorToInt(rows));
     }
 }
