@@ -7,15 +7,24 @@ using System.Linq;
 public class beMobileMaze : MonoBehaviour
 {
 	#region replace this with readonly creation model
-	public float MazeWidthInMeter = 6f;
-	public float MazeLengthInMeter = 10f;
-	public float RoomHigthInMeter = 2;
-	
-	public Vector3 RoomDimension = new Vector3(1.3f, 2, 1.3f);
-	public Vector2 EdgeDimension = new Vector2(0.1f, 0.1f); 
-	public float WallThicknessInMeter = 0.1f;
 
+    [SerializeField]
+    public string UnitNamePattern = "Unit_{0}_{1}";
+    [SerializeField]
+	public float MazeWidthInMeter = 6f;
+    [SerializeField]
+	public float MazeLengthInMeter = 10f;
+    [SerializeField]
+	public float RoomHigthInMeter = 2;
+    [SerializeField]
+	public Vector3 RoomDimension = new Vector3(1.3f, 2, 1.3f);
+    [SerializeField]
+    public Vector2 EdgeDimension = new Vector2(0.1f, 0.1f);
+    [SerializeField]
+    public float WallThicknessInMeter = 0.1f;
+    [SerializeField]
 	public int Rows;
+    [SerializeField]
 	public int Columns;
 
 	public List<GameObject> Walls;

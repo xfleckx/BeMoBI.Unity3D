@@ -12,7 +12,6 @@ public class MazeEditor : AMazeEditor
 {
     private const string unitPrefabName = "MazeUnit";
      
-    public string UnitNamePattern = "Unit_{0}_{1}";
     public float unitFloorOffset = 0f;
 
 
@@ -119,8 +118,8 @@ public class MazeEditor : AMazeEditor
         GUILayout.Label("m");
         GUILayout.EndHorizontal();
         
-        GUILayout.BeginHorizontal(); 
-        UnitNamePattern = EditorGUILayout.TextField("Unit Name Pattern", UnitNamePattern);
+        GUILayout.BeginHorizontal();
+        maze.UnitNamePattern = EditorGUILayout.TextField("Unit Name Pattern", maze.UnitNamePattern);
         GUILayout.EndHorizontal();
 
         GUILayout.EndVertical();
@@ -230,7 +229,7 @@ public class MazeEditor : AMazeEditor
     private void Draw()
     { 
         // Given the tile position check to see if a tile has already been created at that location
-        var unitHost = GameObject.Find(string.Format(UnitNamePattern, currentTilePosition.x, currentTilePosition.y));
+        var unitHost = GameObject.Find(string.Format(maze.UnitNamePattern, currentTilePosition.x, currentTilePosition.y));
 
         // if there is already a tile present and it is not a child of the game object we can just exit.
         if (unitHost != null && unitHost.transform.parent != maze.transform)
@@ -278,7 +277,7 @@ public class MazeEditor : AMazeEditor
         unit.transform.parent = mazeHost.transform;
 
         // give the unit a assetName that represents it's location within the tile mazeHost
-        unit.name = string.Format(UnitNamePattern, tilePos.x, tilePos.y);
+        unit.name = string.Format(maze.UnitNamePattern, tilePos.x, tilePos.y);
 
         MazeUnit mazeUnit = unit.GetComponent<MazeUnit>();
 
@@ -292,7 +291,7 @@ public class MazeEditor : AMazeEditor
     /// </summary>
     private void Erase()
     {
-        var unitHost = GameObject.Find(string.Format(UnitNamePattern, currentTilePosition.x, currentTilePosition.y));
+        var unitHost = GameObject.Find(string.Format(maze.UnitNamePattern, currentTilePosition.x, currentTilePosition.y));
 
         if (!unitHost)
         {
@@ -317,7 +316,7 @@ public class MazeEditor : AMazeEditor
 
         if (_ce.type == EventType.MouseDown || _ce.type == EventType.MouseDrag) {
 
-            var unitHost = GameObject.Find(string.Format(UnitNamePattern, currentTilePosition.x, currentTilePosition.y));
+            var unitHost = GameObject.Find(string.Format(maze.UnitNamePattern, currentTilePosition.x, currentTilePosition.y));
 
             if (unitHost != null)
             {
@@ -470,7 +469,7 @@ public class MazeEditor : AMazeEditor
 
         if (_ce.type == EventType.MouseDown || _ce.type == EventType.MouseDrag)
         {
-            var unitHost = GameObject.Find(string.Format(UnitNamePattern, currentTilePosition.x, currentTilePosition.y));
+            var unitHost = GameObject.Find(string.Format(maze.UnitNamePattern, currentTilePosition.x, currentTilePosition.y));
            
             if (unitHost != null)
             {
