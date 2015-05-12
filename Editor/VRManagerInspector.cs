@@ -28,16 +28,21 @@ public class VRManagerInspector : Editor
 
         GUILayout.Space(25);
 
-        GUILayout.BeginVertical(GUILayout.Width(75));
+        GUILayout.BeginVertical(GUILayout.MaxWidth(75));
 
         GUILayout.Label("Choose Environment", EditorStyles.whiteLabel);
         GUILayout.Space(10);
-        foreach (var item in vrcontroller.Environments)
+        foreach (var item in vrcontroller.AvailableEnvironments)
         {
-            if (GUILayout.Button(item.Title))
+            GUILayout.BeginHorizontal();
+            
+            item.enabled = GUILayout.Toggle(item.enabled, "");
+
+            if (GUILayout.Button(item.Title, GUILayout.Width(75)))
             {
                 vrcontroller.ChangeWorld(item.Title);
             }
+            GUILayout.EndHorizontal();
         }
         GUILayout.EndVertical();
 

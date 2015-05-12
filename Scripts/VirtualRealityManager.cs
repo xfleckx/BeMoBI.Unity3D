@@ -15,10 +15,12 @@ public class VirtualRealityManager : MonoBehaviour {
 	public float HighQualityZoneLength = 12f;
 	public float BorderZoneWidth = 1f;
 	
-	public List<EnvironmentController> Environments = new List<EnvironmentController>();
+    [SerializeField]
+	public List<EnvironmentController> AvailableEnvironments = new List<EnvironmentController>();
 
-	public EnvironmentController ActiveEnvironment;
-	 
+    [SerializeField]
+	public List<EnvironmentController> ActiveEnvironments = new List<EnvironmentController>();
+	
 	// Update is called once per frame
 	void Update () {
 
@@ -34,13 +36,17 @@ public class VirtualRealityManager : MonoBehaviour {
    /// <param name="worldName"></param>
 	public void ChangeWorld(string worldName)
 	{
-		if (Environments.Any((i) => i.Title.Equals(worldName))) {
+		if (AvailableEnvironments.Any((i) => i.Title.Equals(worldName))) {
 
-			this.ActiveEnvironment.gameObject.SetActive(false);
+            if (this.ActiveEnvironments.Any())
+                this.ActiveEnvironments.ForEach((i) => i.gameObject.SetActive(false));
 
-			this.ActiveEnvironment = Environments.First((i) => i.Title.Equals(worldName));
+            this.ActiveEnvironments.Clear();
+            var enabledEnvironment = AvailableEnvironments.First((i) => i.Title.Equals(worldName));
 
-			this.ActiveEnvironment.gameObject.SetActive(true);
+            enabledEnvironment.gameObject.SetActive(true);
+            
+            this.ActiveEnvironments.Add(enabledEnvironment); 
 		}
 	}
 
@@ -49,12 +55,12 @@ public class VirtualRealityManager : MonoBehaviour {
 	/// </summary>
 	/// <param name="names"></param>
 	public void CombineEnvironments(params string[] names)
-	{
-		throw new NotImplementedException();
-
+	{  
 		foreach (var item in names)
 		{
-			
+            var environment = this.AvailableEnvironments.First((i) => i.Title.Equals(item));
+            if(environment != null)
+                environment.gameObject.SetActive(true);
 		}
 	}
 
