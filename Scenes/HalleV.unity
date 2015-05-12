@@ -428,13 +428,13 @@ MonoBehaviour:
   HighQualityZoneWidth: 6.51999998
   HighQualityZoneLength: 14.1400003
   BorderZoneWidth: 1
-  Environments:
-  - {fileID: 1000271699}
+  AvailableEnvironments:
   - {fileID: 2020857087}
   - {fileID: 1416568829}
+  - {fileID: 1000271699}
   - {fileID: 492566100}
-  - {fileID: 0}
-  ActiveEnvironment: {fileID: 1000271699}
+  ActiveEnvironments:
+  - {fileID: 492566100}
 --- !u!65 &195927478
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1634,7 +1634,15 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 154070, guid: 69969e4bc1448c24ca59bdc12826d109, type: 2}
       propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 11403956, guid: 69969e4bc1448c24ca59bdc12826d109, type: 2}
+      propertyPath: m_Enabled
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 11403956, guid: 69969e4bc1448c24ca59bdc12826d109, type: 2}
+      propertyPath: Title
+      value: Name of the Environment
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 69969e4bc1448c24ca59bdc12826d109, type: 2}
@@ -2603,7 +2611,7 @@ MonoBehaviour:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1000271698}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6a7ff97d8c955784f95e48b6e42e7c42, type: 3}
   m_Name: 
@@ -3606,7 +3614,7 @@ MonoBehaviour:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1416568827}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6a7ff97d8c955784f95e48b6e42e7c42, type: 3}
   m_Name: 
@@ -5096,7 +5104,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   environment: {fileID: 195927477}
   instructions: {fileID: 711251474}
-  markerStream: {fileID: 1190541324}
+  markerStream: {fileID: 0}
   NumberOfTrainingsTrials: 2
   NumberOfTrialsPerCondition: 2
 --- !u!4 &1728821262
@@ -5775,7 +5783,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 100000, guid: 0db9188d9e5ae8d4494189a8135265dc, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 400038, guid: 0db9188d9e5ae8d4494189a8135265dc, type: 3}
       propertyPath: m_LocalPosition.x
@@ -6275,7 +6283,7 @@ MonoBehaviour:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 2020857085}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6a7ff97d8c955784f95e48b6e42e7c42, type: 3}
   m_Name: 
