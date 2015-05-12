@@ -64,6 +64,8 @@ public class MazeEditor : AMazeEditor
 
     public void OnDisable()
     {
+        EditorUtility.SetDirty(maze);
+
         if (maze) {
             maze.EditorGizmoCallbacks -= RenderTileHighlighting;
             maze.EditorGizmoCallbacks -= RenderEditorGizmos;

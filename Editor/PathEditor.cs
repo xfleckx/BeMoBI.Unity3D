@@ -106,16 +106,15 @@ public class PathEditor : AMazeEditor {
             //    PrefabUtility.ReplacePrefab(maze.gameObject, referenceToPrefab, ReplacePrefabOptions.ConnectToPrefab);
             //}
 
-            if (maze.Paths.Any())
+            if (instance.Paths.Any())
             {
-
                 GUILayout.Space(4f);
 
                 GUILayout.Label("Existing Paths");
 
                 GUILayout.Space(2f);
 
-                foreach (var path in maze.Paths)
+                foreach (var path in instance.Paths)
                 {
                     GUILayout.BeginHorizontal(GUILayout.Width(100f));
 
@@ -134,7 +133,7 @@ public class PathEditor : AMazeEditor {
 
                 if (pathShouldBeRemoved != null)
                 {
-                    maze.Paths.Remove(pathShouldBeRemoved);
+                    instance.Paths.Remove(pathShouldBeRemoved);
                     pathShouldBeRemoved = null;
                 }
             }
@@ -150,6 +149,40 @@ public class PathEditor : AMazeEditor {
         #endregion
         Handles.EndGUI();
     }
+
+    #region path creation logic
+    private void PathCreationMode(Event _ce)
+    {
+        int controlId = GUIUtility.GetControlID(FocusType.Passive);
+
+        if (_ce.type == EventType.MouseDown || _ce.type == EventType.MouseDrag)
+        {
+            //var unitHost = GameObject.Find(string.Format(maze.UnitNamePattern, currentTilePosition.x, currentTilePosition.y));
+
+            var unit = maze.Grid[Mathf.FloorToInt(currentTilePosition.x), Mathf.FloorToInt(currentTilePosition.y)];
+
+            if (unit)
+            {
+                Debug.Log(string.Format("add {0} to path", unit.name));
+                pathInSelection.AddLast(unit);
+
+                if (_ce.shift && pathInSelection.Any())
+                {
+                    pathInSelection.Remove(unit);
+                }
+            
+            }
+            else
+            {
+                Debug.Log("no element added");
+            }
+
+            GUIUtility.hotControl = controlId;
+            _ce.Use();
+        }
+    }
+
+    #endregion
 
     protected override void RenderEditorGizmos()
     {
@@ -172,41 +205,6 @@ public class PathEditor : AMazeEditor {
 
                 last = iterator.Current;
             }
-        }
-    }
-
-    private void PathCreationMode(Event _ce)
-    {
-        int controlId = GUIUtility.GetControlID(FocusType.Passive);
-
-        if (_ce.type == EventType.MouseDown || _ce.type == EventType.MouseDrag)
-        {
-            var unitHost = GameObject.Find(string.Format(maze.UnitNamePattern, currentTilePosition.x, currentTilePosition.y));
-
-            if (unitHost != null)
-            {
-                var unit = unitHost.GetComponent<MazeUnit>();
-
-                if (unit)
-                {
-                    Debug.Log(string.Format("add {0} to path", unit.name));
-                    pathInSelection.AddLast(unit);
-                }
-
-                if (unit && _ce.shift && pathInSelection.Any())
-                {
-                    pathInSelection.Remove(unit);
-                }
-            }
-            else
-            {
-                Debug.Log("no element added");
-            }
-
-
-
-            GUIUtility.hotControl = controlId;
-            _ce.Use();
         }
     }
 

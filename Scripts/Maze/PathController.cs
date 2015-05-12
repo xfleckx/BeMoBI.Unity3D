@@ -1,10 +1,19 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Linq;
 using System.Collections;
-using System;
+using System.Collections.Generic;
+using UnityEngine;
 
 [RequireComponent(typeof(beMobileMaze))]
 public class PathController : MonoBehaviour {
 
+    public List<PathInMaze> Paths = new List<PathInMaze>();
+
+    public PathInMaze RequirePath(string targetPath)
+    {
+        return Paths.SingleOrDefault((p) => p.PathName.Equals(targetPath));
+    }
+	
 	// Use this for initialization
 	void Start () {
 	

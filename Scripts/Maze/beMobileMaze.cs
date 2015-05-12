@@ -40,13 +40,6 @@ public class beMobileMaze : MonoBehaviour
     [SerializeField]
     public MazeUnit[,] Grid; 
 
-	public List<PathInMaze> Paths = new List<PathInMaze>();
-	
-	public PathInMaze RequirePath(string targetPath)
-	{  
-		return Paths.SingleOrDefault((p) => p.PathName.Equals(targetPath));
-	}
-	
 	public LinkedList<MazeUnit> CreatePathFromGridIDs(LinkedList<Vector2> gridIDs)
 	{
 		var enumerator = gridIDs.GetEnumerator();
