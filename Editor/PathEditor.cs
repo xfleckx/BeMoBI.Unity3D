@@ -10,7 +10,6 @@ public enum PathEditorMode { NONE, PATH_CREATION }
 public class PathEditor : AMazeEditor {
 
     PathController instance;
-    beMobileMaze maze;
 
     private LinkedList<MazeUnit> pathInSelection;
     private string NameOfCurrentPath = String.Empty;
@@ -65,6 +64,7 @@ public class PathEditor : AMazeEditor {
 
     public override void RenderSceneViewUI()
     {
+        Handles.BeginGUI();
         #region Path creation mode
 
         PathCreationEnabled = GUILayout.Toggle(PathCreationEnabled, "Path creation");
@@ -148,6 +148,7 @@ public class PathEditor : AMazeEditor {
 
         }
         #endregion
+        Handles.EndGUI();
     }
 
     protected override void RenderEditorGizmos()
@@ -208,7 +209,6 @@ public class PathEditor : AMazeEditor {
             _ce.Use();
         }
     }
-
 
     private bool PathIsValid(LinkedList<MazeUnit> path)
     {
