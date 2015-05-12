@@ -147,11 +147,6 @@ public class MazeEditor : AMazeEditor
             UpdatePrefabOfCurrentMaze();
         }
 
-        if (GUILayout.Button("Show Paths", GUILayout.Width(255)))
-        {
-
-        }
-
         GUILayout.Space(5f);
 
         GUILayout.BeginHorizontal();
