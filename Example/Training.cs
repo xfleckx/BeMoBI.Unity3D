@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System;
+using System.Linq;
 
 public interface ITrial
 {
@@ -46,15 +47,13 @@ public class Training : ITrial {
         var targetWorld = "maze";
         var targetPath = "pathA";
 
-        environment.ChangeWorld(targetWorld);
+        //environment.ChangeWorld(targetWorld);
 
-        mazeControl = environment.ActiveEnvironment.GetComponent<beMobileMaze>();
+        //mazeControl = environment.ActiveEnvironments.First().GetComponent<beMobileMaze>(); 
 
-        path = mazeControl.RequirePath(targetPath);
+        //path = mazeControl.RequirePath(targetPath);
 
-        mazeControl.MazeUnitEventOccured += mazeControl_MazeUnitEventOccured;
-        
-         
+        //mazeControl.MazeUnitEventOccured += mazeControl_MazeUnitEventOccured; 
     }
 
     /// <summary>
