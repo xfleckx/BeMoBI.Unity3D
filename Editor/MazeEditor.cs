@@ -463,40 +463,6 @@ public class MazeEditor : AMazeEditor
         }
     }
 
-    private void PathCreationMode(Event _ce)
-    {
-        int controlId = GUIUtility.GetControlID(FocusType.Passive);
-
-        if (_ce.type == EventType.MouseDown || _ce.type == EventType.MouseDrag)
-        {
-            var unitHost = GameObject.Find(string.Format(maze.UnitNamePattern, currentTilePosition.x, currentTilePosition.y));
-           
-            if (unitHost != null)
-            {
-                var unit = unitHost.GetComponent<MazeUnit>();
-
-                if (unit)
-                {
-                    Debug.Log(string.Format("add {0} to path", unit.name));
-                    pathInSelection.AddLast(unit);
-                }
-
-                if (unit && _ce.shift && pathInSelection.Any())
-                {
-                    pathInSelection.Remove(unit);
-                }
-            }
-            else {
-                Debug.Log("no element added");
-            }
-
-            
-
-            GUIUtility.hotControl = controlId;
-            _ce.Use();
-        }
-    }
-
     #endregion
 
     protected override void RenderEditorGizmos()
@@ -620,90 +586,6 @@ public class MazeEditor : AMazeEditor
 
         GUILayout.Space(10f);
 
-        #region Path creation mode
-
-        PathCreationEnabled = GUILayout.Toggle(PathCreationEnabled, "Path creation");
-
-        if (PathCreationEnabled) {
-            
-            if(ActiveMode != MazeEditorMode.PATH_CREATION){
-                    DisableModesExcept(MazeEditorMode.PATH_CREATION);
-                    pathInSelection = new LinkedList<MazeUnit>();
-
-                    EditorModeProcessEvent += PathCreationMode;
-                    ActiveMode = MazeEditorMode.PATH_CREATION;
-                }
-
-            currentPathName = GUILayout.TextField(currentPathName, GUILayout.Width(80f));
-
-            if (currentPathName != string.Empty && PathIsValid(pathInSelection) && GUILayout.Button("Save Path", GUILayout.Width(75f)))
-            {
-                var pathInMaze = ScriptableObject.CreateInstance<PathInMaze>();
-                
-                pathInMaze.PathName = currentPathName;
-
-                pathInMaze.Setup(pathInSelection);
-
-                if (PathToMazePrefab == string.Empty && PathToMazeCompanionFolder == string.Empty)
-                {
-                    SavePrefabAndCreateCompanionFolder();
-                }
-
-                if (!AssetDatabase.IsValidFolder(PathToMazeCompanionFolder))
-                {
-                    PathToMazeCompanionFolder = AssetHelper.GetOrCreateCompanionFolderForPrefab(PathToMazePrefab);
-                }
-
-                AssetDatabase.CreateAsset(pathInMaze, string.Format("{0}/{1}", PathToMazeCompanionFolder, currentPathName));
-
-                maze.Paths.Add(pathInMaze);
-
-                PrefabUtility.ReplacePrefab(maze.gameObject, referenceToPrefab, ReplacePrefabOptions.ConnectToPrefab);
-            }
-
-            if (maze.Paths.Any()) { 
-
-                GUILayout.Space(4f);
-
-                GUILayout.Label("Existing Paths");
-            
-                GUILayout.Space(2f);
-
-                foreach (var path in maze.Paths)
-                {
-                    GUILayout.BeginHorizontal(GUILayout.Width(100f));
-                
-                        if (GUILayout.Button(path.name))
-                        {
-                            pathInSelection = maze.CreatePathFromGridIDs(path.GridIDs);
-                        }
-
-                        if (GUILayout.Button("X", GUILayout.Width(20f)))
-                        {
-                            pathShouldBeRemoved = path;
-                        }
-
-                    GUILayout.EndHorizontal();
-                }
-
-                if (pathShouldBeRemoved != null) { 
-                    maze.Paths.Remove(pathShouldBeRemoved);
-                    pathShouldBeRemoved = null;
-                }
-            }
-        }
-        else
-        {
-            EditorModeProcessEvent -= PathCreationMode;
-
-            if(pathInSelection != null)
-                pathInSelection.Clear();
-
-        }
-        #endregion
-
-        GUILayout.Space(10f);
-        
         GUILayout.EndVertical();
         
         Handles.EndGUI();
@@ -715,34 +597,17 @@ public class MazeEditor : AMazeEditor
         {
             case MazeEditorMode.NONE:        
                 EditingModeEnabled = false;
-                PathCreationEnabled= false;
                 SelectionModeEnabled = false;
                 break;
             case MazeEditorMode.EDITING:
-                PathCreationEnabled= false;
                 SelectionModeEnabled = false;
                 break;
             case MazeEditorMode.SELECTION:
-                PathCreationEnabled = false;
                 EditingModeEnabled = false;
-                break;
-            case MazeEditorMode.PATH_CREATION:
-                EditingModeEnabled = false;
-                SelectionModeEnabled = false;
                 break;
             default:
                 break;
         }
-    }
-
-    private bool PathIsValid(LinkedList<MazeUnit> path)
-    {
-        if (path == null)
-            return false;
-
-        bool hasEnoughElements = path.Count > 1;
-
-        return hasEnoughElements;
     }
 
     private void renderEmptyMazeGUI()

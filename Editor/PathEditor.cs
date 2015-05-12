@@ -2,10 +2,23 @@
 using UnityEditor;
 using System.Collections;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+public enum PathEditorMode { NONE, PATH_CREATION }
+
 [CustomEditor(typeof(PathController))]
 public class PathEditor : AMazeEditor {
 
-    PathController instance; 
+    PathController instance;
+    beMobileMaze maze;
+
+    private LinkedList<MazeUnit> pathInSelection;
+    private string NameOfCurrentPath = String.Empty;
+
+    private bool PathCreationEnabled; 
+    public PathEditorMode ActiveMode { get; set; }
+    PathInMaze pathShouldBeRemoved;
+    string currentPathName = string.Empty;
 
     public void OnEnable()
     {
@@ -52,11 +65,159 @@ public class PathEditor : AMazeEditor {
 
     public override void RenderSceneViewUI()
     {
+        #region Path creation mode
 
+        PathCreationEnabled = GUILayout.Toggle(PathCreationEnabled, "Path creation");
+
+        if (PathCreationEnabled)
+        { 
+            if (ActiveMode != PathEditorMode.PATH_CREATION)
+            { 
+                pathInSelection = new LinkedList<MazeUnit>();
+
+                EditorModeProcessEvent += PathCreationMode;
+                ActiveMode = PathEditorMode.PATH_CREATION;
+            }
+
+            currentPathName = GUILayout.TextField(currentPathName, GUILayout.Width(80f));
+
+            //if (currentPathName != string.Empty && PathIsValid(pathInSelection) && GUILayout.Button("Save Path", GUILayout.Width(75f)))
+            //{
+            //    var pathInMaze = ScriptableObject.CreateInstance<PathInMaze>();
+
+            //    pathInMaze.PathName = currentPathName;
+
+            //    pathInMaze.Setup(pathInSelection);
+
+            //    if (PathToMazePrefab == string.Empty && PathToMazeCompanionFolder == string.Empty)
+            //    {
+            //        SavePrefabAndCreateCompanionFolder();
+            //    }
+
+            //    if (!AssetDatabase.IsValidFolder(PathToMazeCompanionFolder))
+            //    {
+            //        PathToMazeCompanionFolder = AssetHelper.GetOrCreateCompanionFolderForPrefab(PathToMazePrefab);
+            //    }
+
+            //    AssetDatabase.CreateAsset(pathInMaze, string.Format("{0}/{1}", PathToMazeCompanionFolder, currentPathName));
+
+            //    maze.Paths.Add(pathInMaze);
+
+            //    PrefabUtility.ReplacePrefab(maze.gameObject, referenceToPrefab, ReplacePrefabOptions.ConnectToPrefab);
+            //}
+
+            if (maze.Paths.Any())
+            {
+
+                GUILayout.Space(4f);
+
+                GUILayout.Label("Existing Paths");
+
+                GUILayout.Space(2f);
+
+                foreach (var path in maze.Paths)
+                {
+                    GUILayout.BeginHorizontal(GUILayout.Width(100f));
+
+                    if (GUILayout.Button(path.name))
+                    {
+                        pathInSelection = maze.CreatePathFromGridIDs(path.GridIDs);
+                    }
+
+                    if (GUILayout.Button("X", GUILayout.Width(20f)))
+                    {
+                        pathShouldBeRemoved = path;
+                    }
+
+                    GUILayout.EndHorizontal();
+                }
+
+                if (pathShouldBeRemoved != null)
+                {
+                    maze.Paths.Remove(pathShouldBeRemoved);
+                    pathShouldBeRemoved = null;
+                }
+            }
+        }
+        else
+        {
+            EditorModeProcessEvent -= PathCreationMode;
+
+            if (pathInSelection != null)
+                pathInSelection.Clear();
+
+        }
+        #endregion
     }
 
     protected override void RenderEditorGizmos()
     {
-        
+        if (pathInSelection != null)
+        {
+            var iterator = pathInSelection.GetEnumerator();
+            MazeUnit last = null;
+
+            while (iterator.MoveNext())
+            {
+                if (!last)
+                {
+                    last = iterator.Current;
+                    continue;
+                }
+
+                var hoveringDistance = new Vector3(0f, maze.RoomHigthInMeter, 0f);
+
+                Gizmos.DrawLine(last.transform.position + hoveringDistance, iterator.Current.transform.position + hoveringDistance);
+
+                last = iterator.Current;
+            }
+        }
     }
+
+    private void PathCreationMode(Event _ce)
+    {
+        int controlId = GUIUtility.GetControlID(FocusType.Passive);
+
+        if (_ce.type == EventType.MouseDown || _ce.type == EventType.MouseDrag)
+        {
+            var unitHost = GameObject.Find(string.Format(maze.UnitNamePattern, currentTilePosition.x, currentTilePosition.y));
+
+            if (unitHost != null)
+            {
+                var unit = unitHost.GetComponent<MazeUnit>();
+
+                if (unit)
+                {
+                    Debug.Log(string.Format("add {0} to path", unit.name));
+                    pathInSelection.AddLast(unit);
+                }
+
+                if (unit && _ce.shift && pathInSelection.Any())
+                {
+                    pathInSelection.Remove(unit);
+                }
+            }
+            else
+            {
+                Debug.Log("no element added");
+            }
+
+
+
+            GUIUtility.hotControl = controlId;
+            _ce.Use();
+        }
+    }
+
+
+    private bool PathIsValid(LinkedList<MazeUnit> path)
+    {
+        if (path == null)
+            return false;
+
+        bool hasEnoughElements = path.Count > 1;
+
+        return hasEnoughElements;
+    }
+
 }
