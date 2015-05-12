@@ -70,7 +70,9 @@ public abstract class AMarkerStream : Singleton<AMarkerStream>, IMarkerStream
     public abstract void Write(string name);
 }
 
-//public class DebugMarkerStream : Singleton<DebugMarkerStream>, IMarkerStream
+/// <summary>
+/// Example implementation of an marker stream
+/// </summary>
 public class DebugMarkerStream : AMarkerStream
 {
     private const string streamName = "DebugMarkerStream";
