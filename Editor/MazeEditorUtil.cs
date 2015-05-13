@@ -11,39 +11,58 @@ public static class MazeEditorUtil
         if (maze.Grid != null) { 
 
             MazeUnit[,] newGrid = new MazeUnit[newColumns, newRows];
-            
-            var existingCols = maze.Grid.GetUpperBound(0);
-            var existingRows = maze.Grid.GetUpperBound(1);
 
-            for (int col = 0; col <= existingCols; col++)
+            for (int col = 0; col < newColumns; col++)
             {
-                for (int row = 0; row <= existingRows; row++)
+                for (int row = 0; row < newRows; row++)
                 {
-                    if (row >= newRows || col >= newColumns) {
-
-                        if (maze.Grid[col, row] != null)
-                            GameObject.DestroyImmediate(maze.Grid[col, row].gameObject);
-   
-                        continue;
-                    }
-
-                    newGrid[col, row] = maze.Grid[col, row];
+                    var hostGameObject = GameObject.Find(string.Format(maze.UnitNamePattern, row, col));
+                    
+                    if(hostGameObject != null)
+                        newGrid[col, row] = hostGameObject.GetComponent<MazeUnit>();
                 }
             }
 
             maze.Grid = newGrid;
-            
+
+            var unitsOutsideOfGrid = maze.Units.Select(
+                (u) => {
+
+                    if (u.GridID.x > newColumns || u.GridID.y > newRows)
+                        return u.gameObject;
+                    else
+                        return null;
+                });
+
+            unitsOutsideOfGrid.ImmediateDestroyObjects();
+
             return maze.Grid;
 
         } 
         
+
+
         maze.Grid = new MazeUnit[newColumns, newRows];
         
         return maze.Grid;
     }
 
+
+
     public static MazeUnit[,] ReconfigureGrid(beMobileMaze maze,  float columns, float rows)
     {
         return ReconfigureGrid(maze,Mathf.FloorToInt(columns), Mathf.FloorToInt(rows));
+    }
+
+
+    public static void ImmediateDestroyObjects(this IEnumerable<GameObject> set)
+    {
+        if (set.Any())
+        {
+            var first = set.First();
+            var tail = set.Skip(1);
+            GameObject.DestroyImmediate(first);
+            tail.ImmediateDestroyObjects();
+        }
     }
 }
