@@ -25,7 +25,9 @@ public class PathEditor : AMazeEditor {
 
         if (instance == null)
             return;
-         
+        if (instance != null)
+            maze = instance.GetComponent<beMobileMaze>();
+
         instance.EditorGizmoCallbacks += RenderTileHighlighting;
         instance.EditorGizmoCallbacks += RenderEditorGizmos; 
     }
@@ -65,6 +67,7 @@ public class PathEditor : AMazeEditor {
     public override void RenderSceneViewUI()
     {
         Handles.BeginGUI();
+
         #region Path creation mode
 
         PathCreationEnabled = GUILayout.Toggle(PathCreationEnabled, "Path creation");

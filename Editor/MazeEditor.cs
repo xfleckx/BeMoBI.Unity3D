@@ -4,8 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using System.Text;
 
-public enum MazeEditorMode {NONE, EDITING, SELECTION, PATH_CREATION}
+public enum MazeEditorMode { NONE, EDITING, SELECTION }
 
 [CustomEditor(typeof(beMobileMaze))]
 public class MazeEditor : AMazeEditor
@@ -17,7 +18,6 @@ public class MazeEditor : AMazeEditor
 
     private bool PathCreationEnabled = false;
     private HashSet<GameObject> currentSelection;
-    private LinkedList<MazeUnit> pathInSelection;
     private string NameOfCurrentPath = String.Empty;
 
     private string PathToMazePrefab = string.Empty;
@@ -471,31 +471,9 @@ public class MazeEditor : AMazeEditor
             {
                 Gizmos.DrawCube(item.transform.position + new Vector3(0, maze.RoomHigthInMeter / 2, 0), new Vector3(maze.RoomDimension.x, maze.RoomHigthInMeter, maze.RoomDimension.z));    
             }
-        }
-
-        if (pathInSelection != null)
-        {
-            var iterator = pathInSelection.GetEnumerator();
-            MazeUnit last = null;
-
-            while (iterator.MoveNext())
-            {
-                if (!last)
-                {
-                    last = iterator.Current;
-                    continue;
-                }
-
-                var hoveringDistance = new Vector3(0f, maze.RoomHigthInMeter, 0f);
-
-                Gizmos.DrawLine(last.transform.position + hoveringDistance, iterator.Current.transform.position + hoveringDistance);
-
-                last = iterator.Current;
-            }
-        }
+        } 
     }
 
-    PathInMaze pathShouldBeRemoved;
     string currentPathName = string.Empty;
 
     public override void RenderSceneViewUI()
@@ -583,9 +561,39 @@ public class MazeEditor : AMazeEditor
 
         GUILayout.Space(10f);
 
+        GUILayout.Label("Grid:");
+        GUILayout.Space(3f);
+
+        RenderMazeGrid();
+
         GUILayout.EndVertical();
         
         Handles.EndGUI();
+    }
+
+    void RenderMazeGrid() {
+
+        StringBuilder gridCode = new StringBuilder();
+        StringBuilder line = new StringBuilder();
+
+        int cols = maze.Grid.GetLength(0);
+        int rows = maze.Grid.GetLength(1);
+
+        for (int r = 0; r < rows; r++)
+        {
+            for (int c = 0; c < cols; c++)
+            {
+                if (maze.Grid[c, r] != null)
+                    line.AppendFormat(" {0}", 1);
+                else
+                    line.AppendFormat(" {0}", 0);
+            }
+            
+                gridCode.AppendLine(line.ToString());
+                line.Remove(0, line.Length);
+        }
+
+        GUILayout.Label(gridCode.ToString());
     }
 
     private void DisableModesExcept(MazeEditorMode mode)
