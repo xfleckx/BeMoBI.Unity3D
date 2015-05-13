@@ -16,7 +16,7 @@ public static class MazeEditorUtil
             {
                 for (int row = 0; row < newRows; row++)
                 {
-                    var hostGameObject = GameObject.Find(string.Format(maze.UnitNamePattern, row, col));
+                    var hostGameObject = GameObject.Find(string.Format(maze.UnitNamePattern, col, row));
                     
                     if(hostGameObject != null)
                         newGrid[col, row] = hostGameObject.GetComponent<MazeUnit>();

@@ -35,7 +35,7 @@ public class beMobileMaze : MonoBehaviour
 	public event Action<MazeUnitEvent> MazeUnitEventOccured;
 
 	[SerializeField]
-	public List<MazeUnit> Units = new List<MazeUnit>();
+	public HashSet<MazeUnit> Units = new HashSet<MazeUnit>();
     
     [SerializeField]
     public MazeUnit[,] Grid; 
@@ -126,14 +126,23 @@ public class beMobileMaze : MonoBehaviour
 
 	}
 
-    void Reset()
+    public void UpdateGrid()
     {
         var existingUnits = GetComponentsInChildren<MazeUnit>();
-        
-        Units.AddRange(existingUnits);
 
-        Columns = Mathf.FloorToInt(MazeWidthInMeter / RoomDimension.x);
-        Rows = Mathf.FloorToInt(MazeLengthInMeter / RoomDimension.z);
+        foreach (var unit in existingUnits)
+        {
+            if (unit.GridID.x >= Columns)
+                Columns = Mathf.FloorToInt(unit.GridID.x);
+
+            if (unit.GridID.y >= Rows)
+                Rows = Mathf.FloorToInt(unit.GridID.y);
+
+            Units.Add(unit);
+        }
+
+        Columns += 1;
+        Rows += 1;
 
         Grid = new MazeUnit[Columns, Rows];
 
@@ -143,5 +152,12 @@ public class beMobileMaze : MonoBehaviour
             var y = Mathf.FloorToInt(unit.GridID.y);
             Grid[x, y] = unit;
         }
+    }
+
+    void Reset()
+    {
+        Debug.Log("Reset on Maze");
+
+        UpdateGrid();
     }
 }

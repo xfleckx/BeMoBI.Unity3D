@@ -46,8 +46,8 @@ public class MazeEditor : AMazeEditor
 
         referenceToPrefab = PrefabUtility.GetPrefabParent(maze.gameObject);
 
-        MazeEditorUtil.ReconfigureGrid(maze, maze.MazeWidthInMeter, maze.MazeLengthInMeter);
-
+        maze.UpdateGrid();
+        
         if (referenceToPrefab != null) { 
             PathToMazePrefab = AssetDatabase.GetAssetPath(referenceToPrefab);
 
@@ -588,9 +588,9 @@ public class MazeEditor : AMazeEditor
                 else
                     line.AppendFormat(" {0}", 0);
             }
-            
-                gridCode.AppendLine(line.ToString());
-                line.Remove(0, line.Length);
+
+            gridCode.AppendLine(line.ToString());
+            line.Remove(0, line.Length);
         }
 
         GUILayout.Label(gridCode.ToString());
