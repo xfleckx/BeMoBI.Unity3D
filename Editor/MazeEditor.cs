@@ -44,10 +44,14 @@ public class MazeEditor : AMazeEditor
     { 
         maze = (beMobileMaze)target;
 
+        if(maze.Grid == null)
+        {
+            RebuildGrid();
+
+        }
+
         referenceToPrefab = PrefabUtility.GetPrefabParent(maze.gameObject);
 
-        maze.UpdateGrid();
-        
         if (referenceToPrefab != null) { 
             PathToMazePrefab = AssetDatabase.GetAssetPath(referenceToPrefab);
 
@@ -60,6 +64,23 @@ public class MazeEditor : AMazeEditor
             maze.EditorGizmoCallbacks += RenderTileHighlighting;
             maze.EditorGizmoCallbacks += RenderEditorGizmos;
         }
+    }
+
+    private void RebuildGrid()
+    {
+        var GridDim = CalcGridSize();
+
+        if (!maze.Units.Any())
+        {
+            var existingUnits = maze.gameObject.GetComponentsInChildren<MazeUnit>();
+
+            foreach (var unit in existingUnits)
+            {
+                maze.Units.Add(unit);
+            }
+        }
+
+        maze.Grid = FillGridWith(maze.Units, (int)GridDim.x, (int)GridDim.y);
     }
 
     public void OnDisable()
@@ -82,6 +103,8 @@ public class MazeEditor : AMazeEditor
         if (maze == null) {
             renderEmptyMazeGUI();
         }
+        
+        // TODO auto reconfigure grid when dimensions changed
 
         GUILayout.BeginVertical();
         
@@ -97,9 +120,21 @@ public class MazeEditor : AMazeEditor
         GUILayout.Label("m");
         GUILayout.EndHorizontal();
 
+        if (GUILayout.Button("Search for Units")) 
+        {
+            var unitsFound = maze.gameObject.GetComponentsInChildren<MazeUnit>();
+
+            foreach (var unit in unitsFound)
+            {
+                if (!maze.Units.Contains(unit))
+                    maze.Units.Add(unit);
+            }
+
+        }
+
         if (GUILayout.Button("Configure Grid"))
         {
-            MazeEditorUtil.ReconfigureGrid(maze, maze.MazeWidthInMeter, maze.MazeLengthInMeter);
+            RebuildGrid();
         }
 
         GUILayout.BeginHorizontal();
@@ -173,6 +208,28 @@ public class MazeEditor : AMazeEditor
 
             InitializeUnit(focusedMaze, item.GridID, item.gameObject); 
         }
+    }
+
+    public Vector2 CalcGridSize()
+    {
+        int rows = Mathf.FloorToInt(maze.MazeLengthInMeter / maze.RoomDimension.z);
+        int columns = Mathf.FloorToInt(maze.MazeWidthInMeter / maze.RoomDimension.x);
+
+        return new Vector2(columns, rows);
+    }
+
+    public MazeUnit[,] FillGridWith(IEnumerable<MazeUnit> existingUnits, int columns, int rows)
+    {
+        var grid = new MazeUnit[columns,rows];
+
+        foreach (var unit in existingUnits)
+        {  
+            var x = Mathf.FloorToInt(unit.GridID.x);
+            var y = Mathf.FloorToInt(unit.GridID.y);
+            grid[x, y] = unit;
+        }
+
+        return grid;
     }
 
     private void UpdatePrefabOfCurrentMaze()
@@ -464,6 +521,8 @@ public class MazeEditor : AMazeEditor
 
     protected override void RenderEditorGizmos()
     {
+        drawFloorGrid();
+
         Gizmos.color = Color.blue;
 
         if (currentSelection != null) { 
@@ -472,6 +531,34 @@ public class MazeEditor : AMazeEditor
                 Gizmos.DrawCube(item.transform.position + new Vector3(0, maze.RoomHigthInMeter / 2, 0), new Vector3(maze.RoomDimension.x, maze.RoomHigthInMeter, maze.RoomDimension.z));    
             }
         } 
+    }
+
+    private void drawFloorGrid()
+    {
+        // store map width, height and position
+        var mapWidth = maze.MazeWidthInMeter;
+        var mapHeight = maze.MazeLengthInMeter;
+        var position = maze.transform.position;
+
+        // draw layer border
+        Gizmos.color = Color.white;
+        Gizmos.DrawLine(position, position + new Vector3(mapWidth, 0, 0));
+        Gizmos.DrawLine(position, position + new Vector3(0, 0, mapHeight));
+        Gizmos.DrawLine(position + new Vector3(mapWidth, 0, 0), position + new Vector3(mapWidth, 0, mapHeight));
+        Gizmos.DrawLine(position + new Vector3(0, 0, mapHeight), position + new Vector3(mapWidth, 0, mapHeight));
+
+        // draw tile cells
+        Gizmos.color = Color.green;
+        for (float i = 1; i <= maze.Columns; i++)
+        {
+            Gizmos.DrawLine(position + new Vector3(i * maze.RoomDimension.x, 0, 0), position + new Vector3(i * maze.RoomDimension.x, 0, mapHeight));
+        }
+
+        for (float i = 1; i <= maze.Rows; i++)
+        {
+            Gizmos.DrawLine(position + new Vector3(0, 0, i * maze.RoomDimension.z), position + new Vector3(mapWidth, 0, i * maze.RoomDimension.z));
+        }
+
     }
 
     string currentPathName = string.Empty;
@@ -572,6 +659,9 @@ public class MazeEditor : AMazeEditor
     }
 
     void RenderMazeGrid() {
+
+        if (maze.Grid == null)
+            return;
 
         StringBuilder gridCode = new StringBuilder();
         StringBuilder line = new StringBuilder();
