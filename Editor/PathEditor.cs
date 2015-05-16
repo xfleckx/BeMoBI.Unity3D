@@ -54,7 +54,7 @@ public class PathEditor : AMazeEditor {
 
         base.OnInspectorGUI();
 
-        RenderSceneViewUI();
+        PathCreationEnabled = GUILayout.Toggle(PathCreationEnabled, "Path creation", EditorStyles.whiteLargeLabel);
 
         if (EditorModeProcessEvent != null)
             EditorModeProcessEvent(Event.current);
@@ -66,13 +66,20 @@ public class PathEditor : AMazeEditor {
         Gizmos.DrawWireCube(MarkerPosition + new Vector3(0, maze.RoomHigthInMeter / 2, 0), new Vector3(maze.RoomDimension.x, maze.RoomHigthInMeter, maze.RoomDimension.z) * 1.1f);
     }
 
+    private string activePathId = string.Empty;
+
     public override void RenderSceneViewUI()
     {
         Handles.BeginGUI();
 
+
+        activePathId = activePath != null ? activePath.Identifier : "No active path";
+
+        GUILayout.Label(activePathId, EditorStyles.whiteBoldLabel);      
+
         #region Path creation mode
 
-        PathCreationEnabled = GUILayout.Toggle(PathCreationEnabled, "Path creation");
+        EditorGUILayout.BeginVertical(GUILayout.Width(100f));
 
         if (PathCreationEnabled)
         { 
@@ -84,13 +91,11 @@ public class PathEditor : AMazeEditor {
                 ActiveMode = PathEditorMode.PATH_CREATION;
             }
 
-            EditorGUILayout.BeginVertical(GUILayout.Width(100f));
-
             //if (currentPathName != string.Empty && PathIsValid(pathInSelection) && GUILayout.Button("Save Path", GUILayout.Width(75f)))
             //{
             //    var pathInMaze = ScriptableObject.CreateInstance<PathInMaze>();
 
-            //    pathInMaze.PathName = currentPathName;
+            //    pathInMaze.Identifier = currentPathName;
 
             //    pathInMaze.Setup(pathInSelection);
 
@@ -117,7 +122,7 @@ public class PathEditor : AMazeEditor {
             }
 
             if(activePath != null)
-                activePath.PathName = GUILayout.TextField(activePath.PathName);
+                activePath.Identifier = GUILayout.TextField(activePath.Identifier);
 
             if (GUILayout.Button("Save Path"))
             {
@@ -144,10 +149,10 @@ public class PathEditor : AMazeEditor {
                 {
                     GUILayout.BeginHorizontal(GUILayout.Width(100f));
 
-                    //if (GUILayout.Button(path.name))
-                    //{
-                    //    pathInSelection = CreatePathFromGridIDs(path.GridIDs);
-                    //}
+                    if (GUILayout.Button(path.Identifier))
+                    {
+                        activePath = path;
+                    }
 
                     if (GUILayout.Button("X", GUILayout.Width(20f)))
                     {
@@ -159,7 +164,7 @@ public class PathEditor : AMazeEditor {
 
                 if (pathShouldBeRemoved != null)
                 {
-                    instance.Paths.Remove(pathShouldBeRemoved);
+                    DeletePath(pathShouldBeRemoved);
                     pathShouldBeRemoved = null;
                 }
             }
@@ -170,8 +175,6 @@ public class PathEditor : AMazeEditor {
 
             }
 
-
-            EditorGUILayout.EndVertical();
         }
         else
         {
@@ -183,6 +186,8 @@ public class PathEditor : AMazeEditor {
         }
 
 
+        EditorGUILayout.EndVertical();
+
         #endregion
         Handles.EndGUI();
     }
@@ -191,9 +196,18 @@ public class PathEditor : AMazeEditor {
     {
       var newPath = ScriptableObject.CreateInstance<PathInMaze>();
       int pathNumber = instance.Paths.Count;
-      newPath.PathName = string.Format("p_{0}", pathNumber);
-
+      newPath.Identifier = string.Format("p_{0}", pathNumber);
+      instance.Paths.Add(newPath);
       return newPath;
+    }
+
+    private void DeletePath(PathInMaze path)
+    {
+        if (activePath != null && activePath.Equals(path))
+            activePath = null; 
+
+        instance.Paths.Remove(path);
+        DestroyImmediate(path);
     }
 
     #region path creation logic

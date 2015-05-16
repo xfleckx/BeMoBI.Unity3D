@@ -8,8 +8,9 @@ public class PathInMaze : ScriptableObject {
 
     [SerializeField]
     public LinkedList<MazeUnit> Units;
+    
     [SerializeField]
-    public string PathName = string.Empty;
+    public string Identifier = string.Empty;
 
     public void OnEnable()
     {
