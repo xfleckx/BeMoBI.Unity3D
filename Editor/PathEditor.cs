@@ -123,7 +123,7 @@ public class PathEditor : AMazeEditor {
 
                     if (GUILayout.Button(path.name))
                     {
-                        pathInSelection = maze.CreatePathFromGridIDs(path.GridIDs);
+                        pathInSelection = CreatePathFromGridIDs(path.GridIDs);
                     }
 
                     if (GUILayout.Button("X", GUILayout.Width(20f)))
@@ -139,6 +139,16 @@ public class PathEditor : AMazeEditor {
                     instance.Paths.Remove(pathShouldBeRemoved);
                     pathShouldBeRemoved = null;
                 }
+            }
+
+            if (GUILayout.Button("Save Path"))
+            {
+
+            }
+
+            if (GUILayout.Button("Deploy Landmarks"))
+            {
+
             }
         }
         else
@@ -183,6 +193,32 @@ public class PathEditor : AMazeEditor {
             GUIUtility.hotControl = controlId;
             _ce.Use();
         }
+    }
+     
+    public LinkedList<MazeUnit> CreatePathFromGridIDs(LinkedList<Vector2> gridIDs)
+    {
+        var enumerator = gridIDs.GetEnumerator();
+        var units = new LinkedList<MazeUnit>();
+
+        while (enumerator.MoveNext())
+        {
+            var gridField = enumerator.Current;
+
+            var correspondingUnitHost = maze.transform.FindChild(string.Format("Unit_{0}_{1}", gridField.x, gridField.y));
+
+            if (correspondingUnitHost == null)
+                throw new MissingComponentException("It seems, that the path doesn't match the maze! Requested Unit is missing!");
+
+            var unit = correspondingUnitHost.GetComponent<MazeUnit>();
+
+            if (unit == null)
+                throw new MissingComponentException("Expected Component on Maze Unit is missing!");
+
+            units.AddLast(unit);
+        }
+
+        return units;
+
     }
 
     #endregion
