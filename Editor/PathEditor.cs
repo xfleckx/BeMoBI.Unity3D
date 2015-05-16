@@ -235,21 +235,24 @@ public class PathEditor : AMazeEditor {
         {
             var unit = maze.Grid[Mathf.FloorToInt(currentTilePosition.x), Mathf.FloorToInt(currentTilePosition.y)];
 
-            if (unit == null)
+            if (_ce.button == 0)
             {
-                Debug.Log("no element added");
+                if (unit == null && !unit.Equals(activePath.Units.Last))
+                {
+                    Debug.Log("no element added");
 
-                GUIUtility.hotControl = controlId;
-                _ce.Use();
+                    GUIUtility.hotControl = controlId;
+                    _ce.Use();
 
-                return;
+                    return;
+                }
+
+                Debug.Log(string.Format("add {0} to path", unit.name));
+
+                activePath.Units.AddLast(unit);
             }
-             
-            Debug.Log(string.Format("add {0} to path", unit.name));
 
-            activePath.Units.AddLast(unit);
-
-            if (_ce.shift && activePath.Units.Any())
+            if (_ce.button == 1 && activePath.Units.Any())
             {
                 activePath.Units.Remove(unit);
             } 
@@ -303,8 +306,6 @@ public class PathEditor : AMazeEditor {
         if (activePath == null)
             MarkerColor = Color.gray;
         
-
-
         if (activePath != null && activePath.Units.Count > 0)
         {
             var iterator = activePath.Units.GetEnumerator();
