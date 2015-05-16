@@ -13,7 +13,7 @@ public class PathController : MonoBehaviour {
 
     public PathInMaze RequirePath(string targetPath)
     {
-        return Paths.SingleOrDefault((p) => p.Identifier.Equals(targetPath));
+        return Paths.SingleOrDefault((p) => p.name.Equals(targetPath));
     }
 	
 	// Use this for initialization

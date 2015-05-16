@@ -73,7 +73,7 @@ public class PathEditor : AMazeEditor {
         Handles.BeginGUI();
 
 
-        activePathId = activePath != null ? activePath.Identifier : "No active path";
+        activePathId = activePath != null ? activePath.name : "No active path";
 
         GUILayout.Label(activePathId, EditorStyles.whiteBoldLabel);      
 
@@ -122,7 +122,7 @@ public class PathEditor : AMazeEditor {
             }
 
             if(activePath != null)
-                activePath.Identifier = GUILayout.TextField(activePath.Identifier);
+                activePath.name = GUILayout.TextField(activePath.name);
 
             if (GUILayout.Button("Save Path"))
             {
@@ -132,10 +132,24 @@ public class PathEditor : AMazeEditor {
                 EditorUtility.SetDirty(instance);
             }
 
+            GUILayout.Space(4f);
+
             if (GUILayout.Button("Delete Path"))
             {
-                DestroyImmediate(activePath);
+                DeletePath(activePath);
             }
+
+            if (GUILayout.Button("Clear paths"))
+            {
+                bool clearAllowed = EditorUtility.DisplayDialog("Delete all paths?", "Do you realy want to delete all paths?", "I agree", "Nooo...");
+
+                if (!clearAllowed)
+                    return;
+
+                instance.Paths.ForEach((p) => DeletePath(p));
+                instance.Paths.Clear();
+                activePath = null;
+            }   
 
             if (instance.Paths.Any())
             {
@@ -149,7 +163,9 @@ public class PathEditor : AMazeEditor {
                 {
                     GUILayout.BeginHorizontal(GUILayout.Width(100f));
 
-                    if (GUILayout.Button(path.Identifier))
+                    var name = path.name != null ? path.name : "no name";
+
+                    if (GUILayout.Button(name))
                     {
                         activePath = path;
                     }
@@ -196,7 +212,7 @@ public class PathEditor : AMazeEditor {
     {
       var newPath = ScriptableObject.CreateInstance<PathInMaze>();
       int pathNumber = instance.Paths.Count;
-      newPath.Identifier = string.Format("p_{0}", pathNumber);
+      newPath.name = string.Format("p_{0}", pathNumber);
       instance.Paths.Add(newPath);
       return newPath;
     }
@@ -217,25 +233,26 @@ public class PathEditor : AMazeEditor {
 
         if (_ce.type == EventType.MouseDown || _ce.type == EventType.MouseDrag)
         {
-            //var unitHost = GameObject.Find(string.Format(maze.UnitNamePattern, currentTilePosition.x, currentTilePosition.y));
-
             var unit = maze.Grid[Mathf.FloorToInt(currentTilePosition.x), Mathf.FloorToInt(currentTilePosition.y)];
 
-            if (unit)
-            {
-                Debug.Log(string.Format("add {0} to path", unit.name));
-                pathInSelection.AddLast(unit);
-
-                if (_ce.shift && pathInSelection.Any())
-                {
-                    pathInSelection.Remove(unit);
-                }
-            
-            }
-            else
+            if (unit == null)
             {
                 Debug.Log("no element added");
+
+                GUIUtility.hotControl = controlId;
+                _ce.Use();
+
+                return;
             }
+             
+            Debug.Log(string.Format("add {0} to path", unit.name));
+
+            activePath.Units.AddLast(unit);
+
+            if (_ce.shift && activePath.Units.Any())
+            {
+                activePath.Units.Remove(unit);
+            } 
 
             GUIUtility.hotControl = controlId;
             _ce.Use();
@@ -270,8 +287,24 @@ public class PathEditor : AMazeEditor {
 
     #endregion
 
+    #region path editing logic
+
+    private void PathEditing()
+    {
+
+    }
+
+    #endregion 
+
+
+
     protected override void RenderEditorGizmos()
     {
+        if (activePath == null)
+            MarkerColor = Color.gray;
+        
+
+
         if (activePath != null && activePath.Units.Count > 0)
         {
             var iterator = activePath.Units.GetEnumerator();
@@ -279,7 +312,7 @@ public class PathEditor : AMazeEditor {
 
             while (iterator.MoveNext())
             {
-                if (last)
+                if (last == null)
                 {
                     last = iterator.Current;
                     continue;
