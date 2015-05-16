@@ -726,7 +726,7 @@ public abstract class AMazeEditor : Editor {
     protected Action<Event> EditorModeProcessEvent;
 
     protected Vector3 MarkerPosition;
-
+    protected Color MarkerColor = Color.blue;
     protected Vector3 draggingStart;
     protected Vector2 currentTilePosition;
     protected Vector3 mouseHitPos;
@@ -747,7 +747,7 @@ public abstract class AMazeEditor : Editor {
 
     protected void RenderTileHighlighting()
     {
-        Gizmos.color = Color.red;
+        Gizmos.color = MarkerColor;
         Gizmos.DrawWireCube(MarkerPosition + new Vector3(0, maze.RoomHigthInMeter / 2, 0), new Vector3(maze.RoomDimension.x, maze.RoomHigthInMeter, maze.RoomDimension.z) * 1.1f);
     }
 
