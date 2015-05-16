@@ -1,22 +1,25 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
+[Serializable]
 public class PathInMaze : ScriptableObject {
 
     [SerializeField]
-    public LinkedList<Vector2> GridIDs;
+    public LinkedList<MazeUnit> Units;
     [SerializeField]
     public string PathName = string.Empty;
 
-    public void Setup(LinkedList<MazeUnit> pathInSelection)
+    public void OnEnable()
     {
-        GridIDs = new LinkedList<Vector2>();
+        Debug.Log("Path Enabled");
 
-        foreach (var item in pathInSelection)
-        {
-            GridIDs.AddLast(item.GridID);
+        if (Units == null) { 
+            Units = new LinkedList<MazeUnit>();
+            Debug.Log("Creating empty Unit List in Path");
         }
+    } 
 
-    }
+
 }

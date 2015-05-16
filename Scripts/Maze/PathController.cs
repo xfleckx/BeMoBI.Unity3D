@@ -4,9 +4,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[Serializable]
 [RequireComponent(typeof(beMobileMaze))]
 public class PathController : MonoBehaviour {
 
+    [SerializeField]
     public List<PathInMaze> Paths = new List<PathInMaze>();
 
     public PathInMaze RequirePath(string targetPath)
