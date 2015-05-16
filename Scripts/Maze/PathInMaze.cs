@@ -11,6 +11,8 @@ public class PathInMaze : ScriptableObject {
       
     public void OnEnable()
     {
+        hideFlags = HideFlags.HideAndDontSave;
+
         Debug.Log(string.Format("Path {0} Enabled", name));
 
         if (Units == null) { 
