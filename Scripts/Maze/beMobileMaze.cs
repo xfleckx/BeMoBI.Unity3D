@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System;
 using System.Linq;
 
+[Serializable]
 public class beMobileMaze : MonoBehaviour
 {
 	#region replace this with readonly creation model
@@ -26,10 +27,7 @@ public class beMobileMaze : MonoBehaviour
     public int Rows { get { return Grid != null ? Grid.GetLength(1) : 0; } }
 
     public int Columns { get { return Grid != null ? Grid.GetLength(0) : 0; } }
-
-	public List<GameObject> Walls;
-	public List<GameObject> Edges;
-	public List<GameObject> Waypoints;
+    
 	#endregion
 
 	public event Action<MazeUnitEvent> MazeUnitEventOccured;

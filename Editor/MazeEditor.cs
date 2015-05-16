@@ -163,12 +163,6 @@ public class MazeEditor : AMazeEditor
 
         GUILayout.BeginVertical();
 
-        if (GUILayout.Button("Open Maze Editor", GUILayout.Width(255)))
-        {
-            MazeEditorWindow window = (MazeEditorWindow)EditorWindow.GetWindow(typeof(MazeEditorWindow));
-            window.Init(maze);
-        }
-
         if (GUILayout.Button("Clone Maze", GUILayout.Width(255)))
         {
             var clone = GameObject.Instantiate(maze);
