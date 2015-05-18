@@ -1,8 +1,10 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
+[Serializable]
 public class MazeUnit : MonoBehaviour {
 
 	public const string NORTH = "North";

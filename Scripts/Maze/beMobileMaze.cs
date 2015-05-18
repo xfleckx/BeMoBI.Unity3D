@@ -36,7 +36,12 @@ public class beMobileMaze : MonoBehaviour
 	public HashSet<MazeUnit> Units = new HashSet<MazeUnit>();
     
     [SerializeField]
-    public MazeUnit[,] Grid; 
+    public MazeUnit[,] Grid;
+
+    public void Awake()
+    {
+
+    }
 
 	public void RecieveUnitEvent(MazeUnitEvent unitEvent)
 	{
