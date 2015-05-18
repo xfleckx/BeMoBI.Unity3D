@@ -11,6 +11,18 @@ public class MazeDesignerMenuItems : ScriptableObject
         var mazeModel = ScriptableObject.CreateInstance<MazeModel>();
     }
 
+    [MenuItem("beMobile/MazeDesigner/Add new Maze as Prefab")]
+    static void CreateNewMazeAsPrefab()
+    {
+        var filePath = EditorUtility.SaveFilePanelInProject("Save the prefab", "aBeMoBIMaze", "prefab","Message");
+        var prefab = PrefabUtility.CreateEmptyPrefab(filePath);
+
+
+        GameObject mazeHost = new GameObject("beMoBIMaze");
+        PrefabUtility.ReplacePrefab(mazeHost, prefab, ReplacePrefabOptions.ConnectToPrefab);
+        var maze = mazeHost.AddComponent<beMobileMaze>(); 
+    }
+
     [InitializeOnLoad]
     public class InitializeNecessaryResources
     {
