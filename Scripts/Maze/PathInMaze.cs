@@ -7,19 +7,22 @@ using System.Collections.Generic;
 public class PathInMaze : ScriptableObject {
 
     [SerializeField]
-    public LinkedList<MazeUnit> Units;
+    public List<MazeUnit> Units;
       
     public void OnEnable()
     {
-        hideFlags = HideFlags.HideAndDontSave;
+       // hideFlags = HideFlags.HideInInspector |HideFlags.HideInHierarchy;
 
         Debug.Log(string.Format("Path {0} Enabled", name));
 
         if (Units == null) { 
-            Units = new LinkedList<MazeUnit>();
+            Units = new List<MazeUnit>();
             Debug.Log("Creating empty Unit List in Path");
         }
-    } 
+    }
 
-
+    public void OnDestroy()
+    {
+        Debug.Log(string.Format("{0} destroyed!", name));
+    }
 }

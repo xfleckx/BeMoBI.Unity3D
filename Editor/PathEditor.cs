@@ -4,12 +4,14 @@ using System.Collections;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 public enum PathEditorMode { NONE, PATH_CREATION }
 
 [CustomEditor(typeof(PathController))]
 public class PathEditor : AMazeEditor {
 
     PathController instance;
+    beMobileMaze mazePrefab;
 
     private LinkedList<MazeUnit> pathInSelection;
     private string NameOfCurrentPath = String.Empty;
@@ -27,9 +29,9 @@ public class PathEditor : AMazeEditor {
 
         if (instance == null)
             return;
-        if (instance != null)
-            maze = instance.GetComponent<beMobileMaze>();
-
+        if (instance != null){
+            maze = instance.GetComponent<beMobileMaze>(); 
+        }
         instance.EditorGizmoCallbacks += RenderTileHighlighting;
         instance.EditorGizmoCallbacks += RenderEditorGizmos; 
     }
@@ -47,9 +49,10 @@ public class PathEditor : AMazeEditor {
     {
         instance = target as PathController;
 
-        if (instance != null) 
+        if (instance != null) {  
             maze = instance.GetComponent<beMobileMaze>();
-            
+            mazePrefab = PrefabUtility.GetPrefabParent(maze) as beMobileMaze;
+        }
         if(maze == null) throw new MissingComponentException(string.Format("The Path Controller should be attached to a {0} instance", typeof(beMobileMaze).Name));
 
         base.OnInspectorGUI();
@@ -126,8 +129,12 @@ public class PathEditor : AMazeEditor {
 
             if (GUILayout.Button("Save Path"))
             {
-                if(!instance.Paths.Contains(activePath))
+                if (!instance.Paths.Contains(activePath)) {
+                    
                     instance.Paths.Add(activePath);
+                }
+
+                Save(activePath);
 
                 EditorUtility.SetDirty(instance);
             }
@@ -208,6 +215,18 @@ public class PathEditor : AMazeEditor {
         Handles.EndGUI();
     }
 
+    private void Save(PathInMaze activePath)
+    {
+        if (!EditorUtility.IsPersistent(activePath))
+        {
+            CreatePathAsset(activePath);
+        }
+        else
+        {
+            EditorUtility.SetDirty(activePath);
+        }
+    }
+
     private PathInMaze CreateNewPath()
     {
       var newPath = ScriptableObject.CreateInstance<PathInMaze>();
@@ -215,6 +234,24 @@ public class PathEditor : AMazeEditor {
       newPath.name = string.Format("p_{0}", pathNumber);
       instance.Paths.Add(newPath);
       return newPath;
+    }
+
+    private void CreatePathAsset(PathInMaze path)
+    {
+        var mazePrefab = PrefabUtility.GetPrefabParent(maze);
+
+        var prefabPath = AssetDatabase.GetAssetPath(mazePrefab);
+        var lastSeparator = prefabPath.LastIndexOf('.');
+        prefabPath = prefabPath.Substring(0, lastSeparator);
+
+        var fileName = Path.Combine(prefabPath, string.Format("{0}.{1}", path.name, "asset"));
+
+        AssetDatabase.CreateAsset(path, fileName);
+
+        foreach (var item in path.Units)
+        {
+            AssetDatabase.AddObjectToAsset(item, path);
+        }
     }
 
     private void DeletePath(PathInMaze path)
@@ -233,11 +270,17 @@ public class PathEditor : AMazeEditor {
 
         if (_ce.type == EventType.MouseDown || _ce.type == EventType.MouseDrag)
         {
-            var unit = maze.Grid[Mathf.FloorToInt(currentTilePosition.x), Mathf.FloorToInt(currentTilePosition.y)];
+            var prefabParent = PrefabUtility.GetPrefabParent(maze);
 
+            var prefabLocation = AssetDatabase.GetAssetPath(prefabParent);
+
+            var prefabLoad = AssetDatabase.LoadAssetAtPath(prefabLocation, typeof(beMobileMaze));
+
+            var unit = maze.Grid[Mathf.FloorToInt(currentTilePosition.x), Mathf.FloorToInt(currentTilePosition.y)];
+            
             if (_ce.button == 0)
             {
-                if (unit == null && !unit.Equals(activePath.Units.Last))
+                if (unit == null && !unit.Equals(activePath.Units.Last()))
                 {
                     Debug.Log("no element added");
 
@@ -249,7 +292,7 @@ public class PathEditor : AMazeEditor {
 
                 Debug.Log(string.Format("add {0} to path", unit.name));
 
-                activePath.Units.AddLast(unit);
+                activePath.Units.Add(unit);
             }
 
             if (_ce.button == 1 && activePath.Units.Any())
