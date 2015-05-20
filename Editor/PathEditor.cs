@@ -7,10 +7,10 @@ using System.Linq;
 using System.IO;
 public enum PathEditorMode { NONE, PATH_CREATION }
 
-[CustomEditor(typeof(PathController))]
+[CustomEditor(typeof(PathInMaze))]
 public class PathEditor : AMazeEditor {
 
-    PathController instance;
+    PathInMaze instance;
     beMobileMaze mazePrefab;
 
     private LinkedList<MazeUnit> pathInSelection;
@@ -25,7 +25,7 @@ public class PathEditor : AMazeEditor {
 
     public void OnEnable()
     {
-        instance = target as PathController;
+        instance = target as PathInMaze;
 
         if (instance == null)
             return;
@@ -47,7 +47,7 @@ public class PathEditor : AMazeEditor {
 
     public override void OnInspectorGUI()
     {
-        instance = target as PathController;
+        instance = target as PathInMaze;
 
         if (instance != null) {  
             maze = instance.GetComponent<beMobileMaze>();
@@ -69,16 +69,9 @@ public class PathEditor : AMazeEditor {
         Gizmos.DrawWireCube(MarkerPosition + new Vector3(0, maze.RoomHigthInMeter / 2, 0), new Vector3(maze.RoomDimension.x, maze.RoomHigthInMeter, maze.RoomDimension.z) * 1.1f);
     }
 
-    private string activePathId = string.Empty;
-
     public override void RenderSceneViewUI()
     {
         Handles.BeginGUI();
-
-
-        activePathId = activePath != null ? activePath.name : "No active path";
-
-        GUILayout.Label(activePathId, EditorStyles.whiteBoldLabel);      
 
         #region Path creation mode
 
@@ -94,109 +87,70 @@ public class PathEditor : AMazeEditor {
                 ActiveMode = PathEditorMode.PATH_CREATION;
             }
 
-            //if (currentPathName != string.Empty && PathIsValid(pathInSelection) && GUILayout.Button("Save Path", GUILayout.Width(75f)))
-            //{
-            //    var pathInMaze = ScriptableObject.CreateInstance<PathInMaze>();
-
-            //    pathInMaze.Identifier = currentPathName;
-
-            //    pathInMaze.Setup(pathInSelection);
-
-            //    if (PathToMazePrefab == string.Empty && PathToMazeCompanionFolder == string.Empty)
-            //    {
-            //        SavePrefabAndCreateCompanionFolder();
-            //    }
-
-            //    if (!AssetDatabase.IsValidFolder(PathToMazeCompanionFolder))
-            //    {
-            //        PathToMazeCompanionFolder = AssetHelper.GetOrCreateCompanionFolderForPrefab(PathToMazePrefab);
-            //    }
-
-            //    AssetDatabase.CreateAsset(pathInMaze, string.Format("{0}/{1}", PathToMazeCompanionFolder, currentPathName));
-
-            //    maze.Paths.Add(pathInMaze);
-
-            //    PrefabUtility.ReplacePrefab(maze.gameObject, referenceToPrefab, ReplacePrefabOptions.ConnectToPrefab);
-            //}
-
-            if (GUILayout.Button("New Path"))
-            {
-                activePath = CreateNewPath();
-            }
-
-            if(activePath != null)
-                activePath.name = GUILayout.TextField(activePath.name);
-
             if (GUILayout.Button("Save Path"))
             {
-                if (!instance.Paths.Contains(activePath)) {
-                    
-                    instance.Paths.Add(activePath);
-                }
+                //if (!instance.Paths.Contains(activePath))
+                //{
 
-                Save(activePath);
+                //    instance.Paths.Add(activePath);
+                //}
 
-                EditorUtility.SetDirty(instance);
+                Save(instance);
             }
 
             GUILayout.Space(4f);
 
-            if (GUILayout.Button("Delete Path"))
-            {
-                DeletePath(activePath);
-            }
 
-            if (GUILayout.Button("Clear paths"))
-            {
-                bool clearAllowed = EditorUtility.DisplayDialog("Delete all paths?", "Do you realy want to delete all paths?", "I agree", "Nooo...");
+            //if (GUILayout.Button("Clear paths"))
+            //{
+            //    bool clearAllowed = EditorUtility.DisplayDialog("Delete all paths?", "Do you realy want to delete all paths?", "I agree", "Nooo...");
 
-                if (!clearAllowed)
-                    return;
+            //    if (!clearAllowed)
+            //        return;
 
-                instance.Paths.ForEach((p) => DeletePath(p));
-                instance.Paths.Clear();
-                activePath = null;
-            }   
+            //    instance.Paths.Clear();
+            //    activePath = null;
+            //}   
 
-            if (instance.Paths.Any())
-            {
-                GUILayout.Space(4f);
+            //if (instance.Paths.Any())
+            //{
+            //    GUILayout.Space(4f);
 
-                GUILayout.Label("Existing Paths");
+            //    GUILayout.Label("Existing Paths");
 
-                GUILayout.Space(2f);
+            //    GUILayout.Space(2f);
 
-                foreach (var path in instance.Paths)
-                {
-                    GUILayout.BeginHorizontal(GUILayout.Width(100f));
+            //    foreach (var path in instance.Paths)
+            //    {
+            //        GUILayout.BeginHorizontal(GUILayout.Width(100f));
 
-                    var name = path.name != null ? path.name : "no name";
+            //        var name = path.name != null ? path.name : "no name";
 
-                    if (GUILayout.Button(name))
-                    {
-                        activePath = path;
-                    }
+            //        if (GUILayout.Button(name))
+            //        {
+            //            activePath = path;
+            //        }
 
-                    if (GUILayout.Button("X", GUILayout.Width(20f)))
-                    {
-                        pathShouldBeRemoved = path;
-                    }
+            //        if (GUILayout.Button("X", GUILayout.Width(20f)))
+            //        {
+            //            pathShouldBeRemoved = path;
+            //        }
 
-                    GUILayout.EndHorizontal();
-                }
+            //        GUILayout.EndHorizontal();
+            //    }
 
-                if (pathShouldBeRemoved != null)
-                {
-                    DeletePath(pathShouldBeRemoved);
-                    pathShouldBeRemoved = null;
-                }
-            }
+            //    if (pathShouldBeRemoved != null)
+            //    {
+            //        //DeletePath(pathShouldBeRemoved);
+            //        pathShouldBeRemoved = null;
+            //    }
+            //}
 
 
-            if (GUILayout.Button("Deploy Landmarks"))
-            {
+            //if (GUILayout.Button("Deploy Landmarks"))
+            //{
 
-            }
+            //}
 
         }
         else
@@ -216,51 +170,8 @@ public class PathEditor : AMazeEditor {
     }
 
     private void Save(PathInMaze activePath)
-    {
-        if (!EditorUtility.IsPersistent(activePath))
-        {
-            CreatePathAsset(activePath);
-        }
-        else
-        {
-            EditorUtility.SetDirty(activePath);
-        }
-    }
-
-    private PathInMaze CreateNewPath()
-    {
-      var newPath = ScriptableObject.CreateInstance<PathInMaze>();
-      int pathNumber = instance.Paths.Count;
-      newPath.name = string.Format("p_{0}", pathNumber);
-      instance.Paths.Add(newPath);
-      return newPath;
-    }
-
-    private void CreatePathAsset(PathInMaze path)
-    {
-        var mazePrefab = PrefabUtility.GetPrefabParent(maze);
-
-        var prefabPath = AssetDatabase.GetAssetPath(mazePrefab);
-        var lastSeparator = prefabPath.LastIndexOf('.');
-        prefabPath = prefabPath.Substring(0, lastSeparator);
-
-        var fileName = Path.Combine(prefabPath, string.Format("{0}.{1}", path.name, "asset"));
-
-        AssetDatabase.CreateAsset(path, fileName);
-
-        foreach (var item in path.Units)
-        {
-            AssetDatabase.AddObjectToAsset(item, path);
-        }
-    }
-
-    private void DeletePath(PathInMaze path)
-    {
-        if (activePath != null && activePath.Equals(path))
-            activePath = null; 
-
-        instance.Paths.Remove(path);
-        DestroyImmediate(path);
+    { 
+        EditorUtility.SetDirty(activePath);
     }
 
     #region path creation logic
@@ -270,17 +181,11 @@ public class PathEditor : AMazeEditor {
 
         if (_ce.type == EventType.MouseDown || _ce.type == EventType.MouseDrag)
         {
-            var prefabParent = PrefabUtility.GetPrefabParent(maze);
-
-            var prefabLocation = AssetDatabase.GetAssetPath(prefabParent);
-
-            var prefabLoad = AssetDatabase.LoadAssetAtPath(prefabLocation, typeof(beMobileMaze));
-
             var unit = maze.Grid[Mathf.FloorToInt(currentTilePosition.x), Mathf.FloorToInt(currentTilePosition.y)];
             
             if (_ce.button == 0)
             {
-                if (unit == null && !unit.Equals(activePath.Units.Last()))
+                if (unit == null && !unit.Equals(instance.Units.Last()))
                 {
                     Debug.Log("no element added");
 
@@ -292,12 +197,17 @@ public class PathEditor : AMazeEditor {
 
                 Debug.Log(string.Format("add {0} to path", unit.name));
 
-                activePath.Units.Add(unit);
-            }
+                instance.Units.Add(unit);
 
-            if (_ce.button == 1 && activePath.Units.Any())
+                instance.GridIDs.Add(unit.GridID);
+
+            }
+            if (_ce.button == 1 && instance.Units.Any())
             {
-                activePath.Units.Remove(unit);
+                instance.Units.Remove(unit);
+
+                var lastIndex = activePath.GridIDs.Count - 1;
+                instance.GridIDs.RemoveAt(lastIndex);
             } 
 
             GUIUtility.hotControl = controlId;
@@ -346,12 +256,12 @@ public class PathEditor : AMazeEditor {
 
     protected override void RenderEditorGizmos()
     {
-        if (activePath == null)
-            MarkerColor = Color.gray;
-        
-        if (activePath != null && activePath.Units.Count > 0)
+        if (!instance.enabled)
+            return; 
+
+        if (instance.Units.Count > 0)
         {
-            var iterator = activePath.Units.GetEnumerator();
+            var iterator = instance.Units.GetEnumerator();
             MazeUnit last = null;
 
             while (iterator.MoveNext())
