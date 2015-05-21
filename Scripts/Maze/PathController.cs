@@ -11,14 +11,39 @@ public class PathController : MonoBehaviour {
     [SerializeField]
     public List<PathInMaze> Paths = new List<PathInMaze>();
 
-    public PathInMaze RequirePath(string targetPath)
+    void Awake()
     {
-        return Paths.SingleOrDefault((p) => p.name.Equals(targetPath));
     }
-	
+
+    public void ForcePathLookup()
+    {
+        Paths.Clear();
+
+        var existingPaths = GetComponents<PathInMaze>();
+
+        Paths.AddRange(existingPaths);
+    }
+
+    public PathInMaze EnablePathContaining(int id)
+    {
+        foreach (var item in Paths) 
+        {
+            if (!(item.ID == id))
+                item.enabled = false;
+            else { 
+                item.enabled = true;
+                return item;
+            }
+        }
+
+        Debug.Log(string.Format("Requested path {0} not found", id));
+
+        return null;
+    }
+
 	// Use this for initialization
 	void Start () {
-	
+        ForcePathLookup();
 	}
 	
 	// Update is called once per frame

@@ -2,14 +2,15 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-
-[Serializable]
+[RequireComponent(typeof(PathController))]
 public class PathInMaze : MonoBehaviour {
     
     public List<MazeUnit> Units;
 
     [SerializeField]
     public List<Vector2> GridIDs;
+
+    public int ID = -1;
 
     void Awake()
     {
@@ -19,21 +20,7 @@ public class PathInMaze : MonoBehaviour {
             Debug.Log("Creating empty Unit List in Path");
         }
     }
-
-    public void OnEnable()
-    {
-       // hideFlags = HideFlags.HideInInspector |HideFlags.HideInHierarchy;
-
-        Debug.Log(string.Format("Path {0} Enabled", name));
-
-
-        if (GridIDs == null)
-        {
-            GridIDs = new List<Vector2>();
-        }
-    }
-
-
+    
 #if UNITY_EDITOR
     public Action EditorGizmoCallbacks;
 #endif

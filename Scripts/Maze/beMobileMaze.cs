@@ -38,11 +38,6 @@ public class beMobileMaze : MonoBehaviour
     [SerializeField]
     public MazeUnit[,] Grid;
 
-    public void Awake()
-    {
-
-    }
-
 	public void RecieveUnitEvent(MazeUnitEvent unitEvent)
 	{
 		if (MazeUnitEventOccured != null)
