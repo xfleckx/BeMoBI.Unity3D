@@ -367,7 +367,7 @@ MeshRenderer:
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_Materials:
-  - {fileID: 2100000, guid: 61ac46497ba62c940ab04e78e64fcaf4, type: 2}
+  - {fileID: 0}
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
   m_UseLightProbes: 0
@@ -696,7 +696,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   GridID: {x: 0, y: 0}
-  FadingSpeed: .100000001
+  FadingStep: .100000001
 --- !u!136 &13660522
 CapsuleCollider:
   m_ObjectHideFlags: 1
