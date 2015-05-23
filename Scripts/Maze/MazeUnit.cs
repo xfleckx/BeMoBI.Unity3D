@@ -12,6 +12,7 @@ public class MazeUnit : MonoBehaviour {
 	public const string WEST = "West";
 	public const string EAST = "East";
 
+    [SerializeField]
 	public Vector2 GridID;
 	// Use this for initialization
 	void Start () {
@@ -29,12 +30,12 @@ public class MazeUnit : MonoBehaviour {
 	}
 
 
-	public void Open(string directionName)
+	public virtual void Open(string directionName)
 	{
 		transform.FindChild(directionName).gameObject.SetActive(false);
 	}
 
-	public void Close(string directionName)
+	public virtual void Close(string directionName)
 	{
 		transform.FindChild(directionName).gameObject.SetActive(true);
 	}
