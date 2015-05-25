@@ -65,22 +65,13 @@ public class PathEditor : AMazeEditor {
 
         EditorGUILayout.BeginVertical();
 
-        showElements = EditorGUILayout.BeginToggleGroup("Show Elements", showElements);
+        showElements = EditorGUILayout.Foldout(showElements, "Show Elements");
+        
+        if(showElements)
+            RenderElements();
 
-        RenderElements();
 
-        EditorGUILayout.EndToggleGroup();
-
-        //if (GUILayout.Button("Update Path Elements"))
-        //{
-        //    foreach (var unit in instance.Units)
-        //    {
-        //        if(!instance.PathElements.ContainsKey(unit.GridID))
-        //            instance.PathElements.Add(unit.GridID, new PathElement(unit));
-        //    }
-        //}
-
-        PathCreationEnabled = GUILayout.Toggle(PathCreationEnabled, "Path creation", EditorStyles.whiteLargeLabel);
+        PathCreationEnabled = GUILayout.Toggle(PathCreationEnabled, "Path creation");
 
         EditorGUILayout.EndVertical();
 
@@ -97,6 +88,7 @@ public class PathEditor : AMazeEditor {
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField(
                 string.Format(pathElementPattern,e.Key.x, e.Key.y, Enum.GetName(typeof(UnitType), e.Value.Type)));
+            EditorGUILayout.ObjectField(e.Value.Unit, typeof(MazeUnit), false);
             EditorGUILayout.EndHorizontal();
         }
 
