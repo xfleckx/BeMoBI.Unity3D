@@ -316,13 +316,13 @@ public class MazeEditor : AMazeEditor
 
         unit.transform.position = mazeHost.transform.position + tilePositionInLocalSpace;
 
-        // we scale the unit to the tile size defined by the TileMap.TileWidth and TileMap.TileHeight fields 
+        // we scale the u to the tile size defined by the TileMap.TileWidth and TileMap.TileHeight fields 
         unit.transform.localScale = new Vector3(mazeHost.RoomDimension.x, mazeHost.RoomDimension.y, mazeHost.RoomDimension.z);
 
         // set the cubes parent to the game object for organizational purposes
         unit.transform.parent = mazeHost.transform;
 
-        // give the unit a assetName that represents it's location within the tile mazeHost
+        // give the u a assetName that represents it's location within the tile mazeHost
         unit.name = string.Format(maze.UnitNamePattern, tilePos.x, tilePos.y);
 
         MazeUnit mazeUnit = unit.GetComponent<MazeUnit>();
@@ -406,24 +406,24 @@ public class MazeEditor : AMazeEditor
 
             if (current.GridID.x - 1 == last.GridID.x)
             {
-                last.Open(MazeUnit.EAST);
-                current.Open(MazeUnit.WEST);
+                last.Open(OpenDirections.East);
+                current.Open(OpenDirections.West);
             }
             else if (current.GridID.x + 1 == last.GridID.x)
             {
-                last.Open(MazeUnit.WEST);
-                current.Open(MazeUnit.EAST);
+                last.Open(OpenDirections.West);
+                current.Open(OpenDirections.East);
             }
 
             if (current.GridID.y - 1 == last.GridID.y)
             {
-                last.Open(MazeUnit.NORTH);
-                current.Open(MazeUnit.SOUTH);
+                last.Open(OpenDirections.North);
+                current.Open(OpenDirections.South);
             }
             else if (current.GridID.y + 1 == last.GridID.y)
             {
-                last.Open(MazeUnit.SOUTH);
-                current.Open(MazeUnit.NORTH);
+                last.Open(OpenDirections.South);
+                current.Open(OpenDirections.North);
             }
 
 
@@ -444,10 +444,10 @@ public class MazeEditor : AMazeEditor
         if (currentSelection.Count == 1)
         {
             var unit = currentSelection.First().GetComponent<MazeUnit>();
-            unit.Close(MazeUnit.NORTH);
-            unit.Close(MazeUnit.SOUTH);
-            unit.Close(MazeUnit.WEST);
-            unit.Close(MazeUnit.EAST);
+            unit.Close(OpenDirections.North);
+            unit.Close(OpenDirections.South);
+            unit.Close(OpenDirections.West);
+            unit.Close(OpenDirections.East);
         }
 
         var iterator = currentSelection.GetEnumerator();
@@ -466,24 +466,24 @@ public class MazeEditor : AMazeEditor
 
             if (current.GridID.x - 1 == last.GridID.x)
             {
-                last.Close(MazeUnit.EAST);
-                current.Close(MazeUnit.WEST);
+                last.Close(OpenDirections.East);
+                current.Close(OpenDirections.West);
             }
             else if (current.GridID.x + 1 == last.GridID.x)
             {
-                last.Close(MazeUnit.WEST);
-                current.Close(MazeUnit.EAST);
+                last.Close(OpenDirections.West);
+                current.Close(OpenDirections.East);
             }
 
             if (current.GridID.y - 1 == last.GridID.y)
             {
-                last.Close(MazeUnit.NORTH);
-                current.Close(MazeUnit.SOUTH);
+                last.Close(OpenDirections.North);
+                current.Close(OpenDirections.South);
             }
             else if (current.GridID.y + 1 == last.GridID.y)
             {
-                last.Close(MazeUnit.SOUTH);
-                current.Close(MazeUnit.NORTH);
+                last.Close(OpenDirections.South);
+                current.Close(OpenDirections.North);
             }
 
             last = current;

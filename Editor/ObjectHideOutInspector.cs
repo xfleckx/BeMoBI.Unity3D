@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using System.Collections;
+using System;
 
 [CustomEditor(typeof(ObjectHideOut))]
 public class ObjectHideOutInspector : Editor {
@@ -15,44 +16,56 @@ public class ObjectHideOutInspector : Editor {
 
         EditorGUILayout.BeginHorizontal();
 
-        EditorGUILayout.BeginVertical();
+        var options = Enum.GetValues(typeof(OpenDirections));
 
-        if (GUILayout.Button(MazeUnit.NORTH))
+        foreach (var item in options)
         {
-            Toogle(instance, MazeUnit.NORTH);
+            var buttonText = Enum.GetName(typeof(OpenDirections),item);
+
+            if (GUILayout.Button(buttonText))
+            {
+                Toogle(instance, (OpenDirections) item);
+            }
         }
 
-        if (GUILayout.Button(MazeUnit.SOUTH))
-        {
-            Toogle(instance, MazeUnit.SOUTH);
-        }
+        //EditorGUILayout.BeginVertical();
 
-        EditorGUILayout.EndVertical();
+        //if (GUILayout.Button(MazeUnit.NORTH))
+        //{
+        //    Toogle(instance, MazeUnit.NORTH);
+        //}
 
-        EditorGUILayout.BeginVertical();
+        //if (GUILayout.Button(MazeUnit.SOUTH))
+        //{
+        //    Toogle(instance, MazeUnit.SOUTH);
+        //}
 
-        if (GUILayout.Button(MazeUnit.WEST))
-        {
-            Toogle(instance, MazeUnit.WEST);
-        }
+        //EditorGUILayout.EndVertical();
 
-        if (GUILayout.Button(MazeUnit.EAST))
-        {
-            Toogle(instance, MazeUnit.EAST);
-        }
-        EditorGUILayout.EndVertical();
+        //EditorGUILayout.BeginVertical();
+
+        //if (GUILayout.Button(MazeUnit.WEST))
+        //{
+        //    Toogle(instance, MazeUnit.WEST);
+        //}
+
+        //if (GUILayout.Button(MazeUnit.EAST))
+        //{
+        //    Toogle(instance, MazeUnit.EAST);
+        //}
+        //EditorGUILayout.EndVertical();
 
 
         EditorGUILayout.EndHorizontal();
 
     }
 
-    private void Toogle(ObjectHideOut hideOut, string directionName)
+    private void Toogle(ObjectHideOut hideOut, OpenDirections direction)
     {
-        if (hideOut.IsOpen(directionName))
-            hideOut.Close(directionName);
+        if (hideOut.IsOpen(Enum.GetName(typeof(OpenDirections), direction)))
+            hideOut.Close(direction);
         else
-            hideOut.Open(directionName);
+            hideOut.Open(direction);
 
     }
 }

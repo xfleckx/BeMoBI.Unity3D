@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System;
 
 public class ObjectHideOut : MazeUnit {
 
@@ -9,16 +10,20 @@ public class ObjectHideOut : MazeUnit {
 
     private Material FadingTarget;
 
-    public override void Open(string directionName)
+    public override void Open(OpenDirections direction)
     {
+       var directionName = Enum.GetName(typeof(OpenDirections), direction);
+
        FadingTarget = GetTargetMaterial(directionName);
        targetState = 0;
        FadingStep *= -1;
        StartCoroutine(Fade());
     }
 
-    public override void Close(string directionName)
+    public override void Close(OpenDirections direction)
     {
+        var directionName = Enum.GetName(typeof(OpenDirections), direction);
+
         FadingTarget = GetTargetMaterial(directionName);
         targetState = 1;
         FadingStep *= -1;

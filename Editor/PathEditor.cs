@@ -254,18 +254,33 @@ public class PathEditor : AMazeEditor {
             return;
 
         var newElement = new PathElement(newUnit);
-
-        newElement.Type = GetElementType(maze, newElement.Unit, instance.PathElements);
+        
+        newElement = GetElementType(newElement);
 
         instance.PathElements.Add(newUnit.GridID, newElement);
 
     }
 
-    private UnitType GetElementType(beMobileMaze maze, MazeUnit unitOfInterest, Dictionary<Vector2, PathElement> dictionary)
+    private PathElement GetElementType(PathElement element)
     {
-        var result = UnitType.I;
+        var u = element.Unit;
+
+        if (u.WaysOpen == (OpenDirections.East | OpenDirections.West) ||
+            u.WaysOpen == (OpenDirections.North | OpenDirections.South))
+        {
+           element.Type = UnitType.I;
+        }
         
-        return result;
+        if(u.WaysOpen == OpenDirections.All)
+            element.Type = UnitType.X;
+
+        if(u.WaysOpen == (OpenDirections.West | OpenDirections.North | OpenDirections.East) ||
+           u.WaysOpen ==  (OpenDirections.West | OpenDirections.South | OpenDirections.East))
+        {
+            element.Type = UnitType.T;
+        }
+
+        return element;
     }
 
     private void Remove(MazeUnit unit)
@@ -299,23 +314,12 @@ public class PathEditor : AMazeEditor {
 
     }
 
-    #endregion
-
-    #region path editing logic
-
-    private void PathEditing()
-    {
-
-    }
-
-    #endregion 
-
-
+    #endregion  
 
     protected override void RenderEditorGizmos()
     {
         if (!instance.enabled)
-            return; 
+            return;
 
         if (instance.PathElements.Count > 0)
         {
@@ -344,16 +348,6 @@ public class PathEditor : AMazeEditor {
                 last = iterator.Current.Unit;
             }
         }
-    }
-
-    private bool PathIsValid(LinkedList<MazeUnit> path)
-    {
-        if (path == null)
-            return false;
-
-        bool hasEnoughElements = path.Count > 1;
-
-        return hasEnoughElements;
     }
 
 }

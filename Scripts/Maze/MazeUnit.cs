@@ -4,13 +4,20 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
+[Flags]
+public enum OpenDirections { 
+    None = 0x00, 
+    North = 0x01, 
+    South = 0x02, 
+    East = 0x04,
+    West = 0x08,
+    All = North | West | South | East
+}
+
 [Serializable]
 public class MazeUnit : MonoBehaviour {
-
-	public const string NORTH = "North";
-	public const string SOUTH = "South";
-	public const string WEST = "West";
-	public const string EAST = "East";
+     
+    public OpenDirections WaysOpen = OpenDirections.None;
 
     [SerializeField]
 	public Vector2 GridID;
@@ -20,15 +27,21 @@ public class MazeUnit : MonoBehaviour {
 		GridID = tilePos; 
 	}
 
-
-	public virtual void Open(string directionName)
+	public virtual void Open(OpenDirections direction)
 	{
-		transform.FindChild(directionName).gameObject.SetActive(false);
+        var directionName = Enum.GetName(typeof(OpenDirections), direction);
+		
+        transform.FindChild(directionName).gameObject.SetActive(false);
+
+        WaysOpen |= direction;
 	}
 
-	public virtual void Close(string directionName)
+	public virtual void Close(OpenDirections direction)
 	{
-		transform.FindChild(directionName).gameObject.SetActive(true);
+        var directionName = Enum.GetName(typeof(OpenDirections), direction);
+        transform.FindChild(directionName).gameObject.SetActive(true);
+
+        WaysOpen &= ~direction;
 	}
 
 
