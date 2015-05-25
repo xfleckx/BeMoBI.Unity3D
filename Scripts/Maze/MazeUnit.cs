@@ -14,19 +14,10 @@ public class MazeUnit : MonoBehaviour {
 
     [SerializeField]
 	public Vector2 GridID;
-	// Use this for initialization
-	void Start () {
-	
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
 
 	public void Initialize(Vector2 tilePos)
 	{
-		GridID = tilePos;
+		GridID = tilePos; 
 	}
 
 
@@ -49,14 +40,7 @@ public class MazeUnit : MonoBehaviour {
 
 		SendMessageUpwards("RecieveUnitEvent", evt, SendMessageOptions.DontRequireReceiver);
 	}
-
-
-	void OnTriggerStay(Collider c)
-	{
-
-	}
-
-
+    
 	void OnTriggerExit(Collider c)
 	{
 		Debug.Log(string.Format("Leaving {0} {1}", GridID.x, GridID.y));
