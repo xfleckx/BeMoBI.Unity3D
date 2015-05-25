@@ -16,12 +16,14 @@ public class PathEditor : AMazeEditor {
     private LinkedList<MazeUnit> pathInSelection;
     private string NameOfCurrentPath = String.Empty;
 
+    private string pathElementPattern = "{0} {1} = {2}";
+
     private bool PathCreationEnabled; 
     public PathEditorMode ActiveMode { get; set; }
     PathInMaze pathShouldBeRemoved;
     string currentPathName = string.Empty;
-
-    private PathInMaze activePath;
+      
+    private bool showElements;
 
     public void OnEnable()
     {
@@ -32,6 +34,10 @@ public class PathEditor : AMazeEditor {
         if (instance != null){
             maze = instance.GetComponent<beMobileMaze>(); 
         }
+
+        if(instance.PathElements == null)
+            instance.PathElements = new Dictionary<Vector2, PathElement>();
+
         instance.EditorGizmoCallbacks += RenderTileHighlighting;
         instance.EditorGizmoCallbacks += RenderEditorGizmos; 
     }
@@ -57,10 +63,44 @@ public class PathEditor : AMazeEditor {
 
         base.OnInspectorGUI();
 
+        EditorGUILayout.BeginVertical();
+
+        showElements = EditorGUILayout.BeginToggleGroup("Show Elements", showElements);
+
+        RenderElements();
+
+        EditorGUILayout.EndToggleGroup();
+
+        //if (GUILayout.Button("Update Path Elements"))
+        //{
+        //    foreach (var unit in instance.Units)
+        //    {
+        //        if(!instance.PathElements.ContainsKey(unit.GridID))
+        //            instance.PathElements.Add(unit.GridID, new PathElement(unit));
+        //    }
+        //}
+
         PathCreationEnabled = GUILayout.Toggle(PathCreationEnabled, "Path creation", EditorStyles.whiteLargeLabel);
+
+        EditorGUILayout.EndVertical();
 
         if (EditorModeProcessEvent != null)
             EditorModeProcessEvent(Event.current);
+    }
+
+    private void RenderElements()
+    {
+        EditorGUILayout.BeginVertical();
+        
+        foreach (var e in instance.PathElements)
+        {
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField(
+                string.Format(pathElementPattern,e.Key.x, e.Key.y, Enum.GetName(typeof(UnitType), e.Value.Type)));
+            EditorGUILayout.EndHorizontal();
+        }
+
+        EditorGUILayout.EndVertical();
     }
 
     protected new void RenderTileHighlighting()
@@ -76,7 +116,7 @@ public class PathEditor : AMazeEditor {
         #region Path creation mode
 
         EditorGUILayout.BeginVertical(GUILayout.Width(100f));
-
+        
         if (PathCreationEnabled)
         { 
             if (ActiveMode != PathEditorMode.PATH_CREATION)
@@ -182,39 +222,44 @@ public class PathEditor : AMazeEditor {
         if (_ce.type == EventType.MouseDown || _ce.type == EventType.MouseDrag)
         {
             var unit = maze.Grid[Mathf.FloorToInt(currentTilePosition.x), Mathf.FloorToInt(currentTilePosition.y)];
-            
+
+            if (unit == null)
+            {
+                Debug.Log("no element added");
+
+                GUIUtility.hotControl = controlId;
+                _ce.Use();
+
+                return;
+            }
+
             if (_ce.button == 0)
             {
-                if (unit == null && !unit.Equals(instance.Units.Last()))
-                {
-                    Debug.Log("no element added");
-
-                    GUIUtility.hotControl = controlId;
-                    _ce.Use();
-
-                    return;
-                }
-
-                Debug.Log(string.Format("add {0} to path", unit.name));
-
-                instance.Units.Add(unit);
-
-                instance.GridIDs.Add(unit.GridID);
-
+                Add(unit);
             }
-            if (_ce.button == 1 && instance.Units.Any())
+            if (_ce.button == 1 && instance.PathElements.Any())
             {
-                instance.Units.Remove(unit);
-
-                var lastIndex = activePath.GridIDs.Count - 1;
-                instance.GridIDs.RemoveAt(lastIndex);
+                Remove(unit);
             } 
 
             GUIUtility.hotControl = controlId;
             _ce.Use();
         }
     }
-     
+
+    private void Add(MazeUnit newUnit)
+    {
+        Debug.Log(string.Format("add {0} to path", newUnit.name));
+
+        if(!instance.PathElements.ContainsKey(newUnit.GridID))
+            instance.PathElements.Add(newUnit.GridID, new PathElement(newUnit));
+    }
+
+    private void Remove(MazeUnit unit)
+    {
+        instance.PathElements.Remove(unit.GridID);
+    }
+
     public LinkedList<MazeUnit> CreatePathFromGridIDs(LinkedList<Vector2> gridIDs)
     {
         var enumerator = gridIDs.GetEnumerator();
@@ -259,24 +304,24 @@ public class PathEditor : AMazeEditor {
         if (!instance.enabled)
             return; 
 
-        if (instance.Units.Count > 0)
+        if (instance.PathElements.Count > 0)
         {
-            var iterator = instance.Units.GetEnumerator();
+            var iterator = instance.PathElements.Values.GetEnumerator();
             MazeUnit last = null;
 
             while (iterator.MoveNext())
             {
                 if (last == null)
                 {
-                    last = iterator.Current;
+                    last = iterator.Current.Unit;
                     continue;
                 }
 
                 var hoveringDistance = new Vector3(0f, maze.RoomHigthInMeter, 0f);
 
-                Gizmos.DrawLine(last.transform.position + hoveringDistance, iterator.Current.transform.position + hoveringDistance);
+                Gizmos.DrawLine(last.transform.position + hoveringDistance, iterator.Current.Unit.transform.position + hoveringDistance);
 
-                last = iterator.Current;
+                last = iterator.Current.Unit;
             }
         }
     }
