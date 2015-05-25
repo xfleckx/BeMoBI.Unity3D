@@ -65,6 +65,13 @@ public class PathEditor : AMazeEditor {
 
         EditorGUILayout.BeginVertical();
 
+        if (GUILayout.Button("Reverse Path"))
+        {
+            IEnumerable<KeyValuePair<Vector2, PathElement>> temp = instance.PathElements.Reverse().ToList();
+            instance.PathElements = temp.ToDictionary((kvp) => kvp.Key, (kvp) => kvp.Value);
+
+        }
+
         showElements = EditorGUILayout.Foldout(showElements, "Show Elements");
         
         if(showElements)
@@ -243,8 +250,22 @@ public class PathEditor : AMazeEditor {
     {
         Debug.Log(string.Format("add {0} to path", newUnit.name));
 
-        if(!instance.PathElements.ContainsKey(newUnit.GridID))
-            instance.PathElements.Add(newUnit.GridID, new PathElement(newUnit));
+        if (instance.PathElements.ContainsKey(newUnit.GridID))
+            return;
+
+        var newElement = new PathElement(newUnit);
+
+        newElement.Type = GetElementType(maze, newElement.Unit, instance.PathElements);
+
+        instance.PathElements.Add(newUnit.GridID, newElement);
+
+    }
+
+    private UnitType GetElementType(beMobileMaze maze, MazeUnit unitOfInterest, Dictionary<Vector2, PathElement> dictionary)
+    {
+        var result = UnitType.I;
+        
+        return result;
     }
 
     private void Remove(MazeUnit unit)
@@ -298,6 +319,15 @@ public class PathEditor : AMazeEditor {
 
         if (instance.PathElements.Count > 0)
         {
+            var hoveringDistance = new Vector3(0f, maze.RoomHigthInMeter, 0f);
+
+            var start = instance.PathElements.First().Value.Unit.transform;
+            Handles.color = Color.blue;
+            Handles.CubeCap(this.GetInstanceID(), start.position + hoveringDistance, start.rotation, 0.3f);
+
+            var end = instance.PathElements.Last().Value.Unit.transform;
+            Handles.ConeCap(this.GetInstanceID(), end.position + hoveringDistance, start.rotation, 0.3f);
+
             var iterator = instance.PathElements.Values.GetEnumerator();
             MazeUnit last = null;
 
@@ -308,8 +338,6 @@ public class PathEditor : AMazeEditor {
                     last = iterator.Current.Unit;
                     continue;
                 }
-
-                var hoveringDistance = new Vector3(0f, maze.RoomHigthInMeter, 0f);
 
                 Gizmos.DrawLine(last.transform.position + hoveringDistance, iterator.Current.Unit.transform.position + hoveringDistance);
 
