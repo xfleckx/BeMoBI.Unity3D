@@ -16,7 +16,7 @@ public class PathEditor : AMazeEditor {
     private LinkedList<MazeUnit> pathInSelection;
     private string NameOfCurrentPath = String.Empty;
 
-    private string pathElementPattern = "{0} {1} = {2}";
+    private string pathElementPattern = "{0} {1} = {2} turn {3}";
 
     private bool PathCreationEnabled; 
     public PathEditorMode ActiveMode { get; set; }
@@ -89,12 +89,18 @@ public class PathEditor : AMazeEditor {
     private void RenderElements()
     {
         EditorGUILayout.BeginVertical();
-        
+
+        if (GUILayout.Button("Save Path"))
+        {
+            Save(instance);
+        }
+
         foreach (var e in instance.PathElements)
         {
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField(
-                string.Format(pathElementPattern,e.Key.x, e.Key.y, Enum.GetName(typeof(UnitType), e.Value.Type)));
+                string.Format(pathElementPattern, e.Key.x, e.Key.y, Enum.GetName(typeof(UnitType), e.Value.Type), Enum.GetName(typeof(TurnType), e.Value.Turn)), GUILayout.Width(150f));
+            
             EditorGUILayout.ObjectField(e.Value.Unit, typeof(MazeUnit), false);
             EditorGUILayout.EndHorizontal();
         }
@@ -124,17 +130,6 @@ public class PathEditor : AMazeEditor {
 
                 EditorModeProcessEvent += PathCreationMode;
                 ActiveMode = PathEditorMode.PATH_CREATION;
-            }
-
-            if (GUILayout.Button("Save Path"))
-            {
-                //if (!instance.Paths.Contains(activePath))
-                //{
-
-                //    instance.Paths.Add(activePath);
-                //}
-
-                Save(instance);
             }
 
             GUILayout.Space(4f);
@@ -235,10 +230,14 @@ public class PathEditor : AMazeEditor {
             if (_ce.button == 0)
             {
                 Add(unit);
+
+                EditorUtility.SetDirty(instance);
             }
             if (_ce.button == 1 && instance.PathElements.Any())
             {
                 Remove(unit);
+
+                EditorUtility.SetDirty(instance);
             } 
 
             GUIUtility.hotControl = controlId;
@@ -261,12 +260,16 @@ public class PathEditor : AMazeEditor {
 
     }
 
-    private PathElement GetElementType(PathElement element)
+    public static PathElement GetElementType(PathElement element)
     {
         var u = element.Unit;
 
         if (u.WaysOpen == (OpenDirections.East | OpenDirections.West) ||
-            u.WaysOpen == (OpenDirections.North | OpenDirections.South))
+            u.WaysOpen == (OpenDirections.North | OpenDirections.South) || 
+            u.WaysOpen == OpenDirections.East ||
+            u.WaysOpen == OpenDirections.West ||
+            u.WaysOpen == OpenDirections.North ||
+            u.WaysOpen == OpenDirections.South )
         {
            element.Type = UnitType.I;
         }
@@ -275,10 +278,27 @@ public class PathEditor : AMazeEditor {
             element.Type = UnitType.X;
 
         if(u.WaysOpen == (OpenDirections.West | OpenDirections.North | OpenDirections.East) ||
-           u.WaysOpen ==  (OpenDirections.West | OpenDirections.South | OpenDirections.East))
+           u.WaysOpen ==  (OpenDirections.West | OpenDirections.South | OpenDirections.East) ||
+           u.WaysOpen == (OpenDirections.West | OpenDirections.South | OpenDirections.North) ||
+            u.WaysOpen ==  (OpenDirections.East | OpenDirections.South | OpenDirections.North) )
         {
             element.Type = UnitType.T;
         }
+
+        if(u.WaysOpen == (OpenDirections.West | OpenDirections.North ) ||
+           u.WaysOpen ==  (OpenDirections.West | OpenDirections.South ) ||
+           u.WaysOpen == (OpenDirections.East | OpenDirections.South ) ||
+            u.WaysOpen ==  (OpenDirections.East | OpenDirections.North) )
+        {
+            element.Type = UnitType.L;
+        }
+
+        return element;
+    }
+
+    public static PathElement GetTurnType(PathElement element)
+    {
+
 
         return element;
     }
@@ -329,8 +349,6 @@ public class PathEditor : AMazeEditor {
             Handles.color = Color.blue;
             Handles.CubeCap(this.GetInstanceID(), start.position + hoveringDistance, start.rotation, 0.3f);
 
-            var end = instance.PathElements.Last().Value.Unit.transform;
-            Handles.ConeCap(this.GetInstanceID(), end.position + hoveringDistance, start.rotation, 0.3f);
 
             var iterator = instance.PathElements.Values.GetEnumerator();
             MazeUnit last = null;
@@ -347,6 +365,10 @@ public class PathEditor : AMazeEditor {
 
                 last = iterator.Current.Unit;
             }
+
+
+            var end = instance.PathElements.Last().Value.Unit.transform;
+            Handles.ConeCap(this.GetInstanceID(), end.position + hoveringDistance, start.rotation, 0.3f);
         }
     }
 
