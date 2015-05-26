@@ -38,6 +38,8 @@ public class PathEditor : AMazeEditor {
         if(instance.PathElements == null)
             instance.PathElements = new Dictionary<Vector2, PathElement>();
 
+        instance.EnableHideOut();
+
         instance.EditorGizmoCallbacks += RenderTileHighlighting;
         instance.EditorGizmoCallbacks += RenderEditorGizmos; 
     }
@@ -46,6 +48,8 @@ public class PathEditor : AMazeEditor {
     {
         if (instance == null)
             return;
+
+        instance.DisableHideOut();
 
         instance.EditorGizmoCallbacks -= RenderTileHighlighting;
         instance.EditorGizmoCallbacks -= RenderEditorGizmos; 
@@ -85,16 +89,25 @@ public class PathEditor : AMazeEditor {
 
         }
 
-        if (GUILayout.Button("Deploy Object HideOut"))
+        if (instance.HideOut == null && GUILayout.Button("Deploy Object HideOut"))
         {
             DeployObjectHideOut();
         }
 
-        if (GUILayout.Button("Remove Object HideOut"))
+        if (instance.HideOut != null && GUILayout.Button("Remove Object HideOut"))
         {
             RemoveObjectHideOut();
         }
 
+        if (instance.HideOut != null && instance.HideOut.enabled && GUILayout.Button("Hide HideOut"))
+        {
+            instance.DisableHideOut();
+        }
+
+        if (instance.HideOut != null && !instance.HideOut.enabled && GUILayout.Button("Show HideOut"))
+        {
+            instance.EnableHideOut();
+        }
 
         EditorGUILayout.EndVertical();
 
@@ -253,6 +266,7 @@ public class PathEditor : AMazeEditor {
 
         pathEnd.Value.Unit.gameObject.SetActive(false);
         instance.HideOut = hideOut;
+        instance.HideOutReplacement = pathEnd.Value.Unit;
         hideOut.transform.parent = instance.transform;
         hideOut.transform.localScale = pathEnd.Value.Unit.transform.localScale;
         hideOut.transform.position = pathEnd.Value.Unit.transform.position;
@@ -263,12 +277,14 @@ public class PathEditor : AMazeEditor {
     {
         if (instance.HideOut != null)
         {
+            var pathEnd = instance.HideOutReplacement;
+
             DestroyImmediate(instance.HideOut.gameObject);
             instance.HideOut = null;
+
+            pathEnd.gameObject.SetActive(true);
         }
 
-        var pathEnd = instance.PathElements.Last();
-        pathEnd.Value.Unit.gameObject.SetActive(true);
 
     }
 
@@ -310,7 +326,7 @@ public class PathEditor : AMazeEditor {
 
     public static PathElement GetTurnType(PathElement current, PathElement last)
     {  
-
+        
 
         return current;
     }

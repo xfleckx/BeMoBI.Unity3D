@@ -12,18 +12,21 @@ public class PathInMaze : MonoBehaviour, ISerializationCallbackReceiver
     public Dictionary<Vector2, PathElement> PathElements;
 
     public ObjectHideOut HideOut;
+    
+    public MazeUnit HideOutReplacement;
 
     public int ID = -1;
 
-    void OnEnable()
+    public void OnEnable()
     {
         InitEmptys();
-        HideOut.gameObject.SetActive(true);
+
+        EnableHideOut();
     }
 
-    void OnDisable()
+    public void OnDisable()
     {
-        HideOut.gameObject.SetActive(false);
+        DisableHideOut();
     }
 
     void Awake()
@@ -49,6 +52,23 @@ public class PathInMaze : MonoBehaviour, ISerializationCallbackReceiver
         {
             PathElements = new Dictionary<Vector2, PathElement>();
             Debug.Log("Creating empty Elements Dictionary in Path");
+        }
+    }
+
+    public void EnableHideOut()
+    {
+        if (HideOut != null) { 
+            HideOut.enabled = true;
+            HideOut.gameObject.SetActive(true);
+            HideOutReplacement.gameObject.SetActive(false);
+        }
+    }
+    public void DisableHideOut()
+    {
+        if (HideOut != null) { 
+            HideOut.enabled = false;
+            HideOut.gameObject.SetActive(false);
+            HideOutReplacement.gameObject.SetActive(true);
         }
     }
 
