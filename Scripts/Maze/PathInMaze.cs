@@ -10,12 +10,20 @@ public enum TurnType { STRAIGHT, LEFT, RIGHT }
 public class PathInMaze : MonoBehaviour, ISerializationCallbackReceiver
 {
     public Dictionary<Vector2, PathElement> PathElements;
-    
+
+    public ObjectHideOut HideOut;
+
     public int ID = -1;
 
     void OnEnable()
     {
         InitEmptys();
+        HideOut.gameObject.SetActive(true);
+    }
+
+    void OnDisable()
+    {
+        HideOut.gameObject.SetActive(false);
     }
 
     void Awake()
@@ -113,6 +121,9 @@ public class PathInMaze : MonoBehaviour, ISerializationCallbackReceiver
 [Serializable]
 public class PathElement
 {
+    [SerializeField]
+    public GameObject Landmark;
+
     [SerializeField]
     public MazeUnit Unit;
 

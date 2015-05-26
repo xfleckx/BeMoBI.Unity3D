@@ -85,6 +85,17 @@ public class PathEditor : AMazeEditor {
 
         }
 
+        if (GUILayout.Button("Deploy Object HideOut"))
+        {
+            DeployObjectHideOut();
+        }
+
+        if (GUILayout.Button("Remove Object HideOut"))
+        {
+            RemoveObjectHideOut();
+        }
+
+
         EditorGUILayout.EndVertical();
 
         if (EditorModeProcessEvent != null)
@@ -209,10 +220,55 @@ public class PathEditor : AMazeEditor {
         
         newElement = GetElementType(newElement);
 
-        if (newElement.Type == UnitType.L || newElement.Type == UnitType.T)
-            newElement = GetTurnType(newElement, instance.PathElements.Values.Last());
+        if (newElement.Type == UnitType.L || newElement.Type == UnitType.T || newElement.Type == UnitType.X) {
+            var previousElement = instance.PathElements.Values.Last();
+            newElement = GetTurnType(newElement, previousElement);
+
+            DeployLandmark(previousElement);
+        }
+         
 
         instance.PathElements.Add(newUnit.GridID, newElement);
+    }
+
+    private void DeployLandmark(PathElement previousElement)
+    {
+        
+    }
+
+    private void DeployObjectHideOut()
+    {
+        var pathEnd = instance.PathElements.Last();
+
+        //var obj = Resources.Load(unitPrefabName); // Load from local asset path 
+        var obj = AssetDatabase.LoadAssetAtPath("Assets/beMobi.Unity3D/Prefabs/ObjectHideOut.prefab", typeof(GameObject));
+
+        if (obj == null)
+        {
+            Debug.LogError("ObjectHideOut.prefab not found!");
+        }
+
+        var hideOutHost = PrefabUtility.InstantiatePrefab(obj) as GameObject;
+        var hideOut = hideOutHost.GetComponent<ObjectHideOut>();
+
+        pathEnd.Value.Unit.gameObject.SetActive(false);
+        instance.HideOut = hideOut;
+        hideOut.transform.parent = instance.transform;
+        hideOut.transform.localScale = pathEnd.Value.Unit.transform.localScale;
+        hideOut.transform.position = pathEnd.Value.Unit.transform.position;
+
+    }
+
+    private void RemoveObjectHideOut()
+    {
+        if (instance.HideOut != null)
+        {
+            DestroyImmediate(instance.HideOut.gameObject);
+            instance.HideOut = null;
+        }
+
+        var pathEnd = instance.PathElements.Last();
+        pathEnd.Value.Unit.gameObject.SetActive(true);
 
     }
 
@@ -253,7 +309,9 @@ public class PathEditor : AMazeEditor {
     }
 
     public static PathElement GetTurnType(PathElement current, PathElement last)
-    { 
+    {  
+
+
         return current;
     }
 
