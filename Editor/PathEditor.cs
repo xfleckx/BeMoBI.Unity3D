@@ -79,6 +79,11 @@ public class PathEditor : AMazeEditor {
 
 
         PathCreationEnabled = GUILayout.Toggle(PathCreationEnabled, "Path creation");
+        
+        if (GUILayout.Button("Deploy Landmarks"))
+        {
+
+        }
 
         EditorGUILayout.EndVertical();
 
@@ -133,59 +138,7 @@ public class PathEditor : AMazeEditor {
             }
 
             GUILayout.Space(4f);
-
-
-            //if (GUILayout.Button("Clear paths"))
-            //{
-            //    bool clearAllowed = EditorUtility.DisplayDialog("Delete all paths?", "Do you realy want to delete all paths?", "I agree", "Nooo...");
-
-            //    if (!clearAllowed)
-            //        return;
-
-            //    instance.Paths.Clear();
-            //    activePath = null;
-            //}   
-
-            //if (instance.Paths.Any())
-            //{
-            //    GUILayout.Space(4f);
-
-            //    GUILayout.Label("Existing Paths");
-
-            //    GUILayout.Space(2f);
-
-            //    foreach (var path in instance.Paths)
-            //    {
-            //        GUILayout.BeginHorizontal(GUILayout.Width(100f));
-
-            //        var name = path.name != null ? path.name : "no name";
-
-            //        if (GUILayout.Button(name))
-            //        {
-            //            activePath = path;
-            //        }
-
-            //        if (GUILayout.Button("X", GUILayout.Width(20f)))
-            //        {
-            //            pathShouldBeRemoved = path;
-            //        }
-
-            //        GUILayout.EndHorizontal();
-            //    }
-
-            //    if (pathShouldBeRemoved != null)
-            //    {
-            //        //DeletePath(pathShouldBeRemoved);
-            //        pathShouldBeRemoved = null;
-            //    }
-            //}
-
-
-            //if (GUILayout.Button("Deploy Landmarks"))
-            //{
-
-            //}
-
+            
         }
         else
         {
@@ -256,6 +209,9 @@ public class PathEditor : AMazeEditor {
         
         newElement = GetElementType(newElement);
 
+        if (newElement.Type == UnitType.L || newElement.Type == UnitType.T)
+            newElement = GetTurnType(newElement, instance.PathElements.Values.Last());
+
         instance.PathElements.Add(newUnit.GridID, newElement);
 
     }
@@ -296,11 +252,9 @@ public class PathEditor : AMazeEditor {
         return element;
     }
 
-    public static PathElement GetTurnType(PathElement element)
-    {
-
-
-        return element;
+    public static PathElement GetTurnType(PathElement current, PathElement last)
+    { 
+        return current;
     }
 
     private void Remove(MazeUnit unit)
