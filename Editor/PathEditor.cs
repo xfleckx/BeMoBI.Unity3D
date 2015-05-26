@@ -354,28 +354,28 @@ public class PathEditor : AMazeEditor {
         {
             if (y0 != y1) // first change in y
             {
-                current.Turn = TurnType.RIGHT;
+                last.Turn = TurnType.RIGHT;
             }
             else
             {
-                current.Turn = TurnType.LEFT;
+                last.Turn = TurnType.LEFT;
             }
         }
         else // different sign
         {
             if (y0 != y1) // first change in y
             {
-                current.Turn = TurnType.LEFT;
+                last.Turn = TurnType.LEFT;
             }
             else
             {
-                current.Turn = TurnType.RIGHT;
+                last.Turn = TurnType.RIGHT;
             }
         }
 
         if (Math.Abs(x0 - x2) == 2 || Math.Abs(y0 - y2) == 2)
         {
-            current.Turn = TurnType.STRAIGHT;
+            last.Turn = TurnType.STRAIGHT;
         }
 
         return current;
