@@ -233,13 +233,30 @@ public class PathEditor : AMazeEditor {
         
         newElement = GetElementType(newElement);
 
-        if (newElement.Type == UnitType.L || newElement.Type == UnitType.T || newElement.Type == UnitType.X) {
-            var previousElement = instance.PathElements.Values.Last();
-            newElement = GetTurnType(newElement, previousElement);
+        //if (newElement.Type == UnitType.L || newElement.Type == UnitType.T || newElement.Type == UnitType.X) {
+        //    var previousElement = instance.PathElements.Values.Last();
+        //    newElement = GetTurnType(newElement, previousElement);
 
+        //    DeployLandmark(previousElement);
+        //}
+
+        //if (newElement.Type == UnitType.L || newElement.Type == UnitType.T || newElement.Type == UnitType.X) { 
+        var nr_el = instance.PathElements.Values.Count; // count all elements in the path to get the second last for turning calculation
+        if (nr_el >= 1)
+        {
+            var previousElement = instance.PathElements.Values.ElementAt(nr_el - 1);
+            if (nr_el >= 2)
+            {
+                var secpreviousElement = instance.PathElements.Values.ElementAt(nr_el - 2);
+                newElement = GetTurnType(newElement, previousElement, secpreviousElement);
+            }
+            else
+            {
+                newElement.Turn = TurnType.STRAIGHT;
+            }
             DeployLandmark(previousElement);
         }
-         
+        //}
 
         instance.PathElements.Add(newUnit.GridID, newElement);
     }
@@ -322,6 +339,46 @@ public class PathEditor : AMazeEditor {
         }
 
         return element;
+    }
+
+    public static PathElement GetTurnType(PathElement current, PathElement last, PathElement sec2last)
+    {
+        var x0 = sec2last.Unit.GridID.x;
+        var y0 = sec2last.Unit.GridID.y;
+        var x1 = last.Unit.GridID.x;
+        var y1 = last.Unit.GridID.y;
+        var x2 = current.Unit.GridID.x;
+        var y2 = current.Unit.GridID.y;
+
+        if ((x0 - x2) - (y0 - y2) == 0) // same sign
+        {
+            if (y0 != y1) // first change in y
+            {
+                current.Turn = TurnType.RIGHT;
+            }
+            else
+            {
+                current.Turn = TurnType.LEFT;
+            }
+        }
+        else // different sign
+        {
+            if (y0 != y1) // first change in y
+            {
+                current.Turn = TurnType.LEFT;
+            }
+            else
+            {
+                current.Turn = TurnType.RIGHT;
+            }
+        }
+
+        if (Math.Abs(x0 - x2) == 2 || Math.Abs(y0 - y2) == 2)
+        {
+            current.Turn = TurnType.STRAIGHT;
+        }
+
+        return current;
     }
 
     public static PathElement GetTurnType(PathElement current, PathElement last)
