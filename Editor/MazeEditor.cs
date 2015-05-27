@@ -390,35 +390,38 @@ public class MazeEditor : AMazeEditor
                 last = current;
                 continue;
             }
+            Debug.Log(current.GridID.x.ToString());
+            // check if current and last are really neighbors:
+            if (Math.Abs(current.GridID.x - last.GridID.x) + Math.Abs(current.GridID.y - last.GridID.y) == 1)
+            {
+                // check which direction we go, possibilities:
+                if (current.GridID.x - last.GridID.x == 1) // going east
+                {
+                    last.Open(OpenDirections.East);
+                    current.Open(OpenDirections.West);
+                }
+                else if (current.GridID.x - last.GridID.x == -1) // going west
+                {
+                    last.Open(OpenDirections.West);
+                    current.Open(OpenDirections.East);
+                }
 
-            if (current.GridID.x - 1 == last.GridID.x)
-            {
-                last.Open(OpenDirections.East);
-                current.Open(OpenDirections.West);
+                if (current.GridID.y - last.GridID.y == 1) // going north
+                {
+                    last.Open(OpenDirections.North);
+                    current.Open(OpenDirections.South);
+                }
+                else if (current.GridID.y - last.GridID.y == -1) // going south
+                {
+                    last.Open(OpenDirections.South);
+                    current.Open(OpenDirections.North);
+                }
             }
-            else if (current.GridID.x + 1 == last.GridID.x)
-            {
-                last.Open(OpenDirections.West);
-                current.Open(OpenDirections.East);
-            }
-
-            if (current.GridID.y - 1 == last.GridID.y)
-            {
-                last.Open(OpenDirections.North);
-                current.Open(OpenDirections.South);
-            }
-            else if (current.GridID.y + 1 == last.GridID.y)
-            {
-                last.Open(OpenDirections.South);
-                current.Open(OpenDirections.North);
-            }
-
 
 
             last = current;
         }
     }
-
     private void TryDisconnectingCurrentSelection()
     {
         if (currentSelection == null)
