@@ -121,7 +121,8 @@ public class PathEditor : AMazeEditor {
 
         if (GUILayout.Button("Save Path"))
         {
-            Save(instance);
+            EditorUtility.SetDirty(instance);
+            EditorApplication.delayCall += AssetDatabase.SaveAssets;
         }
 
         foreach (var e in instance.PathElements)
@@ -179,12 +180,7 @@ public class PathEditor : AMazeEditor {
         #endregion
         Handles.EndGUI();
     }
-
-    private void Save(PathInMaze activePath)
-    { 
-        EditorUtility.SetDirty(activePath);
-    }
-
+     
     #region path creation logic
     private void PathCreationMode(Event _ce)
     {
@@ -197,7 +193,7 @@ public class PathEditor : AMazeEditor {
             if (unit == null)
             {
                 Debug.Log("no element added");
-
+                
                 GUIUtility.hotControl = controlId;
                 _ce.Use();
 
