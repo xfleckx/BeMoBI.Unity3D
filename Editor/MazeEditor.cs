@@ -142,6 +142,7 @@ public class MazeEditor : AMazeEditor
         if (GUILayout.Button("Rescale"))
         {
             Rescale(maze, maze.RoomDimension);
+            RebuildGrid();
         }
 
         GUILayout.EndHorizontal();
@@ -227,6 +228,10 @@ public class MazeEditor : AMazeEditor
     private void UpdatePrefabOfCurrentMaze()
     {
        referenceToPrefab = PrefabUtility.ReplacePrefab(maze.gameObject, referenceToPrefab, ReplacePrefabOptions.ConnectToPrefab);
+
+       EditorUtility.SetDirty(referenceToPrefab);
+
+       AssetDatabase.SaveAssets();
     }
 
     private void SavePrefabAndCreateCompanionFolder()
