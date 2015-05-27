@@ -102,8 +102,6 @@ public class MazeEditor : AMazeEditor
             renderEmptyMazeGUI();
         }
         
-        // TODO auto reconfigure grid when dimensions changed
-
         GUILayout.BeginVertical();
         
         GUILayout.BeginHorizontal();
@@ -146,8 +144,7 @@ public class MazeEditor : AMazeEditor
         }
 
         GUILayout.EndHorizontal();
-
-
+        
         GUILayout.BeginHorizontal();
         GUILayout.Label("Height of Rooms");
         maze.RoomHigthInMeter = EditorGUILayout.FloatField(maze.RoomHigthInMeter, GUILayout.Width(50));
@@ -157,10 +154,6 @@ public class MazeEditor : AMazeEditor
         GUILayout.BeginHorizontal();
         maze.UnitNamePattern = EditorGUILayout.TextField("Unit Name Pattern", maze.UnitNamePattern);
         GUILayout.EndHorizontal();
-
-        GUILayout.EndVertical();
-
-        GUILayout.BeginVertical();
 
         if (GUILayout.Button("Clone Maze", GUILayout.Width(255)))
         {
@@ -176,17 +169,7 @@ public class MazeEditor : AMazeEditor
         {
             UpdatePrefabOfCurrentMaze();
         }
-
-        GUILayout.Space(5f);
-
-        GUILayout.BeginHorizontal();
-        ObjectFolderName = GUILayout.TextField(ObjectFolderName, GUILayout.Width(150f));
-        
-        if(GUILayout.Button("...")){
-            ObjectFolderName = EditorUtility.OpenFolderPanel("Open folder containing objects", "Assets", "");
-        }
-
-        GUILayout.EndHorizontal();
+          
         GUILayout.EndVertical();
 
     }
@@ -230,8 +213,7 @@ public class MazeEditor : AMazeEditor
        referenceToPrefab = PrefabUtility.ReplacePrefab(maze.gameObject, referenceToPrefab, ReplacePrefabOptions.ConnectToPrefab);
 
        EditorUtility.SetDirty(referenceToPrefab);
-
-       AssetDatabase.SaveAssets();
+       EditorApplication.delayCall += AssetDatabase.SaveAssets;
     }
 
     private void SavePrefabAndCreateCompanionFolder()
