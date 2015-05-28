@@ -17,6 +17,7 @@ public class ObjectHideOut : MazeUnit {
 
     private Material FadingTarget;
 
+
     public GameObject GrabObject()
     {
         rotation = TargetObject.transform.localRotation;
@@ -31,6 +32,16 @@ public class ObjectHideOut : MazeUnit {
         o.transform.localPosition = position;
         o.transform.localRotation = rotation;
         o.transform.localScale = scaling;
+    }
+
+    public void Open()
+    {
+        Open(WaysOpen);
+    }
+
+    public void Close()
+    {
+        Close(WaysOpen);
     }
 
     public override void Open(OpenDirections direction)

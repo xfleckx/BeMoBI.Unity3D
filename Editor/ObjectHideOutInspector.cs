@@ -16,6 +16,20 @@ public class ObjectHideOutInspector : Editor {
 
         EditorGUILayout.BeginHorizontal();
 
+        if (GUILayout.Button("Open"))
+        {
+            instance.Open();
+        }
+
+        if (GUILayout.Button("Close"))
+        {
+            instance.Close();
+        }
+
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+
         var options = Enum.GetValues(typeof(OpenDirections));
 
         foreach (var item in options)
