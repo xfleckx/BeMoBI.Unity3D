@@ -4,11 +4,34 @@ using System;
 
 public class ObjectHideOut : MazeUnit {
 
+    private Transform targetTransform;
+    private Quaternion rotation;
+    private Vector3 position;
+    private Vector3 scaling;
+
+    public GameObject TargetObject;
+
     private bool fading;
     private float targetState = 0;
     public float FadingStep = 0.1f;
 
     private Material FadingTarget;
+
+    public GameObject GrabObject()
+    {
+        rotation = TargetObject.transform.localRotation;
+        position = TargetObject.transform.localPosition;
+        TargetObject.transform.parent = null;
+        return TargetObject;
+    }
+
+    public void ReturnObject(GameObject o)
+    {
+        o.transform.parent = gameObject.transform;
+        o.transform.localPosition = position;
+        o.transform.localRotation = rotation;
+        o.transform.localScale = scaling;
+    }
 
     public override void Open(OpenDirections direction)
     {
