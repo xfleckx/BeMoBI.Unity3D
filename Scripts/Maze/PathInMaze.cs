@@ -13,6 +13,8 @@ public class PathInMaze : MonoBehaviour, ISerializationCallbackReceiver
 
     public ObjectHideOut HideOut;
     
+    public List<GameObject> Landmarks;
+
     public MazeUnit HideOutReplacement;
 
     public int ID = -1;
@@ -53,6 +55,11 @@ public class PathInMaze : MonoBehaviour, ISerializationCallbackReceiver
             PathElements = new Dictionary<Vector2, PathElement>();
             Debug.Log("Creating empty Elements Dictionary in Path");
         }
+
+        if (Landmarks == null) {
+            Landmarks = new List<GameObject>();
+            Debug.Log("Creating empty Landmarks set");
+        }
     }
 
     public void EnableHideOut()
@@ -85,9 +92,7 @@ public class PathInMaze : MonoBehaviour, ISerializationCallbackReceiver
 
     // save the dictionary to lists
     public void OnBeforeSerialize()
-    {
-        Debug.Log("Serialization starts");
-
+    { 
         if (PathElements == null || Units == null || GridIDs == null ||Elements == null)
             return;
 
@@ -114,8 +119,7 @@ public class PathInMaze : MonoBehaviour, ISerializationCallbackReceiver
             PathElements.Add(gid, Elements[i]);
             PathElements[gid].Unit = Units[i];
         }
-
-        Debug.Log("Derialization ends");
+         
     }
 
     #endregion 

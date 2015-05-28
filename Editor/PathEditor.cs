@@ -86,7 +86,11 @@ public class PathEditor : AMazeEditor {
         
         if (GUILayout.Button("Deploy Landmarks"))
         {
-
+            DeployLandmarks();
+        }
+        if (GUILayout.Button("Remove Landmarks"))
+        {
+            RemoveLandmarks();
         }
 
         if (instance.HideOut == null && GUILayout.Button("Deploy Object HideOut"))
@@ -113,6 +117,25 @@ public class PathEditor : AMazeEditor {
 
         if (EditorModeProcessEvent != null)
             EditorModeProcessEvent(Event.current);
+    }
+
+    private void DeployLandmarks()
+    {
+        var tUnits = instance.PathElements.Values.Where((pe) => pe.Type == UnitType.T);
+
+        foreach (var unit in tUnits)
+        {
+            DeployLandmark(unit);
+        }
+    }
+
+    private void RemoveLandmarks()
+    {
+        foreach (var mark in instance.Landmarks)
+        {
+            DestroyImmediate(mark);
+        }
+        instance.Landmarks.Clear();
     }
 
     private void RenderElements()
@@ -257,21 +280,47 @@ public class PathEditor : AMazeEditor {
         instance.PathElements.Add(newUnit.GridID, newElement);
     }
 
-    private void DeployLandmark(PathElement previousElement)
+    private void DeployLandmark(PathElement element)
     {
+        var filePathToLandmarkAsset =  "Assets/beMoBi.Unity3D/Prefabs/Landmark.prefab";
+        var landmarkAsset = AssetDatabase.LoadAssetAtPath(filePathToLandmarkAsset, typeof(GameObject));
+
+        if (landmarkAsset == null)
+        {
+            Debug.LogError(string.Format("Could not load Landmark.prefab at Path {0}", filePathToLandmarkAsset));
+            return;
+        }
+
+        var newLandmark = PrefabUtility.InstantiatePrefab(landmarkAsset) as GameObject;
+        instance.Landmarks.Add(newLandmark);
+        element.Landmark = newLandmark; 
+        element.Landmark.transform.parent = element.Unit.transform;
+        element.Landmark.transform.localPosition = EstimateLandmarkPosition(element);
         
+    }
+
+    private Vector3 EstimateLandmarkPosition(PathElement element)
+    {
+        float x, y, z;
+        x = 0f;
+        y = 0f;
+        z = 0f;
+
+
+
+        return new Vector3(x, y, z);
     }
 
     private void DeployObjectHideOut()
     {
         var pathEnd = instance.PathElements.Last();
 
-        //var obj = Resources.Load(unitPrefabName); // Load from local asset path 
         var obj = AssetDatabase.LoadAssetAtPath("Assets/beMobi.Unity3D/Prefabs/ObjectHideOut.prefab", typeof(GameObject));
 
         if (obj == null)
         {
             Debug.LogError("ObjectHideOut.prefab not found!");
+            return;
         }
 
         var hideOutHost = PrefabUtility.InstantiatePrefab(obj) as GameObject;
@@ -283,6 +332,8 @@ public class PathEditor : AMazeEditor {
         hideOut.transform.parent = instance.transform;
         hideOut.transform.localScale = pathEnd.Value.Unit.transform.localScale;
         hideOut.transform.position = pathEnd.Value.Unit.transform.position;
+
+        hideOut.WaysOpen = pathEnd.Value.Unit.WaysOpen;
 
     }
 
