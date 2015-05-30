@@ -272,8 +272,7 @@ public class PathEditor : AMazeEditor {
             else
             {
                 newElement.Turn = TurnType.STRAIGHT;
-            }
-            DeployLandmark(previousElement);
+            } 
         }
         //}
 
@@ -295,18 +294,27 @@ public class PathEditor : AMazeEditor {
         instance.Landmarks.Add(newLandmark);
         element.Landmark = newLandmark; 
         element.Landmark.transform.parent = element.Unit.transform;
-        element.Landmark.transform.localPosition = EstimateLandmarkPosition(element);
+
+        int index = instance.PathElements.Values.ToList().FindIndex((p) => p.Equals(element));
+        var previous = instance.PathElements.Values.ElementAt(index - 1);
+        var following = instance.PathElements.Values.ElementAt(index + 1);
+        element.Landmark.transform.localPosition = EstimateLandmarkPosition( previous, element, following);
         
     }
 
-    private Vector3 EstimateLandmarkPosition(PathElement element)
+    private Vector3 EstimateLandmarkPosition(PathElement previous, PathElement current, PathElement following)
     {
         float x, y, z;
         x = 0f;
         y = 0f;
         z = 0f;
 
+        y = 1.65f;
 
+        var turn = current.Turn;
+        var current_waysOpen = current.Unit.WaysOpen;
+
+        var deltaPreviousFollowing = following.Unit.GridID - previous.Unit.GridID;
 
         return new Vector3(x, y, z);
     }
@@ -334,6 +342,8 @@ public class PathEditor : AMazeEditor {
         hideOut.transform.position = pathEnd.Value.Unit.transform.position;
 
         hideOut.WaysOpen = pathEnd.Value.Unit.WaysOpen;
+
+        hideOut.name = string.Format("H_P{0}",instance.ID);
 
     }
 
