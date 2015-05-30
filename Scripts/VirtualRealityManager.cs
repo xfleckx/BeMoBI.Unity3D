@@ -15,10 +15,10 @@ public class VirtualRealityManager : MonoBehaviour {
 	public float HighQualityZoneLength = 12f;
 	public float BorderZoneWidth = 1f;
 	
-    [SerializeField]
+	[SerializeField]
 	public List<EnvironmentController> AvailableEnvironments = new List<EnvironmentController>();
 
-    [SerializeField]
+	[SerializeField]
 	public List<EnvironmentController> ActiveEnvironments = new List<EnvironmentController>();
 	
 	// Update is called once per frame
@@ -34,20 +34,24 @@ public class VirtualRealityManager : MonoBehaviour {
    /// Change the whole world to exactly one environment
    /// </summary>
    /// <param name="worldName"></param>
-	public void ChangeWorld(string worldName)
+	public EnvironmentController ChangeWorld(string worldName)
 	{
 		if (AvailableEnvironments.Any((i) => i.Title.Equals(worldName))) {
 
-            if (this.ActiveEnvironments.Any())
-                this.ActiveEnvironments.ForEach((i) => i.gameObject.SetActive(false));
+			if (this.ActiveEnvironments.Any())
+				this.ActiveEnvironments.ForEach((i) => i.gameObject.SetActive(false));
 
-            this.ActiveEnvironments.Clear();
-            var enabledEnvironment = AvailableEnvironments.First((i) => i.Title.Equals(worldName));
+			this.ActiveEnvironments.Clear();
+			var enabledEnvironment = AvailableEnvironments.First((i) => i.Title.Equals(worldName));
 
-            enabledEnvironment.gameObject.SetActive(true);
-            
-            this.ActiveEnvironments.Add(enabledEnvironment); 
+			enabledEnvironment.gameObject.SetActive(true);
+			
+			this.ActiveEnvironments.Add(enabledEnvironment);
+			
+			return enabledEnvironment;
 		}
+
+		return null;
 	}
 
 	/// <summary>
@@ -58,9 +62,9 @@ public class VirtualRealityManager : MonoBehaviour {
 	{  
 		foreach (var item in names)
 		{
-            var environment = this.AvailableEnvironments.First((i) => i.Title.Equals(item));
-            if(environment != null)
-                environment.gameObject.SetActive(true);
+			var environment = this.AvailableEnvironments.First((i) => i.Title.Equals(item));
+			if(environment != null)
+				environment.gameObject.SetActive(true);
 		}
 	}
 
