@@ -71,8 +71,7 @@ public class PathEditor : AMazeEditor {
 
         if (GUILayout.Button("Reverse Path"))
         {
-            IEnumerable<KeyValuePair<Vector2, PathElement>> temp = instance.PathElements.Reverse().ToList();
-            instance.PathElements = temp.ToDictionary((kvp) => kvp.Key, (kvp) => kvp.Value);
+            instance.InvertPath();
 
         }
 
