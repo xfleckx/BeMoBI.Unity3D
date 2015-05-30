@@ -5,13 +5,16 @@ public class EnvironmentController : MonoBehaviour {
 
 	public string Title = "Name of the Environment";
 
-	// Use this for initialization
-	void Start () {
-	
+	void Awake()
+	{
+		Title = gameObject.name;
 	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
+
+    /// <summary>
+    /// Just an idea of how this controller Script could make sense...
+    /// </summary>
+    public void DisableIllumination()
+    {
+
+    }
 }
