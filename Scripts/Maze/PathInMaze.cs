@@ -10,6 +10,8 @@ public enum TurnType { STRAIGHT, LEFT, RIGHT }
 [RequireComponent(typeof(PathController))]
 public class PathInMaze : MonoBehaviour, ISerializationCallbackReceiver
 {
+	public bool Available = true;
+
 	public Dictionary<Vector2, PathElement> PathElements;
 
 	public ObjectHideOut HideOut;
@@ -18,12 +20,12 @@ public class PathInMaze : MonoBehaviour, ISerializationCallbackReceiver
 
 	public MazeUnit HideOutReplacement;
 
-    private bool inverse = false;
+	private bool inverse = false;
 
-    public bool Inverse
-    {
-        get { return inverse; } 
-    }
+	public bool Inverse
+	{
+		get { return inverse; } 
+	}
 
 	public int ID = -1;
 
@@ -70,15 +72,15 @@ public class PathInMaze : MonoBehaviour, ISerializationCallbackReceiver
 		}
 	}
 
-    public void SetLandmarks(bool active)
-    {
-        foreach (var item in Landmarks)
-        {
-            item.SetActive(active);
-        }
-    } 
+	public void SetLandmarks(bool active)
+	{
+		foreach (var item in Landmarks)
+		{
+			item.SetActive(active);
+		}
+	} 
 
-    public void EnableHideOut()
+	public void EnableHideOut()
 	{
 		if (HideOut != null) { 
 			HideOut.enabled = true;
@@ -87,7 +89,7 @@ public class PathInMaze : MonoBehaviour, ISerializationCallbackReceiver
 		}
 	}
 	
-    public void DisableHideOut()
+	public void DisableHideOut()
 	{
 		if (HideOut != null) { 
 			HideOut.enabled = false;
@@ -96,12 +98,12 @@ public class PathInMaze : MonoBehaviour, ISerializationCallbackReceiver
 		}
 	}
 
-    public void InvertPath()
-    {
-        IEnumerable<KeyValuePair<Vector2, PathElement>> temp = PathElements.Reverse().ToList();
-        PathElements = temp.ToDictionary((kvp) => kvp.Key, (kvp) => kvp.Value);
-        inverse = !inverse;
-    }
+	public void InvertPath()
+	{
+		IEnumerable<KeyValuePair<Vector2, PathElement>> temp = PathElements.Reverse().ToList();
+		PathElements = temp.ToDictionary((kvp) => kvp.Key, (kvp) => kvp.Value);
+		inverse = !inverse;
+	}
 
 	#region Serialization
 	[HideInInspector]

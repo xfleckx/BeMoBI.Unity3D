@@ -9,10 +9,11 @@ public class PathController : MonoBehaviour {
 
 	public List<PathInMaze> Paths = new List<PathInMaze>();
 
-	void Awake()
+	void Start()
 	{
+		ForcePathLookup();
 	}
-
+	
 	public void ForcePathLookup()
 	{
 		Paths.Clear();
@@ -40,16 +41,12 @@ public class PathController : MonoBehaviour {
 		return result;
 	}
 
-	// Use this for initialization
-	void Start () {
-		ForcePathLookup();
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
+	public int[] GetAvailablePathIDs()
+	{
+		var ids = Paths.Where(p => p.Available).Select(p => p.ID);
 
+		return ids.ToArray();
+	}
 
 #if UNITY_EDITOR
 	public Action EditorGizmoCallbacks;

@@ -69,20 +69,20 @@ public class PathEditor : AMazeEditor {
 
         EditorGUILayout.BeginVertical();
 
-        if (GUILayout.Button("Reverse Path"))
-        {
-            instance.InvertPath();
-
-        }
-
+        PathCreationEnabled = GUILayout.Toggle(PathCreationEnabled, "Path creation");
+        
         showElements = EditorGUILayout.Foldout(showElements, "Show Elements");
         
         if(showElements)
             RenderElements();
 
+        if (GUILayout.Button("Reverse Path"))
+        {
+            instance.InvertPath();
+        }
 
-        PathCreationEnabled = GUILayout.Toggle(PathCreationEnabled, "Path creation");
-        
+        EditorGUILayout.Separator();
+
         if (GUILayout.Button("Deploy Landmarks"))
         {
             DeployLandmarks();
@@ -91,6 +91,8 @@ public class PathEditor : AMazeEditor {
         {
             RemoveLandmarks();
         }
+
+        EditorGUILayout.Separator();
 
         if (instance.HideOut == null && GUILayout.Button("Deploy Object HideOut"))
         {
