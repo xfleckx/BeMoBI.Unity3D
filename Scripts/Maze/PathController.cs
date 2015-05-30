@@ -7,41 +7,42 @@ using UnityEngine;
 [RequireComponent(typeof(beMobileMaze))]
 public class PathController : MonoBehaviour {
 
-    public List<PathInMaze> Paths = new List<PathInMaze>();
+	public List<PathInMaze> Paths = new List<PathInMaze>();
 
-    void Awake()
-    {
-    }
+	void Awake()
+	{
+	}
 
-    public void ForcePathLookup()
-    {
-        Paths.Clear();
+	public void ForcePathLookup()
+	{
+		Paths.Clear();
 
-        var existingPaths = GetComponents<PathInMaze>();
+		var existingPaths = GetComponents<PathInMaze>();
 
-        Paths.AddRange(existingPaths);
-    }
+		Paths.AddRange(existingPaths);
+	}
 
-    public PathInMaze EnablePathContaining(int id)
-    {
-        foreach (var item in Paths) 
-        {
-            if (!(item.ID == id))
-                item.enabled = false;
-            else { 
-                item.enabled = true;
-                return item;
-            }
-        }
+	public PathInMaze EnablePathContaining(int id)
+	{
+		PathInMaze result = null;
 
-        Debug.Log(string.Format("Requested path {0} not found", id));
+		foreach (var item in Paths) 
+		{
+			if (item.ID == id){
+				item.enabled = true;
+				result = item;
+			}
+			else { 
+				item.enabled = false;
+			}
+		} 
 
-        return null;
-    }
+		return result;
+	}
 
 	// Use this for initialization
 	void Start () {
-        ForcePathLookup();
+		ForcePathLookup();
 	}
 	
 	// Update is called once per frame
@@ -51,14 +52,14 @@ public class PathController : MonoBehaviour {
 
 
 #if UNITY_EDITOR
-    public Action EditorGizmoCallbacks;
+	public Action EditorGizmoCallbacks;
 #endif
 
-    public void OnDrawGizmos()
-    { 
+	public void OnDrawGizmos()
+	{ 
 #if UNITY_EDITOR
-        if (EditorGizmoCallbacks != null)
-            EditorGizmoCallbacks();
+		if (EditorGizmoCallbacks != null)
+			EditorGizmoCallbacks();
 #endif
-    }
+	}
 }
