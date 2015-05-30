@@ -135,11 +135,6 @@ public class PathInMaze : MonoBehaviour, ISerializationCallbackReceiver
             EditorGizmoCallbacks();
 #endif
     }
-
-    public void OnDestroy()
-    {
-        Debug.Log(string.Format("{0} destroyed!", name));
-    }
 }
 
 [Serializable]
