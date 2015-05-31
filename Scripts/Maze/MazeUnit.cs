@@ -47,8 +47,6 @@ public class MazeUnit : MonoBehaviour {
 
 	void OnTriggerEnter(Collider c)
 	{
-		Debug.Log(string.Format("Entering {0} {1}", GridID.x, GridID.y));
-
 		var evt = new MazeUnitEvent(MazeUnitEventType.Entering, c, this); 
 
 		SendMessageUpwards("RecieveUnitEvent", evt, SendMessageOptions.DontRequireReceiver);
@@ -56,8 +54,6 @@ public class MazeUnit : MonoBehaviour {
 	
 	void OnTriggerExit(Collider c)
 	{
-		Debug.Log(string.Format("Leaving {0} {1}", GridID.x, GridID.y));
-
 		var evt = new MazeUnitEvent(MazeUnitEventType.Exiting, c, this); 
 		
 		SendMessageUpwards("RecieveUnitEvent", evt, SendMessageOptions.DontRequireReceiver);
