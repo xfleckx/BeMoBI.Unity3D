@@ -546,7 +546,11 @@ public class MazeEditor : AMazeEditor
     string currentPathName = string.Empty;
 
     public override void RenderSceneViewUI()
-    {  
+    {
+        if (EditorApplication.isPlaying)
+            return;
+
+
         Handles.BeginGUI();
 
         GUILayout.BeginVertical(GUILayout.Width(200f));
