@@ -84,9 +84,8 @@ public class MazeUnitEvent
 		get { return c; } 
 	}
 	 
-	public MazeUnitEvent(global::MazeUnitEventType mazeUnitEventType, UnityEngine.Collider c, MazeUnit mazeUnit)
+	public MazeUnitEvent(MazeUnitEventType mazeUnitEventType, UnityEngine.Collider c, MazeUnit mazeUnit)
 	{
-		// TODO: Complete member initialization
 		this.mazeUnitEventType = mazeUnitEventType;
 		this.c = c;
 		this.mazeUnit = mazeUnit;
