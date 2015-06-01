@@ -429,7 +429,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 441590, guid: 69969e4bc1448c24ca59bdc12826d109, type: 2}
       propertyPath: m_RootOrder
-      value: 3
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 154070, guid: 69969e4bc1448c24ca59bdc12826d109, type: 2}
       propertyPath: m_Name
@@ -1145,7 +1145,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 423174, guid: 6ba929523b479c54095536511e4f7170, type: 2}
       propertyPath: m_RootOrder
-      value: 2
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 11417386, guid: 6ba929523b479c54095536511e4f7170, type: 2}
       propertyPath: worldManager
@@ -1663,7 +1663,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 0db9188d9e5ae8d4494189a8135265dc, type: 3}
       propertyPath: m_RootOrder
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 400030, guid: 0db9188d9e5ae8d4494189a8135265dc, type: 3}
       propertyPath: m_LocalPosition.x

@@ -30,6 +30,8 @@ public class MazeEditor : AMazeEditor
     private bool modeRemoveEnabled = false;
     private bool DisconnectFromUnitPrefab = true;
 
+    private float newWallWidth = 0.003f;
+
     private string ObjectFolderName = string.Empty;
 
     private UnityEngine.Object referenceToPrefab;
@@ -154,6 +156,57 @@ public class MazeEditor : AMazeEditor
         GUILayout.BeginHorizontal();
         maze.UnitNamePattern = EditorGUILayout.TextField("Unit Name Pattern", maze.UnitNamePattern);
         GUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+
+        if (GUILayout.Button("Close Maze Roof"))
+        {
+            foreach (var unit in maze.Units)
+            {
+                var topTransform = unit.transform.FindChild("Top");
+                if (topTransform != null)
+                    topTransform.gameObject.SetActive(true);
+            }
+        }
+         
+        if (GUILayout.Button("Open Maze Roof"))
+        {
+            foreach (var unit in maze.Units)
+            {
+                var topTransform = unit.transform.FindChild("Top");
+                if (topTransform != null)
+                    topTransform.gameObject.SetActive(false);
+            }
+        }
+
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+
+        newWallWidth = EditorGUILayout.FloatField("New Width for Walls", newWallWidth);
+
+        if (GUILayout.Button("Rescale Wall width"))
+        {
+            var transforms = new List<Transform>();
+
+            foreach (var unit in maze.Units)
+            {
+                transforms.Add(unit.transform.FindChild("North"));
+                transforms.Add(unit.transform.FindChild("South"));
+                transforms.Add(unit.transform.FindChild("West"));
+                transforms.Add(unit.transform.FindChild("East"));
+
+                foreach (var item in transforms)
+                {
+                    var temp = item.transform.localScale;
+                    item.transform.localScale = new Vector3(temp.x, temp.y, newWallWidth);
+                }
+
+                transforms.Clear();
+            }
+        }
+
+        EditorGUILayout.EndHorizontal();
 
         if (GUILayout.Button("Clone Maze", GUILayout.Width(255)))
         {

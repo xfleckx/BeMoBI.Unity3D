@@ -87,52 +87,6 @@ NavMeshSettings:
     cellSize: .166666657
     manualCellSize: 0
   m_NavMeshData: {fileID: 0}
---- !u!1001 &985257414
-Prefab:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 449764, guid: 3da97a72bd0f68e438486911a076c390, type: 2}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 449764, guid: 3da97a72bd0f68e438486911a076c390, type: 2}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 449764, guid: 3da97a72bd0f68e438486911a076c390, type: 2}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 449764, guid: 3da97a72bd0f68e438486911a076c390, type: 2}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 449764, guid: 3da97a72bd0f68e438486911a076c390, type: 2}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 449764, guid: 3da97a72bd0f68e438486911a076c390, type: 2}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 449764, guid: 3da97a72bd0f68e438486911a076c390, type: 2}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 449764, guid: 3da97a72bd0f68e438486911a076c390, type: 2}
-      propertyPath: m_RootOrder
-      value: 3
-      objectReference: {fileID: 0}
-    - target: {fileID: 167888, guid: 3da97a72bd0f68e438486911a076c390, type: 2}
-      propertyPath: m_Name
-      value: beMoBIMaze
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-  m_ParentPrefab: {fileID: 100100000, guid: 3da97a72bd0f68e438486911a076c390, type: 2}
-  m_IsPrefabParent: 0
 --- !u!1 &1083560390
 GameObject:
   m_ObjectHideFlags: 0
@@ -287,8 +241,8 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1373472289}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalRotation: {x: .364192873, y: -.0136523861, z: -.0348839797, w: .930569947}
+  m_LocalPosition: {x: -.200000003, y: 3.31999993, z: -2.03999996}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}

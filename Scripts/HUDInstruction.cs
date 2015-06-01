@@ -139,6 +139,14 @@ public class HUDInstruction : MonoBehaviour {
 		}
 	}
 
+	void Display(GameObject aVisibleObject)
+	{
+		InstructionTextBesideImage.gameObject.SetActive(false);
+		InstructionTextWide.gameObject.SetActive(false);
+		InstructionImage.gameObject.SetActive(false);
+
+	}
+
 	void HideInstructionHUD()
 	{
 		Debug.Log("Calling HideInstructionHUD");
