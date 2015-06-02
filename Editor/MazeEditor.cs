@@ -150,6 +150,17 @@ public class MazeEditor : AMazeEditor
         GUILayout.Label("Height of Rooms");
         maze.RoomHigthInMeter = EditorGUILayout.FloatField(maze.RoomHigthInMeter, GUILayout.Width(50));
         GUILayout.Label("m");
+
+        if (GUILayout.Button("Reset Height"))
+        {
+            //var walls = 
+
+            //foreach (var item in maze.Units)
+            //{
+                
+            //}
+        }
+
         GUILayout.EndHorizontal();
         
         GUILayout.BeginHorizontal();

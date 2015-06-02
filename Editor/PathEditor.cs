@@ -372,7 +372,7 @@ public class PathEditor : AMazeEditor {
     {
         var pathEnd = instance.PathElements.Last();
 
-        var obj = AssetDatabase.LoadAssetAtPath(string.Format("{0}/ObjectHideOut.prefab", PathToPrefabs), typeof(GameObject));
+        var obj = AssetDatabase.LoadAssetAtPath(string.Format("{0}ObjectHideOut.prefab", PathToPrefabs), typeof(GameObject));
 
         if (obj == null)
         {
@@ -388,7 +388,7 @@ public class PathEditor : AMazeEditor {
         instance.HideOutReplacement = pathEnd.Value.Unit;
         hideOut.transform.parent = instance.transform;
         hideOut.transform.localScale = pathEnd.Value.Unit.transform.localScale;
-        hideOut.transform.position = pathEnd.Value.Unit.transform.position;
+        hideOut.transform.localPosition = pathEnd.Value.Unit.transform.localPosition;
 
         hideOut.WaysOpen = pathEnd.Value.Unit.WaysOpen;
 
