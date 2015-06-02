@@ -57,7 +57,12 @@ public class MazeUnit : MonoBehaviour {
 		var evt = new MazeUnitEvent(MazeUnitEventType.Exiting, c, this); 
 		
 		SendMessageUpwards("RecieveUnitEvent", evt, SendMessageOptions.DontRequireReceiver);
-	} 
+	}
+
+    void OnDrawGizmos()
+    {
+        Gizmos.DrawCube(transform.position, new Vector3( 0.01f,0.01f,0.01f));
+    }
 
 }
 

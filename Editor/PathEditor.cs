@@ -20,6 +20,8 @@ public class PathEditor : AMazeEditor {
 
     private string pathElementPattern = "{0} {1} = {2} turn {3}";
 
+    public Vector3 LandmarkScaling = new Vector3(0.3f, 0.3f, 1);
+
     private bool PathCreationEnabled; 
     public PathEditorMode ActiveMode { get; set; }
     PathInMaze pathShouldBeRemoved;
@@ -84,6 +86,8 @@ public class PathEditor : AMazeEditor {
         }
 
         EditorGUILayout.Separator();
+
+        LandmarkScaling = EditorGUILayout.Vector3Field("Landmark Scale", LandmarkScaling);
 
         if (GUILayout.Button("Deploy Landmarks"))
         {
@@ -294,15 +298,59 @@ public class PathEditor : AMazeEditor {
         }
 
         var newLandmark = PrefabUtility.InstantiatePrefab(landmarkAsset) as GameObject;
+        
         instance.Landmarks.Add(newLandmark);
+        
         element.Landmark = newLandmark; 
         element.Landmark.transform.parent = element.Unit.transform;
 
         int index = instance.PathElements.Values.ToList().FindIndex((p) => p.Equals(element));
         var previous = instance.PathElements.Values.ElementAt(index - 1);
         var following = instance.PathElements.Values.ElementAt(index + 1);
-        element.Landmark.transform.localPosition = EstimateLandmarkPosition( previous, element, following);
+       // element.Landmark.transform = EstimateLandmarkPosition( previous, element, following);
+        var newTransform = GetLandmarkTransform(element);
+
+        float xOffset = 0f;
+        float eulerAngleY = 0;
+        if (newTransform.name == "East")
+        {
+            xOffset = -0.02f;
+            eulerAngleY = 90;
+        }
+
+        if (newTransform.name == "West")
+        { 
+            xOffset = 0.02f;
+            eulerAngleY = -90;
+        }
+
+        element.Landmark.transform.eulerAngles = newTransform.eulerAngles + new Vector3(0, eulerAngleY, 0); 
+
+        element.Landmark.transform.localPosition = newTransform.localPosition + new Vector3(xOffset, 0, -0.01f);
+       
+        element.Landmark.transform.rotation = newTransform.rotation;
+
+        if (element.Turn == TurnType.LEFT)
+        {
+            element.Landmark.transform.localEulerAngles = element.Landmark.transform.localEulerAngles + new Vector3(0, 0, 180f);
+        }
+
+        element.Landmark.transform.localScale = LandmarkScaling;
+    }
+
+    private Transform GetLandmarkTransform(PathElement current)
+    {
+        var walls = new List<GameObject>();
+
+        walls.Add(current.Unit.transform.FindChild("East").gameObject);
+        walls.Add(current.Unit.transform.FindChild("West").gameObject);
+        walls.Add(current.Unit.transform.FindChild("North").gameObject);
+        walls.Add(current.Unit.transform.FindChild("South").gameObject);
+
+        var closedWall = walls.Where(w => w.activeSelf).First();
         
+        
+        return closedWall.transform;
     }
 
     private Vector3 EstimateLandmarkPosition(PathElement previous, PathElement current, PathElement following)
@@ -316,8 +364,6 @@ public class PathEditor : AMazeEditor {
 
         var turn = current.Turn;
         var current_waysOpen = current.Unit.WaysOpen;
-
-        var deltaPreviousFollowing = following.Unit.GridID - previous.Unit.GridID;
 
         return new Vector3(x, y, z);
     }

@@ -34,11 +34,15 @@ public class PathInMaze : MonoBehaviour, ISerializationCallbackReceiver
 		InitEmptys();
 
 		EnableHideOut();
+
+        SetLandmarks(true);
 	}
 
 	public void OnDisable()
 	{
 		DisableHideOut();
+
+        SetLandmarks(false);
 	}
 
 	void Awake()
