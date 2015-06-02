@@ -583,14 +583,15 @@ public class MazeEditor : AMazeEditor
         // store map width, height and position
         var mapWidth = maze.MazeWidthInMeter;
         var mapHeight = maze.MazeLengthInMeter;
-        var position = maze.transform.position;
+        var origin = maze.transform.position;
+        var position = maze.transform.TransformPoint(origin);
 
         // draw layer border
         Gizmos.color = Color.white;
-        Gizmos.DrawLine(position, maze.transform.TransformPoint(position + new Vector3(mapWidth, 0, 0)));
-        Gizmos.DrawLine(position, maze.transform.TransformPoint(position + new Vector3(0, 0, mapHeight)));
-        Gizmos.DrawLine(position + maze.transform.TransformPoint(new Vector3(mapWidth, 0, 0)), maze.transform.TransformPoint(position + new Vector3(mapWidth, 0, mapHeight)));
-        Gizmos.DrawLine(position + maze.transform.TransformPoint(new Vector3(0, 0, mapHeight)), maze.transform.TransformPoint(position + new Vector3(mapWidth, 0, mapHeight)));
+        Gizmos.DrawLine(maze.transform.TransformPoint(position), maze.transform.TransformPoint(position + new Vector3(mapWidth, 0, 0)));
+        Gizmos.DrawLine(maze.transform.TransformPoint(position), maze.transform.TransformPoint(position + new Vector3(0, 0, mapHeight)));
+        Gizmos.DrawLine(maze.transform.TransformPoint(position + new Vector3(mapWidth, 0, 0)), maze.transform.TransformPoint(position + new Vector3(mapWidth, 0, mapHeight)));
+        Gizmos.DrawLine(maze.transform.TransformPoint(position + new Vector3(0, 0, mapHeight)), maze.transform.TransformPoint(position + new Vector3(mapWidth, 0, mapHeight)));
         
         Vector3 lineStart;
         Vector3 lineEnde;
