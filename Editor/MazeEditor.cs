@@ -364,14 +364,14 @@ public class MazeEditor : AMazeEditor
             unitFloorOffset,
             (tilePos.y * mazeHost.RoomDimension.z) + (mazeHost.RoomDimension.z / 2f));
 
-        unit.transform.position = mazeHost.transform.position + tilePositionInLocalSpace;
-
-        // we scale the u to the tile size defined by the TileMap.TileWidth and TileMap.TileHeight fields 
-        unit.transform.localScale = new Vector3(mazeHost.RoomDimension.x, mazeHost.RoomDimension.y, mazeHost.RoomDimension.z);
-
         // set the cubes parent to the game object for organizational purposes
         unit.transform.parent = mazeHost.transform;
 
+        //unit.transform.localPosition = mazeHost.transform.position + mazeHost.transform.TransformPoint(tilePositionInLocalSpace);
+        unit.transform.localPosition = tilePositionInLocalSpace;
+        // we scale the u to the tile size defined by the TileMap.TileWidth and TileMap.TileHeight fields 
+        unit.transform.localScale = new Vector3(mazeHost.RoomDimension.x, mazeHost.RoomDimension.y, mazeHost.RoomDimension.z);
+        
         // give the u a assetName that represents it's location within the tile mazeHost
         unit.name = string.Format(maze.UnitNamePattern, tilePos.x, tilePos.y);
 
@@ -543,29 +543,14 @@ public class MazeEditor : AMazeEditor
         }
     }
 
-    private void SetRandomObject()
-    {
-        var folder = string.Format("Assets/{0}", ObjectFolderName);
-         
-        if (AssetDatabase.IsValidFolder(folder))
-        {
-            var files = Directory.GetFiles(folder);
-            foreach (var item in files)
-            {
-                Debug.Log(item);
-            }
-            //var assetImporter = ModelImporter.GetAtPath(fileName)
-        }
-        else
-        {
-            Debug.Log("Object folder not valid");
-        }
-    }
-
     #endregion
 
     protected override void RenderEditorGizmos()
     {
+        var tempMatrix = Gizmos.matrix;
+
+        Gizmos.matrix = maze.transform.localToWorldMatrix;
+
         drawFloorGrid();
 
         Gizmos.color = Color.blue;
@@ -573,9 +558,12 @@ public class MazeEditor : AMazeEditor
         if (currentSelection != null) { 
             foreach (var item in currentSelection)
             {
-                Gizmos.DrawCube(item.transform.position + new Vector3(0, maze.RoomHigthInMeter / 2, 0), new Vector3(maze.RoomDimension.x, maze.RoomHigthInMeter, maze.RoomDimension.z));    
+                var pos = item.transform.localPosition + new Vector3(0, maze.RoomHigthInMeter / 2, 0);
+                Gizmos.DrawCube(pos, new Vector3(maze.RoomDimension.x, maze.RoomHigthInMeter, maze.RoomDimension.z));    
             }
-        } 
+        }
+
+        Gizmos.matrix = tempMatrix;
     }
 
     private void drawFloorGrid()
@@ -583,15 +571,16 @@ public class MazeEditor : AMazeEditor
         // store map width, height and position
         var mapWidth = maze.MazeWidthInMeter;
         var mapHeight = maze.MazeLengthInMeter;
-        var origin = maze.transform.position;
-        var position = maze.transform.TransformPoint(origin);
+
+        //var position = maze.transform.position;
+        var position = new Vector3(0, 0, 0);
 
         // draw layer border
         Gizmos.color = Color.white;
-        Gizmos.DrawLine(maze.transform.TransformPoint(position), maze.transform.TransformPoint(position + new Vector3(mapWidth, 0, 0)));
-        Gizmos.DrawLine(maze.transform.TransformPoint(position), maze.transform.TransformPoint(position + new Vector3(0, 0, mapHeight)));
-        Gizmos.DrawLine(maze.transform.TransformPoint(position + new Vector3(mapWidth, 0, 0)), maze.transform.TransformPoint(position + new Vector3(mapWidth, 0, mapHeight)));
-        Gizmos.DrawLine(maze.transform.TransformPoint(position + new Vector3(0, 0, mapHeight)), maze.transform.TransformPoint(position + new Vector3(mapWidth, 0, mapHeight)));
+        Gizmos.DrawLine(position, position + new Vector3(mapWidth, 0, 0));
+        Gizmos.DrawLine(position, position + new Vector3(0, 0, mapHeight));
+        Gizmos.DrawLine(position + new Vector3(mapWidth, 0, 0), position + new Vector3(mapWidth, 0, mapHeight));
+        Gizmos.DrawLine(position + new Vector3(0, 0, mapHeight), position + new Vector3(mapWidth, 0, mapHeight));
         
         Vector3 lineStart;
         Vector3 lineEnde;
@@ -602,14 +591,15 @@ public class MazeEditor : AMazeEditor
             lineStart = position + new Vector3(i * maze.RoomDimension.x, 0, 0);
             lineEnde = position + new Vector3(i * maze.RoomDimension.x, 0, mapHeight);
 
-            Gizmos.DrawLine(maze.transform.TransformPoint(lineStart), maze.transform.TransformPoint(lineEnde));
+            Gizmos.DrawLine(lineStart, lineEnde);
         }
 
         for (float i = 1; i <= maze.Rows; i++)
         {
             lineStart = position + new Vector3(0, 0, i * maze.RoomDimension.z);
             lineEnde = position + new Vector3(mapWidth, 0, i * maze.RoomDimension.z);
-            Gizmos.DrawLine(maze.transform.TransformPoint(lineStart), maze.transform.TransformPoint(lineEnde));
+
+            Gizmos.DrawLine(lineStart, lineEnde);
         }
 
     }
@@ -686,11 +676,6 @@ public class MazeEditor : AMazeEditor
             if (GUILayout.Button("Disconnect", GUILayout.Width(100f)))
             {
                 TryDisconnectingCurrentSelection();
-            }
-
-            if (GUILayout.Button("Set Random Object", GUILayout.Width(100f)))
-            {
-                SetRandomObject();
             }
 
         }
@@ -804,8 +789,15 @@ public abstract class AMazeEditor : Editor {
 
     protected void RenderTileHighlighting()
     {
+        var tempMatrix = Gizmos.matrix;
+
+        Gizmos.matrix = maze.transform.localToWorldMatrix;
+
         Gizmos.color = MarkerColor;
-        Gizmos.DrawWireCube(MarkerPosition + new Vector3(0, maze.RoomHigthInMeter / 2, 0), new Vector3(maze.RoomDimension.x, maze.RoomHigthInMeter, maze.RoomDimension.z) * 1.1f);
+        var pos = MarkerPosition + new Vector3(0, maze.RoomHigthInMeter / 2, 0);
+        Gizmos.DrawWireCube(pos, new Vector3(maze.RoomDimension.x, maze.RoomHigthInMeter, maze.RoomDimension.z) * 1.1f);
+
+        Gizmos.matrix = tempMatrix;
     }
 
     public abstract void RenderSceneViewUI();
