@@ -153,12 +153,28 @@ public class MazeEditor : AMazeEditor
 
         if (GUILayout.Button("Reset Height"))
         {
-            //var walls = 
+            foreach (var item in maze.Units)
+            { 
+                int c = item.transform.childCount;
+                for (int i = 0; i < c; i++)
+                {
+                    var child = item.transform.GetChild(i);
 
-            //foreach (var item in maze.Units)
-            //{
-                
-            //}
+                    if (child.name.Equals("East") || 
+                        child.name.Equals("West") || 
+                        child.name.Equals("North") || 
+                        child.name.Equals("South"))
+                    {
+                        child.localScale = new Vector3(child.localScale.x, maze.RoomHigthInMeter, child.localScale.z);
+                        child.localPosition = new Vector3(child.localPosition.x, maze.RoomHigthInMeter / 2, child.localPosition.z);
+                    }
+
+                    if (child.name.Equals("Top"))
+                    {
+                        child.localPosition = new Vector3(child.localPosition.x, maze.RoomHigthInMeter, child.localPosition.z);
+                    }
+                }
+            }
         }
 
         GUILayout.EndHorizontal();
