@@ -587,21 +587,28 @@ public class MazeEditor : AMazeEditor
 
         // draw layer border
         Gizmos.color = Color.white;
-        Gizmos.DrawLine(position, position + new Vector3(mapWidth, 0, 0));
-        Gizmos.DrawLine(position, position + new Vector3(0, 0, mapHeight));
-        Gizmos.DrawLine(position + new Vector3(mapWidth, 0, 0), position + new Vector3(mapWidth, 0, mapHeight));
-        Gizmos.DrawLine(position + new Vector3(0, 0, mapHeight), position + new Vector3(mapWidth, 0, mapHeight));
-
+        Gizmos.DrawLine(position, maze.transform.TransformPoint(position + new Vector3(mapWidth, 0, 0)));
+        Gizmos.DrawLine(position, maze.transform.TransformPoint(position + new Vector3(0, 0, mapHeight)));
+        Gizmos.DrawLine(position + maze.transform.TransformPoint(new Vector3(mapWidth, 0, 0)), maze.transform.TransformPoint(position + new Vector3(mapWidth, 0, mapHeight)));
+        Gizmos.DrawLine(position + maze.transform.TransformPoint(new Vector3(0, 0, mapHeight)), maze.transform.TransformPoint(position + new Vector3(mapWidth, 0, mapHeight)));
+        
+        Vector3 lineStart;
+        Vector3 lineEnde;
         // draw tile cells
         Gizmos.color = Color.green;
         for (float i = 1; i <= maze.Columns; i++)
         {
-            Gizmos.DrawLine(position + new Vector3(i * maze.RoomDimension.x, 0, 0), position + new Vector3(i * maze.RoomDimension.x, 0, mapHeight));
+            lineStart = position + new Vector3(i * maze.RoomDimension.x, 0, 0);
+            lineEnde = position + new Vector3(i * maze.RoomDimension.x, 0, mapHeight);
+
+            Gizmos.DrawLine(maze.transform.TransformPoint(lineStart), maze.transform.TransformPoint(lineEnde));
         }
 
         for (float i = 1; i <= maze.Rows; i++)
         {
-            Gizmos.DrawLine(position + new Vector3(0, 0, i * maze.RoomDimension.z), position + new Vector3(mapWidth, 0, i * maze.RoomDimension.z));
+            lineStart = position + new Vector3(0, 0, i * maze.RoomDimension.z);
+            lineEnde = position + new Vector3(mapWidth, 0, i * maze.RoomDimension.z);
+            Gizmos.DrawLine(maze.transform.TransformPoint(lineStart), maze.transform.TransformPoint(lineEnde));
         }
 
     }
