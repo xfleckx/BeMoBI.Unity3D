@@ -31,6 +31,7 @@ public class InstructionEditorWindow : EditorWindow {
                         }
 
                         HudController.KnownSets.Add(loadedSet.identifier, loadedSet);
+                        EditorUtility.SetDirty(HudController);
                     }
                 }
          

@@ -29,12 +29,9 @@ public class HUDInstruction : MonoBehaviour {
 	public Text InstructionTextWide;
 
 	public RawImage InstructionImage;
-
-	public KeyCode KeyOnForward;
-	public KeyCode KeyOnBackward;
-	public KeyCode KeyOnRestart;
-
+    
 	bool SwitchToNextInstruction = false;
+    bool forceStop = false;
 
 	void Awake()
 	{
@@ -48,13 +45,9 @@ public class HUDInstruction : MonoBehaviour {
 			!InstructionTextWide)
 		{
 			throw new MissingReferenceException(referenceError);		
-		}
-
+		} 
 	}
-	
-	void Update () {
-
-	}
+	 
 
 	public void StartDisplaying(string nameOfInstructionSet)
 	{
@@ -71,12 +64,10 @@ public class HUDInstruction : MonoBehaviour {
 
 	void ActivateRendering()
 	{
-
 		for (int i = 0; i < transform.childCount; i++)
 		{
 			transform.GetChild(i).gameObject.SetActive(true);
 		}
-
 	}
 
 	public void StartDisplaying(InstructionSet set)
@@ -93,28 +84,40 @@ public class HUDInstruction : MonoBehaviour {
 
 		ActivateRendering();
 		StartCoroutine(StartInstructionRendering());
-
 	}
+
+    public void StopDisplaying()
+    {
+        forceStop = true;
+    }
+
+    public void SkipCurrent()
+    {
+        SwitchToNextInstruction = true;
+    }
 
 	IEnumerator StartInstructionRendering()
 	{
 		IEnumerator<Instruction> instructionEnumerator = currentInstructionSet.instructions.GetEnumerator();
 
-		while (instructionEnumerator.MoveNext())
+		while (instructionEnumerator.MoveNext() && !forceStop)
 		{
-			Instruction instruction = instructionEnumerator.Current;
+			var instruction = instructionEnumerator.Current;
 
 			Display(instruction);
 
-			if (instruction.DisplayTime == 0)
-			{ 
-				// TODO Keypress
-
+            if (instruction.DisplayTime == 0 && SwitchToNextInstruction)
+            {
+                SwitchToNextInstruction = false;
 				yield return new WaitForEndOfFrame();
 			} 
 			   
 			yield return new WaitForSeconds(instruction.DisplayTime);
 		}
+
+        forceStop = false;
+        
+        currentInstructionSet.instructions.Clear();
 
 		HideInstructionHUD();
 

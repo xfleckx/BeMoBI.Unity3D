@@ -15,7 +15,6 @@ public class MazeEditor : AMazeEditor
      
     public float unitFloorOffset = 0f;
 
-
     private bool PathCreationEnabled = false;
     private HashSet<GameObject> currentSelection;
     private string NameOfCurrentPath = String.Empty;

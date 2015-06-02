@@ -13,6 +13,8 @@ public class PathEditor : AMazeEditor {
     PathInMaze instance;
     beMobileMaze mazePrefab;
 
+    const string PathToPrefabs = "Assets/beMobi.Unity3D/Prefabs/";
+
     private LinkedList<MazeUnit> pathInSelection;
     private string NameOfCurrentPath = String.Empty;
 
@@ -282,7 +284,7 @@ public class PathEditor : AMazeEditor {
 
     private void DeployLandmark(PathElement element)
     {
-        var filePathToLandmarkAsset =  "Assets/beMoBi.Unity3D/Prefabs/Landmark.prefab";
+        var filePathToLandmarkAsset = string.Format("{0}Landmark.prefab",PathToPrefabs);
         var landmarkAsset = AssetDatabase.LoadAssetAtPath(filePathToLandmarkAsset, typeof(GameObject));
 
         if (landmarkAsset == null)
@@ -324,7 +326,7 @@ public class PathEditor : AMazeEditor {
     {
         var pathEnd = instance.PathElements.Last();
 
-        var obj = AssetDatabase.LoadAssetAtPath("Assets/beMobi.Unity3D/Prefabs/ObjectHideOut.prefab", typeof(GameObject));
+        var obj = AssetDatabase.LoadAssetAtPath(string.Format("{0}/ObjectHideOut.prefab", PathToPrefabs), typeof(GameObject));
 
         if (obj == null)
         {
