@@ -170,8 +170,11 @@ public class PathEditor : AMazeEditor {
 
     protected new void RenderTileHighlighting()
     {
+        var temp = Gizmos.matrix;
+        Gizmos.matrix = maze.transform.localToWorldMatrix;
         Gizmos.color = Color.blue;
         Gizmos.DrawWireCube(MarkerPosition + new Vector3(0, maze.RoomHigthInMeter / 2, 0), new Vector3(maze.RoomDimension.x, maze.RoomHigthInMeter, maze.RoomDimension.z) * 1.1f);
+        Gizmos.matrix = temp;
     }
 
     public override void RenderSceneViewUI()
@@ -250,6 +253,11 @@ public class PathEditor : AMazeEditor {
 
     private void Add(MazeUnit newUnit)
     {
+        /**
+         * 
+         * BUG Dictionary sorts the keys! So the Path will be messed up!
+         * */
+
         Debug.Log(string.Format("add {0} to path", newUnit.name));
 
         if (instance.PathElements.ContainsKey(newUnit.GridID))
@@ -393,7 +401,7 @@ public class PathEditor : AMazeEditor {
         hideOut.WaysOpen = pathEnd.Value.Unit.WaysOpen;
 
         hideOut.name = string.Format("H_P{0}",instance.ID);
-
+        maze.Units.Add(hideOut);
     }
 
     private void RemoveObjectHideOut()
