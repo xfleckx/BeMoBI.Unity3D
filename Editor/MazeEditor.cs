@@ -29,6 +29,9 @@ public class MazeEditor : AMazeEditor
     private bool modeRemoveEnabled = false;
     private bool DisconnectFromUnitPrefab = true;
 
+    private float IntendedMazeLength = 0f;
+    private float IntendedMazeWidth = 0f;
+
     private float newWallWidth = 0.003f;
 
     private string ObjectFolderName = string.Empty;
@@ -107,14 +110,18 @@ public class MazeEditor : AMazeEditor
         
         GUILayout.BeginHorizontal();
         GUILayout.Label("Length of Maze");
-        maze.MazeLengthInMeter = EditorGUILayout.FloatField(maze.MazeLengthInMeter, GUILayout.Width(50));
         GUILayout.Label("m");
+        maze.MazeLengthInMeter = EditorGUILayout.FloatField(maze.MazeLengthInMeter, GUILayout.Width(50));
+         
         GUILayout.EndHorizontal();
 
         GUILayout.BeginHorizontal();
         GUILayout.Label("Width of Maze");
-        maze.MazeWidthInMeter = EditorGUILayout.FloatField(maze.MazeWidthInMeter, GUILayout.Width(50));
+
         GUILayout.Label("m");
+        maze.MazeWidthInMeter = EditorGUILayout.FloatField(maze.MazeWidthInMeter, GUILayout.Width(50));
+         
+
         GUILayout.EndHorizontal();
 
         if (GUILayout.Button("Search for Units")) 
@@ -879,7 +886,7 @@ public abstract class AMazeEditor : Editor {
         var pos = new Vector3(currentTilePosition.x * maze.RoomDimension.x, 0, currentTilePosition.y * maze.RoomDimension.z);
 
         // set the TileMap.MarkerPosition value
-        MarkerPosition = maze.transform.position + new Vector3(pos.x + (maze.RoomDimension.x / 2), pos.y, pos.z + (maze.RoomDimension.z / 2));
+        MarkerPosition = new Vector3(pos.x + (maze.RoomDimension.x / 2), pos.y, pos.z + (maze.RoomDimension.z / 2));
     }
 
     /// <summary>
