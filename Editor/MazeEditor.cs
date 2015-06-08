@@ -15,6 +15,10 @@ public class MazeEditor : AMazeEditor
      
     public float unitFloorOffset = 0f;
 
+    public Material FloorMaterial;
+    public Material WallMaterial;
+    public Material TopMaterial;
+
     private bool PathCreationEnabled = false;
     private HashSet<GameObject> currentSelection;
     private string NameOfCurrentPath = String.Empty;
@@ -270,9 +274,83 @@ public class MazeEditor : AMazeEditor
         {
             UpdatePrefabOfCurrentMaze();
         }
-          
+
+        EditorGUILayout.BeginHorizontal();
+        WallMaterial = EditorGUILayout.ObjectField("Wall: ", WallMaterial, typeof(Material), false) as Material;
+        if(WallMaterial != null && GUILayout.Button("Apply")){
+            ApplyToAllMazeUnits((u) => { 
+            
+               int c = u.transform.childCount;
+               for (int i = 0; i < c; i++)
+               {
+                   var child = u.transform.GetChild(i);
+
+                   if (child.name.Equals("East") ||
+                       child.name.Equals("West") ||
+                       child.name.Equals("North") ||
+                       child.name.Equals("South"))
+                   {
+                       var renderer = child.gameObject.GetComponent<Renderer>();
+                       renderer.material = WallMaterial;
+                   }
+               }
+            });
+        }
+
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        FloorMaterial = EditorGUILayout.ObjectField("Floor: ", FloorMaterial, typeof(Material), false) as Material;
+        if (FloorMaterial != null && GUILayout.Button("Apply"))
+        {
+            ApplyToAllMazeUnits((u) =>
+            {
+                int c = u.transform.childCount;
+                for (int i = 0; i < c; i++)
+                {
+                    var child = u.transform.GetChild(i);
+
+                    if (child.name.Equals("Floor") )
+                    {
+                        var renderer = child.gameObject.GetComponent<Renderer>();
+                        renderer.material = FloorMaterial;
+                    }
+                }
+            });
+        }
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        TopMaterial = EditorGUILayout.ObjectField("Top: ", TopMaterial, typeof(Material), false) as Material;
+        if (TopMaterial && GUILayout.Button("Apply"))
+        {
+            ApplyToAllMazeUnits((u) =>
+            {
+                int c = u.transform.childCount;
+                for (int i = 0; i < c; i++)
+                {
+                    var child = u.transform.GetChild(i);
+
+                    if (child.name.Equals("Top"))
+                    {
+                        var renderer = child.gameObject.GetComponent<Renderer>();
+                        renderer.material = TopMaterial;
+                    }
+                }
+            });
+        }
+        EditorGUILayout.EndHorizontal();
+
         GUILayout.EndVertical();
 
+    }
+
+    private void ApplyToAllMazeUnits(Action<MazeUnit> action)
+    {
+        foreach (var item in maze.Units)
+        {
+            action(item);
+        }
     }
 
     private void Rescale(beMobileMaze focusedMaze, Vector3 newUnitScale)
