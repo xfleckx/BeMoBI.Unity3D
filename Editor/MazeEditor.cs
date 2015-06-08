@@ -185,7 +185,12 @@ public class MazeEditor : AMazeEditor
                         child.localPosition = new Vector3(child.localPosition.x, maze.RoomHigthInMeter, child.localPosition.z);
                     }
                 }
+
+                var boxCollider = item.GetComponent<BoxCollider>();
+                boxCollider.center = new Vector3(0, maze.RoomHigthInMeter / 2, 0);
+                boxCollider.size = new Vector3(1, maze.RoomHigthInMeter, 1);
             }
+
         }
 
         GUILayout.EndHorizontal();
