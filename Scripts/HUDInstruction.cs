@@ -6,24 +6,14 @@ using System.IO;
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
-public class HUDInstruction : MonoBehaviour {
+public class HUDInstruction : Singleton<HUDInstruction>, ISerializationCallbackReceiver {
 
 	private const string referenceError = "Please reference Unity GUI Text and Raw Image Components to HUDInstruction instance!";
-
-	private static HUDInstruction _instance;
-	public static HUDInstruction Instance
-	{
-		get {
-			if (!_instance)
-				return _instance = new GameObject().AddComponent<HUDInstruction>();
-			else 
-				return _instance;
-		}
-	}
-
+    
 	public InstructionSet currentInstructionSet;
+    [SerializeField]
 	public IDictionary<string, InstructionSet> KnownSets = new SortedDictionary<string, InstructionSet>();
-	
+
 	public Text InstructionTextBesideImage;
 	
 	public Text InstructionTextWide;
@@ -33,10 +23,29 @@ public class HUDInstruction : MonoBehaviour {
 	bool SwitchToNextInstruction = false;
     bool forceStop = false;
 
-	void Awake()
-	{
-		_instance = this;
-	}
+    bool isRendering = false;
+
+    public bool IsRendering
+    {
+        get { return isRendering; } 
+    }
+
+    void Awake()
+    {
+        if (instance == null)
+        {
+            //If I am the first instance, make me the Singleton
+            instance = this;
+            DontDestroyOnLoad(this);
+        }
+        else
+        {
+            //If a Singleton already exists and you find
+            //another reference in scene, destroy it!
+            if (this != instance)
+                Destroy(this.gameObject);
+        }
+    }
 
 	void Start () {
 
@@ -59,7 +68,7 @@ public class HUDInstruction : MonoBehaviour {
 
 		ActivateRendering();
 
-		StartCoroutine(StartInstructionRendering());
+		StartCoroutine(InstructionRendering());
 	}
 
 	void ActivateRendering()
@@ -70,11 +79,20 @@ public class HUDInstruction : MonoBehaviour {
 		}
 	}
 
+    public void StartDisplaying()
+    {
+        if (currentInstructionSet == null)
+            return;
+
+        ActivateRendering();
+        StartCoroutine(InstructionRendering());
+    }
+
 	public void StartDisplaying(InstructionSet set)
 	{
 		currentInstructionSet = set;
 		ActivateRendering();
-		StartCoroutine(StartInstructionRendering());
+		StartCoroutine(InstructionRendering());
 	}
 
 	public void StartDisplaying(Instruction instruction)
@@ -83,12 +101,13 @@ public class HUDInstruction : MonoBehaviour {
 		currentInstructionSet.instructions.AddLast(instruction);
 
 		ActivateRendering();
-		StartCoroutine(StartInstructionRendering());
+		StartCoroutine(InstructionRendering());
 	}
 
     public void StopDisplaying()
     {
         forceStop = true;
+        HideInstructionHUD();
     }
 
     public void SkipCurrent()
@@ -96,9 +115,14 @@ public class HUDInstruction : MonoBehaviour {
         SwitchToNextInstruction = true;
     }
 
-	IEnumerator StartInstructionRendering()
+	IEnumerator InstructionRendering()
 	{
+        forceStop = false;
+        SwitchToNextInstruction = false;
+
 		IEnumerator<Instruction> instructionEnumerator = currentInstructionSet.instructions.GetEnumerator();
+
+        Debug.Log("Start Instruction rendering");
 
 		while (instructionEnumerator.MoveNext() && !forceStop)
 		{
@@ -106,20 +130,25 @@ public class HUDInstruction : MonoBehaviour {
 
 			Display(instruction);
 
-            if (instruction.DisplayTime == 0 && SwitchToNextInstruction)
+            isRendering = true;
+
+            if (instruction.DisplayTime == 0 || SwitchToNextInstruction)
             {
-                SwitchToNextInstruction = false;
+                Debug.Log("Skip Instruction");
 				yield return new WaitForEndOfFrame();
+
+                SwitchToNextInstruction = false;
 			} 
-			   
+			
 			yield return new WaitForSeconds(instruction.DisplayTime);
 		}
 
-        forceStop = false;
-        
         currentInstructionSet.instructions.Clear();
-
+        currentInstructionSet = null;
+        
 		HideInstructionHUD();
+
+        Debug.Log("End Instruction");
 
 		yield return null;
 	}
@@ -153,7 +182,9 @@ public class HUDInstruction : MonoBehaviour {
 	void HideInstructionHUD()
 	{
 		Debug.Log("Calling HideInstructionHUD");
-		
+
+        isRendering = false;
+
 		for (int i = 0; i < transform.childCount; i++)
 		{
 			transform.GetChild(i).gameObject.SetActive(false);    
@@ -191,6 +222,26 @@ public class HUDInstruction : MonoBehaviour {
 	//    InstructionTextBesideImage.text = string.Empty;
 	//}
 #endregion
+
+    #region Serialization
+    [SerializeField]
+    private List<InstructionSet> serializebaleInstructionList = new List<InstructionSet>();
+
+    public void OnAfterDeserialize()
+    {
+        foreach (var item in serializebaleInstructionList)
+        {
+            KnownSets.Add(item.name, item);
+        }
+    }
+
+    public void OnBeforeSerialize()
+    {
+        serializebaleInstructionList.Clear();
+        serializebaleInstructionList.AddRange(KnownSets.Values); 
+    }
+
+    #endregion 
 }
 
 public class InstructionFactory
@@ -199,9 +250,9 @@ public class InstructionFactory
 
 		var lines = File.ReadAllLines(fileName, System.Text.Encoding.UTF8);
 
-		var resultSet = new InstructionSet();
+		var resultSet = ScriptableObject.CreateInstance<InstructionSet>();
 
-		resultSet.identifier = Path.GetFileNameWithoutExtension(fileName);
+		resultSet.name = Path.GetFileNameWithoutExtension(fileName);
 
 		Process(lines.ToList(), resultSet);
 
@@ -264,23 +315,51 @@ public class InstructionFactory
 
 }
 
-public class InstructionSet 
+[Serializable]
+public class InstructionSet : ScriptableObject, ISerializationCallbackReceiver
 {
-	public string identifier = string.Empty;
+    void OnEnable()
+    {
+        Debug.Log(string.Format( "InstructionSet {0} created", name), this);
+    }
 
 	public LinkedList<Instruction> instructions = new LinkedList<Instruction>();
-	 
+
+    [SerializeField]
+    private List<Instruction> serializedInstructionList = new List<Instruction>();
+
+    public void OnBeforeSerialize()
+    {
+        serializedInstructionList.Clear();
+        foreach (var item in instructions)
+        {
+            serializedInstructionList.Add(item);
+        }
+    }
+
+    public void OnAfterDeserialize()
+    {
+        foreach (var item in serializedInstructionList)
+        {
+            instructions.AddLast(item);
+        }
+    }
+    
+    public override string ToString()
+    {
+        return string.Format("IS: {0}", name);
+    }
 }
 
+[Serializable]
 public class Instruction
-{
+{ 
 	public string Text;
-
 	public float DisplayTime;
 
 	public Instruction()
 	{
-		Text = "Fizz";
+        Text = String.Empty;
 		DisplayTime = 0f;
 	}
 
@@ -291,9 +370,12 @@ public class Instruction
 	}
 }
 
+[Serializable]
 public class InstructionWithImage : Instruction
-{
+{ 
 	public string ImageName;
+    
+    public string PathToImageAsResource;
 
 	public Texture ImageTexture;
 }

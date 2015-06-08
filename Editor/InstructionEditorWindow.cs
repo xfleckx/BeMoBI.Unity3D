@@ -30,19 +30,19 @@ public class InstructionEditorWindow : EditorWindow {
                             EditorGUILayout.HelpBox("The file was found, but did not contain any instructions!", MessageType.Error);
                         }
 
-                        HudController.KnownSets.Add(loadedSet.identifier, loadedSet);
+                        HudController.KnownSets.Add(loadedSet.name, loadedSet);
                         EditorUtility.SetDirty(HudController);
                     }
                 }
          
                 if (GUILayout.Button("Save Instruction set"))
                 {
-                    EditorUtility.SaveFilePanelInProject(fileName, HudController.currentInstructionSet.identifier, "txt", "Save the current Instruction");
+                    EditorUtility.SaveFilePanelInProject(fileName, HudController.currentInstructionSet.name, "txt", "Save the current Instruction");
                 }
         
                 if (HudController.KnownSets.Any())
                 {
-                        RenderInstructionComboBox();
+                    RenderInstructionComboBox();
                 }    
 
             GUILayout.EndVertical();
@@ -63,19 +63,26 @@ public class InstructionEditorWindow : EditorWindow {
 
     private void RenderInstructionComboBox()
     {
-        var optionCount = HudController.KnownSets.Keys.Count;
-        var options = new string[optionCount];
-        HudController.KnownSets.Keys.CopyTo(options, 0);
-        setSelectionIndex = EditorGUILayout.Popup(setSelectionIndex, options);
+        //var optionCount = HudController.KnownSets.Keys.Count;
+        //var options = new string[optionCount];
+        //HudController.KnownSets.Keys.CopyTo(options, 0);
+        //setSelectionIndex = EditorGUILayout.Popup(setSelectionIndex, options);
 
-        var sets = new InstructionSet[HudController.KnownSets.Keys.Count];
-        HudController.KnownSets.Values.CopyTo(sets, 0);
-        HudController.currentInstructionSet = sets[setSelectionIndex];
-    }
+        //var sets = new InstructionSet[HudController.KnownSets.Keys.Count];
+        //HudController.KnownSets.Values.CopyTo(sets, 0);
+
+        setSelectionIndex = HudController.KnownSets.Values.RenderAsSelectionBox(setSelectionIndex);
+
+        HudController.currentInstructionSet = HudController.KnownSets.ElementAt(setSelectionIndex).Value;
+    } 
 
     private Vector2 scrollPosition;
     private void Render(InstructionSet set)
     {
+        if (set.instructions == null) { 
+            Debug.Log("Empty instructions");
+            return;
+        }
         scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
         
         foreach (var item in set.instructions)
@@ -141,7 +148,6 @@ public class InstructionEditorWindow : EditorWindow {
         var demo = new InstructionWithImage();
 
         demo.DisplayTime = 0f;
-
 
         set.instructions.AddLast(new Instruction()
         {

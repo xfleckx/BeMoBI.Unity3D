@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Linq;
 using UnityEditor;
 using UnityEngine.UI;
 
@@ -7,33 +8,32 @@ using UnityEngine.UI;
 public class InstructionEditor : Editor {
 
     private bool showHUDElementReferences = false;
-
+    private int selectedSetIndex = 0;
     public override void OnInspectorGUI()
     {
         HUDInstruction instructions = (HUDInstruction)target;
 
         EditorGUILayout.BeginVertical();
 
-        showHUDElementReferences = EditorGUILayout.Foldout(showHUDElementReferences, "HUD Elements");
-        
-        if (showHUDElementReferences) { 
-            instructions.InstructionTextBesideImage = (Text) EditorGUILayout.ObjectField(new GUIContent("Text renderer"), instructions.InstructionTextBesideImage, typeof(Text), true);
-            instructions.InstructionTextWide = (Text) EditorGUILayout.ObjectField(new GUIContent("Text w/o Image"), instructions.InstructionTextWide, typeof(Text), true);
-            instructions.InstructionImage = (RawImage) EditorGUILayout.ObjectField(new GUIContent("Image renderer"), instructions.InstructionImage, typeof(RawImage), true);
-            
+        if(instructions.KnownSets.Any()){
+            selectedSetIndex = instructions.KnownSets.Values.RenderAsSelectionBox(selectedSetIndex);
+            instructions.currentInstructionSet = instructions.KnownSets.ElementAt(selectedSetIndex).Value;
         }
-        
+        else
+            EditorGUILayout.HelpBox("No instructions available! Start with loading a set! - (Edit)", MessageType.Info);
+
         if (GUILayout.Button("Play Instructions"))
         {
             if (instructions.currentInstructionSet == null)
-            {
                 instructions.currentInstructionSet = InstructionEditorWindow.CreateExampleInstructionSet();
-            }
 
-            instructions.StartDisplaying("NameOfInstructionSet");
+            if(instructions.currentInstructionSet != null && !instructions.currentInstructionSet.instructions.Any())
+                instructions.currentInstructionSet = InstructionEditorWindow.CreateExampleInstructionSet();
+
+            instructions.StartDisplaying();
         }
 
-        if (GUILayout.Button("Play Instructions"))
+        if (GUILayout.Button("Stop Instructions"))
         {
             instructions.StopDisplaying();
         }
@@ -54,6 +54,16 @@ public class InstructionEditor : Editor {
 
         EditorGUILayout.EndVertical();
 
+        showHUDElementReferences = EditorGUILayout.Foldout(showHUDElementReferences, "HUD Elements");
+
+        if (showHUDElementReferences)
+        {
+            instructions.InstructionTextBesideImage = (Text)EditorGUILayout.ObjectField(new GUIContent("Text renderer"), instructions.InstructionTextBesideImage, typeof(Text), true);
+            instructions.InstructionTextWide = (Text)EditorGUILayout.ObjectField(new GUIContent("Text w/o Image"), instructions.InstructionTextWide, typeof(Text), true);
+            instructions.InstructionImage = (RawImage)EditorGUILayout.ObjectField(new GUIContent("Image renderer"), instructions.InstructionImage, typeof(RawImage), true);
+
+        }
+        
     }
 
 }
