@@ -241,15 +241,30 @@ public class MazeEditor : AMazeEditor
 
         EditorGUILayout.EndHorizontal();
 
-        if (GUILayout.Button("Clone Maze", GUILayout.Width(255)))
+        if (GUILayout.Button("Change Wall Positions"))
         {
-            var clone = GameObject.Instantiate(maze);
+            foreach (var unit in maze.Units)
+            {
+                var north = unit.transform.FindChild("North");
+                north.localPosition = new Vector3(0, north.localPosition.y, 0.495f);
+                var south = unit.transform.FindChild("South");
+                south.localPosition = new Vector3(0, south.localPosition.y, -0.495f);
+                var west = unit.transform.FindChild("West");
+                west.localPosition = new Vector3(-0.495f, west.localPosition.y, 0.005f);
+                var east = unit.transform.FindChild("East");
+                east.localPosition = new Vector3(0.495f, east.localPosition.y, 0.005f);
+            }
         }
 
-        if (GUILayout.Button("Create Maze Prefab", GUILayout.Width(255)))
-        {
-            SavePrefabAndCreateCompanionFolder();
-        }
+        //if (GUILayout.Button("Clone Maze", GUILayout.Width(255)))
+        //{
+        //    var clone = GameObject.Instantiate(maze);
+        //}
+
+        //if (GUILayout.Button("Create Maze Prefab", GUILayout.Width(255)))
+        //{
+        //    SavePrefabAndCreateCompanionFolder();
+        //}
 
         if (referenceToPrefab && GUILayout.Button("Update Prefab"))
         {
