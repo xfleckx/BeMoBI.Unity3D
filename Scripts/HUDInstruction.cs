@@ -11,6 +11,9 @@ public class HUDInstruction : Singleton<HUDInstruction>, ISerializationCallbackR
 	private const string referenceError = "Please reference Unity GUI Text and Raw Image Components to HUDInstruction instance!";
     
 	public InstructionSet currentInstructionSet;
+
+    public Instruction currentInstruction;
+
     [SerializeField]
 	public IDictionary<string, InstructionSet> KnownSets = new SortedDictionary<string, InstructionSet>();
 
@@ -88,6 +91,15 @@ public class HUDInstruction : Singleton<HUDInstruction>, ISerializationCallbackR
         StartCoroutine(InstructionRendering());
     }
 
+    public void DisplayDirect(InstructionSet set){
+        ActivateRendering();
+
+        currentInstructionSet = set;
+        currentInstruction = set.instructions.First();
+
+        Display(currentInstruction);
+    }
+
 	public void StartDisplaying(InstructionSet set)
 	{
 		currentInstructionSet = set;
@@ -155,20 +167,25 @@ public class HUDInstruction : Singleton<HUDInstruction>, ISerializationCallbackR
 	
 	void Display(Instruction instruction){
 
-		InstructionTextBesideImage.text = string.Empty;
-		InstructionTextWide.text = instruction.Text;
-		InstructionImage.gameObject.SetActive(false); 
-	}
+        if (instruction.ImageTexture != null)
+        {
+            InstructionTextBesideImage.text = instruction.Text;
+            InstructionTextWide.text = string.Empty;
+            InstructionImage.gameObject.SetActive(true);
 
-	void Display(InstructionWithImage instruction)
-	{
-		InstructionTextBesideImage.text = instruction.Text;
-		InstructionTextWide.text = string.Empty;
-		InstructionImage.gameObject.SetActive(true);
-		
-		if (instruction.ImageTexture != null) { 
-			InstructionImage.texture = instruction.ImageTexture;
-		}
+            if (instruction.ImageTexture != null)
+            {
+                InstructionImage.texture = instruction.ImageTexture;
+            }
+        }
+        else
+        {
+
+            InstructionTextBesideImage.text = string.Empty;
+            InstructionTextWide.text = instruction.Text;
+            InstructionImage.gameObject.SetActive(false);
+
+        }
 	}
 
 	void Display(GameObject aVisibleObject)
@@ -238,7 +255,10 @@ public class HUDInstruction : Singleton<HUDInstruction>, ISerializationCallbackR
     public void OnBeforeSerialize()
     {
         serializebaleInstructionList.Clear();
-        serializebaleInstructionList.AddRange(KnownSets.Values); 
+
+        var test = KnownSets.Values.ToArray();
+
+        serializebaleInstructionList.AddRange(test); 
     }
 
     #endregion 
@@ -293,7 +313,7 @@ public class InstructionFactory
 			var temp = set.instructions.Last.Value;
 			set.instructions.RemoveLast();
 
-			var instructionContainingImage = new InstructionWithImage();
+			var instructionContainingImage = new Instruction();
 			instructionContainingImage.Text = temp.Text;
 			instructionContainingImage.DisplayTime = temp.DisplayTime;
 			instructionContainingImage.ImageName = imageName;
@@ -355,8 +375,14 @@ public class InstructionSet : ScriptableObject, ISerializationCallbackReceiver
 public class Instruction
 { 
 	public string Text;
+
 	public float DisplayTime;
 
+    public string ImageName;
+
+    public string PathToImageAsResource;
+
+    public Texture ImageTexture;
 	public Instruction()
 	{
         Text = String.Empty;
@@ -368,17 +394,7 @@ public class Instruction
 		this.Text = textFromSomewhere;
 		this.DisplayTime = time;
 	}
-}
-
-[Serializable]
-public class InstructionWithImage : Instruction
-{ 
-	public string ImageName;
-    
-    public string PathToImageAsResource;
-
-	public Texture ImageTexture;
-}
+} 
  
 public static class StringExtensions
 {

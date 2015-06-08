@@ -257,9 +257,7 @@ public class PathEditor : AMazeEditor {
          * 
          * BUG Dictionary sorts the keys! So the Path will be messed up!
          * */
-
-        Debug.Log(string.Format("add {0} to path", newUnit.name));
-
+          
         if (instance.PathElements.ContainsKey(newUnit.GridID))
             return;
 

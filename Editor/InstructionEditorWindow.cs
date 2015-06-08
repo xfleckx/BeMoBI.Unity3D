@@ -96,39 +96,30 @@ public class InstructionEditorWindow : EditorWindow {
     private void Render(Instruction instruction)
     {
         GUILayout.Space(instructionBoxMargin.y);
+
         GUILayout.BeginVertical();
 
-            instruction.Text = GUILayout.TextArea(instruction.Text, GUILayout.MinHeight(50f)) as string;
-            instruction.DisplayTime = EditorGUILayout.FloatField("Display Time", instruction.DisplayTime);
-
-        GUILayout.EndHorizontal();
-    }
-
-    private void Render(InstructionWithImage instruction)
-    {
         GUILayout.BeginHorizontal();
 
-        if (instruction.ImageTexture == null) {
+        if (instruction.ImageTexture == null)
+        {
 
             var texture = Resources.Load<Texture2D>(instruction.ImageName) as Texture2D;
             instruction.ImageTexture = texture;
             GUILayout.Box(instruction.ImageTexture, GUILayout.MaxHeight(100), GUILayout.MaxWidth(100));
         }
         else
-        {  
+        {
             GUILayout.Box(instruction.ImageName, GUILayout.MaxHeight(100), GUILayout.MaxWidth(100));
         }
 
 
-        GUILayout.BeginVertical();
-
-            instruction.Text = GUILayout.TextArea(instruction.Text) as string;
-            instruction.DisplayTime = EditorGUILayout.FloatField("Display Time", instruction.DisplayTime);
+        instruction.Text = GUILayout.TextArea(instruction.Text, GUILayout.MinHeight(50f)) as string;
+        instruction.DisplayTime = EditorGUILayout.FloatField("Display Time", instruction.DisplayTime);
 
         GUILayout.EndHorizontal();
 
-        GUILayout.EndHorizontal();
-
+        GUILayout.EndVertical();
     }
 
     void OnDestroy()
@@ -143,11 +134,7 @@ public class InstructionEditorWindow : EditorWindow {
         {
             Text = "First Instruction to display for 1.5 seconds",
             DisplayTime = 1.5f
-        });
-
-        var demo = new InstructionWithImage();
-
-        demo.DisplayTime = 0f;
+        }); 
 
         set.instructions.AddLast(new Instruction()
         {
