@@ -22,6 +22,8 @@ public class PathEditor : AMazeEditor {
 
     public Vector3 LandmarkScaling = new Vector3(0.3f, 0.3f, 1);
 
+    public Vector3 LandmarkOffset = new Vector3(0f, 0f, 0f);
+
     private bool PathCreationEnabled; 
     public PathEditorMode ActiveMode { get; set; }
     PathInMaze pathShouldBeRemoved;
@@ -88,11 +90,20 @@ public class PathEditor : AMazeEditor {
         EditorGUILayout.Separator();
 
         LandmarkScaling = EditorGUILayout.Vector3Field("Landmark Scale", LandmarkScaling);
-
+        LandmarkOffset = EditorGUILayout.Vector3Field("Landmark Offset", LandmarkOffset);
+        EditorGUILayout.BeginHorizontal();
+        
         if (GUILayout.Button("Deploy Landmarks"))
         {
             DeployLandmarks();
         }
+        if (GUILayout.Button("Set Offset"))
+        {
+            instance.Landmarks.ForEach(lm => lm.transform.localPosition = lm.transform.localPosition + LandmarkOffset);
+        }
+
+        EditorGUILayout.EndHorizontal();
+
         if (GUILayout.Button("Remove Landmarks"))
         {
             RemoveLandmarks();
@@ -568,6 +579,5 @@ public class PathEditor : AMazeEditor {
             var end = instance.PathElements.Last().Value.Unit.transform;
             Handles.ConeCap(this.GetInstanceID(), end.position + hoveringDistance, start.rotation, 0.3f);
         }
-    }
-
+    } 
 }
