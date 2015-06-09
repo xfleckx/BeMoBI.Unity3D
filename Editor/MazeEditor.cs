@@ -288,6 +288,27 @@ public class MazeEditor : AMazeEditor
             }
         }
 
+        if (GUILayout.Button("Repair Unit List"))
+        {
+            var unitsExceptMissingReference = maze.Units.Where(u => u != null);
+            
+            maze.Units.Clear();
+            
+            foreach (var item in unitsExceptMissingReference)
+            {
+                maze.Units.Add(item);
+            }
+            
+            for (int i = 0; i < maze.transform.childCount; i++)
+            {
+                var existing = maze.transform.GetChild(i).GetComponent<MazeUnit>();
+
+                if (existing != null && !maze.Units.Contains(existing))
+                    maze.Units.Add(existing);
+            }
+
+        }
+
         EditorGUILayout.BeginHorizontal();
         WallMaterial = EditorGUILayout.ObjectField("Wall: ", WallMaterial, typeof(Material), false) as Material;
         if(WallMaterial != null && GUILayout.Button("Apply")){
