@@ -406,7 +406,7 @@ public class PathEditor : AMazeEditor {
         hideOut.transform.parent = instance.transform;
         hideOut.transform.localScale = pathEnd.Value.Unit.transform.localScale;
         hideOut.transform.localPosition = pathEnd.Value.Unit.transform.localPosition;
-
+        hideOut.transform.localRotation = Quaternion.identity;
         hideOut.WaysOpen = pathEnd.Value.Unit.WaysOpen;
 
         hideOut.name = string.Format("H_P{0}",instance.ID);
