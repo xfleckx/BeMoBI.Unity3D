@@ -407,8 +407,11 @@ public class PathEditor : AMazeEditor {
         if (instance.HideOut != null)
         {
             var pathEnd = instance.HideOutReplacement;
+            
+            maze.Units.Remove(instance.HideOut);
 
             DestroyImmediate(instance.HideOut.gameObject);
+            
             instance.HideOut = null;
 
             pathEnd.gameObject.SetActive(true);
