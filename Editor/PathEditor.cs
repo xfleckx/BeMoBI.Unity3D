@@ -320,6 +320,7 @@ public class PathEditor : AMazeEditor {
         
         element.Landmark = newLandmark; 
         element.Landmark.transform.parent = element.Unit.transform;
+        element.Landmark.transform.rotation = Quaternion.identity;
 
         int index = instance.PathElements.Values.ToList().FindIndex((p) => p.Equals(element));
         var previous = instance.PathElements.Values.ElementAt(index - 1);
