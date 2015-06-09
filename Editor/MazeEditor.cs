@@ -280,6 +280,14 @@ public class MazeEditor : AMazeEditor
             UpdatePrefabOfCurrentMaze();
         }
 
+        if (GUILayout.Button("Correct Unit Positions"))
+        {
+            foreach (var unit in maze.Units)
+            {
+                unit.transform.localPosition = unit.transform.position;
+            }
+        }
+
         EditorGUILayout.BeginHorizontal();
         WallMaterial = EditorGUILayout.ObjectField("Wall: ", WallMaterial, typeof(Material), false) as Material;
         if(WallMaterial != null && GUILayout.Button("Apply")){
@@ -362,8 +370,6 @@ public class MazeEditor : AMazeEditor
     {
         foreach (var item in focusedMaze.Units)
         {
-            item.transform.localScale = newUnitScale;
-
             InitializeUnit(focusedMaze, item.GridID, item.gameObject); 
         }
     }
