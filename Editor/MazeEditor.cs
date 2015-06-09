@@ -147,7 +147,7 @@ public class MazeEditor : AMazeEditor
 
         GUILayout.BeginHorizontal();
 
-        maze.RoomDimension = EditorGUILayout.Vector3Field("Room Dimension", maze.RoomDimension);
+        maze.RoomDimension = EditorGUILayout.Vector3Field("Room Dimension", new Vector3(maze.RoomDimension.x, maze.RoomHigthInMeter, maze.RoomDimension.z));
         
         if (GUILayout.Button("Rescale"))
         {
@@ -360,8 +360,6 @@ public class MazeEditor : AMazeEditor
 
     private void Rescale(beMobileMaze focusedMaze, Vector3 newUnitScale)
     {
-        var origin = focusedMaze.transform.position;
-
         foreach (var item in focusedMaze.Units)
         {
             item.transform.localScale = newUnitScale;
@@ -743,31 +741,38 @@ public class MazeEditor : AMazeEditor
 
         GUILayout.Space(10f);
         
-        EditingModeEnabled = GUILayout.Toggle(EditingModeEnabled, "Editing Mode");
-
         #region Editing Mode UI
 
-        if (EditingModeEnabled)
-        {
-            if (ActiveMode != MazeEditorMode.EDITING) {
-                DisableModesExcept(MazeEditorMode.EDITING);
-                EditorModeProcessEvent = null;
-                EditorModeProcessEvent += EditingMode;
-                ActiveMode = MazeEditorMode.EDITING;
+        if (MazeDoesNotContainPaths())
+        { 
+            EditingModeEnabled = GUILayout.Toggle(EditingModeEnabled, "Editing Mode");
+
+            if (EditingModeEnabled)
+            {
+                if (ActiveMode != MazeEditorMode.EDITING) {
+                    DisableModesExcept(MazeEditorMode.EDITING);
+                    EditorModeProcessEvent = null;
+                    EditorModeProcessEvent += EditingMode;
+                    ActiveMode = MazeEditorMode.EDITING;
+                }
+                GUILayout.BeginHorizontal();
+                GUILayout.Space(15f);
+                GUILayout.BeginVertical();
+                modeAddEnabled = GUILayout.Toggle(!modeRemoveEnabled, "Adding Cells");
+                modeRemoveEnabled = GUILayout.Toggle(!modeAddEnabled, "Erasing Cells");
+                GUILayout.EndVertical();
+                GUILayout.EndHorizontal();
             }
-            GUILayout.BeginHorizontal();
-            GUILayout.Space(15f);
-            GUILayout.BeginVertical();
-            modeAddEnabled = GUILayout.Toggle(!modeRemoveEnabled, "Adding Cells");
-            modeRemoveEnabled = GUILayout.Toggle(!modeAddEnabled, "Erasing Cells");
-            GUILayout.EndVertical();
-            GUILayout.EndHorizontal();
+            else
+            {
+                modeRemoveEnabled = false;
+                modeAddEnabled = false;
+                EditorModeProcessEvent -= EditingMode;
+            }
         }
         else
         {
-            modeRemoveEnabled = false;
-            modeAddEnabled = false;
-            EditorModeProcessEvent -= EditingMode;
+            GUILayout.Label("Editing disabled, \n Maze contains paths!");
         }
         #endregion
 
@@ -776,6 +781,7 @@ public class MazeEditor : AMazeEditor
         SelectionModeEnabled = GUILayout.Toggle(SelectionModeEnabled, "Selection Mode");
 
         #region Selection Mode UI
+
         if (SelectionModeEnabled) {
 
             if (ActiveMode != MazeEditorMode.SELECTION) {
@@ -798,7 +804,6 @@ public class MazeEditor : AMazeEditor
             {
                 TryDisconnectingCurrentSelection();
             }
-
         }
         else
         {
@@ -819,6 +824,21 @@ public class MazeEditor : AMazeEditor
         GUILayout.EndVertical();
         
         Handles.EndGUI();
+    }
+
+    private bool MazeDoesNotContainPaths()
+    {
+        var controller = maze.GetComponent<PathController>();
+        
+        if (controller == null)
+            return false;
+
+        if (!controller.Paths.Any())
+            controller.ForcePathLookup();
+
+        var hasPaths = controller.Paths.Any(p => p.PathElements.Any());
+
+        return !hasPaths;
     }
 
     void RenderMazeGrid() {

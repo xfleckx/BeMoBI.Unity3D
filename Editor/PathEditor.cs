@@ -493,13 +493,6 @@ public class PathEditor : AMazeEditor {
         return current;
     }
 
-    public static PathElement GetTurnType(PathElement current, PathElement last)
-    {  
-        
-
-        return current;
-    }
-
     private void Remove(MazeUnit unit)
     {
         instance.PathElements.Remove(unit.GridID);
@@ -554,6 +547,11 @@ public class PathEditor : AMazeEditor {
             {
                 if (last == null)
                 {
+                    last = iterator.Current.Unit;
+                    continue;
+                }
+
+                if (last == null || iterator.Current.Unit == null) { 
                     last = iterator.Current.Unit;
                     continue;
                 }
