@@ -491,7 +491,7 @@ public class MazeEditor : AMazeEditor
         //unit.transform.localPosition = mazeHost.transform.position + mazeHost.transform.TransformPoint(tilePositionInLocalSpace);
         unit.transform.localPosition = tilePositionInLocalSpace;
         // we scale the u to the tile size defined by the TileMap.TileWidth and TileMap.TileHeight fields 
-        unit.transform.localScale = new Vector3(mazeHost.RoomDimension.x, mazeHost.RoomDimension.y, mazeHost.RoomDimension.z);
+        unit.transform.localScale = new Vector3(mazeHost.RoomDimension.x, mazeHost.RoomDimension.y * maze.RoomHigthInMeter, mazeHost.RoomDimension.z);
         
         // give the u a assetName that represents it's location within the tile mazeHost
         unit.name = string.Format(maze.UnitNamePattern, tilePos.x, tilePos.y);
