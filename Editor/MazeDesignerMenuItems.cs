@@ -14,8 +14,8 @@ public class MazeDesignerMenuItems : ScriptableObject
         var prefab = PrefabUtility.CreateEmptyPrefab(filePath);
 
         GameObject mazeHost = new GameObject("beMoBIMaze");
-        var maze = mazeHost.AddComponent<beMobileMaze>();
-        var pathController = mazeHost.AddComponent<PathController>();
+        mazeHost.AddComponent<beMobileMaze>();
+        mazeHost.AddComponent<PathController>();
         PrefabUtility.ReplacePrefab(mazeHost, prefab, ReplacePrefabOptions.ConnectToPrefab);
 
         EditorUtility.SetDirty(prefab);

@@ -6,8 +6,6 @@ using UnityEngine.UI;
 [CustomEditor(typeof(VirtualRealityManager))]
 public class VRManagerInspector : Editor
 {
-    private bool showHUDElementReferences = false;
-
     private VirtualRealityManager vrcontroller;
 
     public override void OnInspectorGUI()

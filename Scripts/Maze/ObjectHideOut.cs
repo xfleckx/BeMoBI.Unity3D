@@ -7,7 +7,7 @@ public class ObjectHideOut : MazeUnit {
     private Transform targetTransform;
     private Quaternion rotation;
     private Vector3 position;
-    private Vector3 scaling;
+    private Vector3 scaling = Vector3.one;
 
     public GameObject TargetObject;
 

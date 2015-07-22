@@ -18,10 +18,8 @@ public class MazeEditor : AMazeEditor
     public Material FloorMaterial;
     public Material WallMaterial;
     public Material TopMaterial;
-
-    private bool PathCreationEnabled = false;
+     
     private HashSet<GameObject> currentSelection;
-    private string NameOfCurrentPath = String.Empty;
 
     private string PathToMazePrefab = string.Empty;
     private string PathToMazeCompanionFolder = string.Empty;
@@ -31,22 +29,15 @@ public class MazeEditor : AMazeEditor
     private bool EditingModeEnabled = false;
     private bool modeAddEnabled = false;
     private bool modeRemoveEnabled = false;
-    private bool DisconnectFromUnitPrefab = true;
-
-    private float IntendedMazeLength = 0f;
-    private float IntendedMazeWidth = 0f;
 
     private float newWallWidth = 0.003f;
-
-    private string ObjectFolderName = string.Empty;
 
     private UnityEngine.Object referenceToPrefab;
 
     private MazeEditorMode ActiveMode = MazeEditorMode.NONE;
 
     private MazeUnit lastAddedUnit;
-
-    private GUIStyle sceneViewEditorStyle;
+     
       
     public void OnEnable()
     { 
@@ -65,8 +56,6 @@ public class MazeEditor : AMazeEditor
 
             PathToMazeCompanionFolder = AssetHelper.GetOrCreateCompanionFolderForPrefab(PathToMazePrefab);
         }
-
-        sceneViewEditorStyle = new GUIStyle();
 
         if (maze) {
             maze.EditorGizmoCallbacks += RenderTileHighlighting;
@@ -749,8 +738,6 @@ public class MazeEditor : AMazeEditor
         }
 
     }
-
-    string currentPathName = string.Empty;
 
     public override void RenderSceneViewUI()
     {

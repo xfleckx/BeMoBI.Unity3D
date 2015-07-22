@@ -11,12 +11,9 @@ public enum PathEditorMode { NONE, PATH_CREATION }
 public class PathEditor : AMazeEditor {
 
     PathInMaze instance;
-    beMobileMaze mazePrefab;
-
     const string PathToPrefabs = "Assets/beMobi.Unity3D/Prefabs/";
 
     private LinkedList<MazeUnit> pathInSelection;
-    private string NameOfCurrentPath = String.Empty;
 
     private string pathElementPattern = "{0} {1} = {2} turn {3}";
 
@@ -27,8 +24,7 @@ public class PathEditor : AMazeEditor {
     private bool PathCreationEnabled; 
     public PathEditorMode ActiveMode { get; set; }
     PathInMaze pathShouldBeRemoved;
-    string currentPathName = string.Empty;
-      
+
     private bool showElements;
 
     public void OnEnable()
@@ -67,7 +63,6 @@ public class PathEditor : AMazeEditor {
 
         if (instance != null) {  
             maze = instance.GetComponent<beMobileMaze>();
-            mazePrefab = PrefabUtility.GetPrefabParent(maze) as beMobileMaze;
         }
         if(maze == null) throw new MissingComponentException(string.Format("The Path Controller should be attached to a {0} instance", typeof(beMobileMaze).Name));
 
@@ -322,10 +317,6 @@ public class PathEditor : AMazeEditor {
         element.Landmark.transform.parent = element.Unit.transform;
         element.Landmark.transform.rotation = Quaternion.identity;
 
-        int index = instance.PathElements.Values.ToList().FindIndex((p) => p.Equals(element));
-        var previous = instance.PathElements.Values.ElementAt(index - 1);
-        var following = instance.PathElements.Values.ElementAt(index + 1);
-       // element.Landmark.transform = EstimateLandmarkPosition( previous, element, following);
         var newTransform = GetLandmarkTransform(element);
 
         float xOffset = 0f;
@@ -373,17 +364,8 @@ public class PathEditor : AMazeEditor {
 
     private Vector3 EstimateLandmarkPosition(PathElement previous, PathElement current, PathElement following)
     {
-        float x, y, z;
-        x = 0f;
-        y = 0f;
-        z = 0f;
-
-        y = 1.65f;
-
-        var turn = current.Turn;
-        var current_waysOpen = current.Unit.WaysOpen;
-
-        return new Vector3(x, y, z);
+        throw new NotImplementedException("Implementation not finished!");
+        
     }
 
     private void DeployObjectHideOut()

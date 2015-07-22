@@ -46,9 +46,6 @@ public class Waypoint : beMoBIBase, IEventSystemHandler {
 		SendMessageUpwards("RecieveWaypointEvent", name);
 	}
 
-
-	private Vector3 gizmoSize = new Vector3(0.01f, 0.01f, 0.01f);
-
 	void OnDrawGizmos()
 	{
 		Gizmos.DrawWireSphere(transform.position, 0.1f); 
