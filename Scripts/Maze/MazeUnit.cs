@@ -30,8 +30,16 @@ public class MazeUnit : MonoBehaviour {
 	public virtual void Open(OpenDirections direction)
 	{
 		var directionName = Enum.GetName(typeof(OpenDirections), direction);
-		
-		transform.FindChild(directionName).gameObject.SetActive(false);
+
+        var expectedChild = transform.FindChild(directionName);
+
+        if (expectedChild != null) { 
+            expectedChild.gameObject.SetActive(false);
+        }
+        else
+        {
+            Debug.LogError(string.Format("Children with name {0} expected but not found!", directionName));
+        }
 
 		WaysOpen |= direction;
 	}
