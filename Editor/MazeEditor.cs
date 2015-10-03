@@ -862,7 +862,7 @@ public class MazeEditor : AMazeEditor
         if (controller == null)
             return false;
 
-        if (!controller.Paths.Any())
+        if (!controller.Paths.Any() || controller.Paths.Any((p) =>  p == null))
             controller.ForcePathLookup();
 
         var hasPaths = controller.Paths.Any(p => p.PathElements.Any());
