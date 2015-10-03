@@ -454,7 +454,7 @@ public class PathEditor : AMazeEditor {
     {
         var x0 = sec2last.Unit.GridID.x;
         var y0 = sec2last.Unit.GridID.y;
-        var x1 = last.Unit.GridID.x;
+        //  var x1 = last.Unit.GridID.x; // why unused?
         var y1 = last.Unit.GridID.y;
         var x2 = current.Unit.GridID.x;
         var y2 = current.Unit.GridID.y;
