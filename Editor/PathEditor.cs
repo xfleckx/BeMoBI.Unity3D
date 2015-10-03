@@ -11,7 +11,7 @@ public enum PathEditorMode { NONE, PATH_CREATION }
 public class PathEditor : AMazeEditor {
 
     PathInMaze instance;
-    const string PathToPrefabs = "Assets/beMobi.Unity3D/Prefabs/";
+    const string PathToPrefabs = EditorEnvironmentConstants.BASE_ASSET_PATH + "/" + EditorEnvironmentConstants.PREFABS_DIR + "/";
 
     private LinkedList<MazeUnit> pathInSelection;
 

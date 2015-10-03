@@ -11,7 +11,7 @@ public enum MazeEditorMode { NONE, EDITING, SELECTION }
 [CustomEditor(typeof(beMobileMaze))]
 public class MazeEditor : AMazeEditor
 {
-    private const string unitPrefabName = "MazeUnit";
+    public const string STD_UNIT_PREFAB_NAME = "MazeUnit";
      
     public float unitFloorOffset = 0f;
 
@@ -466,8 +466,9 @@ public class MazeEditor : AMazeEditor
         // if no game object was found create the unitHost prefab
         if (unitHost == null)
         {
-            //var obj = Resources.Load(unitPrefabName); // Load from local asset path 
-            var obj = AssetDatabase.LoadAssetAtPath("Assets/beMobi.Unity3D/Prefabs/MazeUnit.prefab", typeof(GameObject));
+            string mazeUnitPrefab = EditorEnvironmentConstants.BASE_ASSET_PATH + "/" + EditorEnvironmentConstants.PREFABS_DIR + "/" + STD_UNIT_PREFAB_NAME + ".prefab";
+
+            var obj = AssetDatabase.LoadAssetAtPath<GameObject>(mazeUnitPrefab);
              
             if (obj)
             {
@@ -476,7 +477,7 @@ public class MazeEditor : AMazeEditor
             }
             else
             {
-                Debug.LogError(string.Format("Prefab \"{0}\" not found in resources", unitPrefabName));
+                Debug.LogError(string.Format("\"{0}\" not found!", mazeUnitPrefab));
                 return;
             }
         }
