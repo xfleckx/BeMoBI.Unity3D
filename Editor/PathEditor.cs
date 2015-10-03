@@ -557,10 +557,35 @@ public class PathEditor : AMazeEditor {
 
                 last = iterator.Current.Unit;
             }
+            
+            var lastElement = instance.PathElements.Last().Value.Unit;
+            var endTransform = lastElement.transform;
 
+            var coneRotation =  start.rotation;
 
-            var end = instance.PathElements.Last().Value.Unit.transform;
-            Handles.ConeCap(this.GetInstanceID(), end.position + hoveringDistance, start.rotation, 0.3f);
+            switch (lastElement.WaysOpen)
+            {
+                case OpenDirections.None:
+                    break;
+                case OpenDirections.North:
+                    coneRotation.SetLookRotation(-endTransform.forward);
+                    break;
+                case OpenDirections.South:
+                    coneRotation.SetLookRotation(endTransform.forward);
+                    break;
+                case OpenDirections.East:
+                    coneRotation.SetLookRotation(-endTransform.right);
+                    break;
+                case OpenDirections.West:
+                    coneRotation.SetLookRotation(endTransform.right);
+                    break;
+                case OpenDirections.All:
+                    break;
+                default:
+                    break;
+            }    
+           
+            Handles.ConeCap(this.GetInstanceID(), endTransform.position + hoveringDistance, coneRotation, 0.3f);
         }
     } 
 }
