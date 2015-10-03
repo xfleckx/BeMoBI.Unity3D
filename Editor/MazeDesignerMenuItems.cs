@@ -3,7 +3,7 @@ using UnityEditor;
 
 public class MazeDesignerMenuItems : ScriptableObject
 {
-    [MenuItem("beMobile/MazeDesigner/Add new Maze as Prefab")]
+    [MenuItem("BeMoBI/Maze/Add new Maze as Prefab")]
     static void CreateNewMazeAsPrefab()
     {
         var filePath = EditorUtility.SaveFilePanelInProject("Save the prefab", "aBeMoBIMaze", "prefab","Message");
@@ -13,7 +13,7 @@ public class MazeDesignerMenuItems : ScriptableObject
 
         var prefab = PrefabUtility.CreateEmptyPrefab(filePath);
 
-        GameObject mazeHost = new GameObject("beMoBIMaze");
+        GameObject mazeHost = new GameObject("BeMoBIMaze");
         mazeHost.AddComponent<beMobileMaze>();
         mazeHost.AddComponent<PathController>();
         PrefabUtility.ReplacePrefab(mazeHost, prefab, ReplacePrefabOptions.ConnectToPrefab);
