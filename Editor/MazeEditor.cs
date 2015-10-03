@@ -22,7 +22,6 @@ public class MazeEditor : AMazeEditor
     private HashSet<GameObject> currentSelection;
 
     private string PathToMazePrefab = string.Empty;
-    private string PathToMazeCompanionFolder = string.Empty;
 
     private bool SelectionModeEnabled = false;
 
@@ -53,8 +52,6 @@ public class MazeEditor : AMazeEditor
 
         if (referenceToPrefab != null) { 
             PathToMazePrefab = AssetDatabase.GetAssetPath(referenceToPrefab);
-
-            PathToMazeCompanionFolder = AssetHelper.GetOrCreateCompanionFolderForPrefab(PathToMazePrefab);
         }
 
         if (maze) {
@@ -419,9 +416,7 @@ public class MazeEditor : AMazeEditor
         PathToMazePrefab = EditorUtility.SaveFilePanelInProject("Save maze", "maze.prefab", "prefab", "Save maze as Prefab");
         Debug.Log("Saved to " + PathToMazePrefab);
         referenceToPrefab = PrefabUtility.CreatePrefab(PathToMazePrefab, maze.gameObject, ReplacePrefabOptions.ConnectToPrefab);
-
-        PathToMazeCompanionFolder = AssetHelper.GetOrCreateCompanionFolderForPrefab(PathToMazePrefab);
-
+        
         Debug.Log("Create companion folder " + PathToMazePrefab);
     }
 
