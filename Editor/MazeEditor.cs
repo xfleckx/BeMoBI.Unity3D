@@ -588,7 +588,7 @@ public class MazeEditor : AMazeEditor
                 last = current;
                 continue;
             }
-            Debug.Log(current.GridID.x.ToString());
+            Debug.Log(current.GridID.ToString());
             // check if current and last are really neighbors:
             if (Math.Abs(current.GridID.x - last.GridID.x) + Math.Abs(current.GridID.y - last.GridID.y) == 1)
             {
@@ -943,6 +943,8 @@ public abstract class AMazeEditor : Editor {
     protected Vector2 currentTilePosition;
     protected Vector3 mouseHitPos;
 
+    protected GUIStyle sceneViewUIStyle;
+
     protected void TileHighlightingOnMouseCursor()
     {
         // if UpdateHitPosition return true we should update the scene views so that the marker will update in real time
@@ -964,9 +966,13 @@ public abstract class AMazeEditor : Editor {
         Gizmos.matrix = maze.transform.localToWorldMatrix;
 
         Gizmos.color = MarkerColor;
+        
         var pos = MarkerPosition + new Vector3(0, maze.RoomHigthInMeter / 2, 0);
+        
         Gizmos.DrawWireCube(pos, new Vector3(maze.RoomDimension.x, maze.RoomHigthInMeter, maze.RoomDimension.z) * 1.1f);
-
+          
+        Handles.Label(pos, string.Format("{0}.{1}", (int) MarkerPosition.x, (int) MarkerPosition.z), sceneViewUIStyle );
+         
         Gizmos.matrix = tempMatrix;
     }
 
@@ -974,12 +980,20 @@ public abstract class AMazeEditor : Editor {
 
     public void OnSceneGUI()
     {
+        SetupGUIStyle();
+
         TileHighlightingOnMouseCursor();
 
         RenderSceneViewUI();
 
         if (EditorModeProcessEvent != null)
             EditorModeProcessEvent(Event.current);
+    }
+
+    protected virtual void SetupGUIStyle()
+    {
+        sceneViewUIStyle = new GUIStyle();
+        sceneViewUIStyle.normal.textColor = Color.blue;
     }
 
     protected abstract void RenderEditorGizmos();
