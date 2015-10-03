@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UnityEditor;
 using UnityEngine;
 
 public static class MazeEditorUtil
@@ -59,5 +60,80 @@ public static class MazeEditorUtil
         var tail = set.Skip(1);
         GameObject.DestroyImmediate(first);
         tail.ImmediateDestroyObjects(); 
+    }
+
+    public static void ReplaceUnits(beMobileMaze targetMaze, GameObject replacementPrefab)
+    {
+        foreach (var existingUnit in targetMaze.Units)
+        {
+            var newUnitFromPrefab = PrefabUtility.InstantiatePrefab(replacementPrefab) as GameObject;
+
+            PrefabUtility.DisconnectPrefabInstance(newUnitFromPrefab);
+
+            //newUnitFromPrefab.hideFlags = HideFlags.HideAndDontSave;
+
+            var newUnit = newUnitFromPrefab.GetComponent<MazeUnit>();
+
+            ReplaceUnit(targetMaze, existingUnit, newUnit);
+
+            UnityEngine.Object.DestroyImmediate(newUnitFromPrefab);
+        }
+    }
+
+    public static void ReplaceUnit(beMobileMaze hostMaze, MazeUnit oldUnit, MazeUnit newUnit)
+    {
+        #region prepare children lists 
+
+        int new_ChildCount = newUnit.transform.childCount;
+
+        List<GameObject> new_Children = new List<GameObject>();
+
+        int old_ChildCount = oldUnit.transform.childCount;
+
+        List<GameObject> old_children = new List<GameObject>();
+
+        for (int i = 0; i < old_ChildCount; i++)
+        {
+            var old_child = oldUnit.transform.GetChild(i);
+            
+            old_children.Add(old_child.gameObject);
+        }
+
+        for (int i = 0; i < new_ChildCount; i++)
+        {
+            var new_child = newUnit.transform.GetChild(i);
+
+            new_Children.Add(new_child.gameObject);
+        }
+
+        #endregion
+
+        foreach (var newChild in new_Children)
+        {
+            if (old_children.Any((go) => go.name.Equals(newChild.name))) { 
+
+                var old_equivalent = old_children.Single((go) => go.name.Equals(newChild.name));
+
+                newChild.transform.parent = old_equivalent.transform.parent;
+
+                newChild.transform.localPosition = newChild.transform.position;
+                newChild.transform.localScale = Vector3.one;
+
+                newChild.SetActive(old_equivalent.activeSelf);
+
+                old_equivalent.transform.parent = null;
+            }
+        }
+
+        oldUnit.transform.localScale = hostMaze.RoomDimension;
+
+        foreach (var item in old_children)
+        {
+            UnityEngine.Object.DestroyImmediate(item.gameObject);
+        }
+    }
+    public static bool IsSet(OpenDirections value, OpenDirections flag)
+    {
+        return (value & flag) == flag;
     }
 }
