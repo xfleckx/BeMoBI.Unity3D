@@ -16,7 +16,14 @@ public enum OpenDirections {
 
 [Serializable]
 public class MazeUnit : MonoBehaviour {
-	 
+
+    public const string TOP = "Top";
+    public const string FLOOR = "Floor";
+    public const string NORTH = "North";
+    public const string SOUTH = "South";
+    public const string WEST = "West";
+    public const string EAST = "East";
+
 	public OpenDirections WaysOpen = OpenDirections.None;
 
 	[SerializeField]
