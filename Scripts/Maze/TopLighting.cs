@@ -38,7 +38,13 @@ public class TopLighting : MonoBehaviour {
 
     public void OnDrawGizmos()
     {
-        Gizmos.DrawLine(transform.position, -transform.up / 2);
+        var temp = Gizmos.matrix;
+
+        Gizmos.matrix = transform.localToWorldMatrix;
+
+        Gizmos.DrawLine(transform.localPosition, -transform.up / 2);
+
+        Gizmos.matrix = temp; 
     }
      
 }
