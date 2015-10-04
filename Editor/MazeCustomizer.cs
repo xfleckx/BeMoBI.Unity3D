@@ -62,8 +62,14 @@ public class MazeCustomizer : EditorWindow
 
         if (GUILayout.Button("Add Lighting to each unit.", GUILayout.Height(50f)))
         {
+            AddLightingToMaze();
         }
-        
+
+
+        if (GUILayout.Button("Remove Lighting to each unit.", GUILayout.Height(20f)))
+        {
+            RemoveLightingFromMaze();
+        }
         EditorGUILayout.EndHorizontal();
 
         if (lightPrefab)
@@ -172,6 +178,32 @@ public class MazeCustomizer : EditorWindow
 
         MazeEditorUtil.ReplaceUnits(selectedMaze, replacementPrefab);
         
+    }
+
+    private void AddLightingToMaze()
+    {
+        foreach (var unit in selectedMaze.Units)
+        {
+            var top = unit.gameObject.transform.FindChild("Top"); 
+
+            var newLightInstance = PrefabUtility.InstantiatePrefab(lightPrefab) as GameObject;
+
+            newLightInstance.transform.parent = top.transform;
+            newLightInstance.transform.localPosition = new Vector3(0, -0.001f, 0);
+            newLightInstance.transform.localScale = new Vector3(selectedMaze.RoomDimension.x, 1, selectedMaze.RoomDimension.z);
+        }
+    }
+
+    private void RemoveLightingFromMaze()
+    {
+        foreach (var unit in selectedMaze.Units)
+        {
+            var top = unit.gameObject.transform.FindChild("Top");
+
+            var lightning = top.FindChild("TopLighting");
+
+            DestroyImmediate(lightning.gameObject);
+        }
     }
 
     #region TODO
