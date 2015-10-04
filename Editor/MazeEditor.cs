@@ -466,7 +466,7 @@ public class MazeEditor : AMazeEditor
         // if no game object was found create the unitHost prefab
         if (unitHost == null)
         {
-            string mazeUnitPrefab = EditorEnvironmentConstants.BASE_ASSET_PATH + "/" + EditorEnvironmentConstants.PREFABS_DIR + "/" + STD_UNIT_PREFAB_NAME + ".prefab";
+            string mazeUnitPrefab = EditorEnvironmentConstants.Get_BASE_ASSET_PATH() + "/" + EditorEnvironmentConstants.PREFABS_DIR + "/" + STD_UNIT_PREFAB_NAME + EditorEnvironmentConstants.PREFAB_EXTENSION;
 
             var obj = AssetDatabase.LoadAssetAtPath<GameObject>(mazeUnitPrefab);
              

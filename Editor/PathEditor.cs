@@ -11,7 +11,7 @@ public enum PathEditorMode { NONE, PATH_CREATION }
 public class PathEditor : AMazeEditor {
 
     PathInMaze instance;
-    const string PathToPrefabs = EditorEnvironmentConstants.BASE_ASSET_PATH + "/" + EditorEnvironmentConstants.PREFABS_DIR + "/";
+    static string PathToPrefabs = EditorEnvironmentConstants.Get_BASE_ASSET_PATH() + "/" + EditorEnvironmentConstants.PREFABS_DIR + "/";
 
     private LinkedList<MazeUnit> pathInSelection;
 
