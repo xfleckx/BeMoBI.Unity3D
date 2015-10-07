@@ -682,6 +682,9 @@ public class MazeEditor : AMazeEditor
 
         Gizmos.matrix = maze.transform.localToWorldMatrix;
 
+        var temp = Handles.matrix;
+        Handles.matrix = Gizmos.matrix;
+
         drawFloorGrid();
 
         Gizmos.color = Color.blue;
@@ -694,6 +697,7 @@ public class MazeEditor : AMazeEditor
             }
         }
 
+        Handles.matrix = temp;
         Gizmos.matrix = tempMatrix;
     }
 
@@ -717,6 +721,7 @@ public class MazeEditor : AMazeEditor
         Vector3 lineEnde;
         // draw tile cells
         Gizmos.color = Color.green;
+
         for (float i = 1; i <= maze.Columns; i++)
         {
             float xOffset = i * maze.RoomDimension.x;
@@ -966,9 +971,15 @@ public abstract class AMazeEditor : Editor {
         var pos = MarkerPosition + new Vector3(0, maze.RoomHigthInMeter / 2, 0);
         
         Gizmos.DrawWireCube(pos, new Vector3(maze.RoomDimension.x, maze.RoomHigthInMeter, maze.RoomDimension.z) * 1.1f);
-          
+
+        var temp = Handles.matrix;
+        
+        Handles.matrix = Gizmos.matrix;
+
         Handles.Label(pos, string.Format("{0}.{1}", (int) MarkerPosition.x, (int) MarkerPosition.z), sceneViewUIStyle );
-         
+
+        Handles.matrix = temp;
+
         Gizmos.matrix = tempMatrix;
     }
 
