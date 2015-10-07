@@ -45,12 +45,12 @@ public static class MazeEditorUtil
 
         return maze.Grid;
     }
-     
+
     public static MazeUnit[,] ReconfigureGrid(beMobileMaze maze, float columns, float rows)
     {
-        return ReconfigureGrid(maze,Mathf.FloorToInt(columns), Mathf.FloorToInt(rows));
+        return ReconfigureGrid(maze, Mathf.FloorToInt(columns), Mathf.FloorToInt(rows));
     }
-     
+
     public static void ImmediateDestroyObjects(this IEnumerable<GameObject> set)
     {
         if (!set.Any())
@@ -59,7 +59,7 @@ public static class MazeEditorUtil
         var first = set.First();
         var tail = set.Skip(1);
         GameObject.DestroyImmediate(first);
-        tail.ImmediateDestroyObjects(); 
+        tail.ImmediateDestroyObjects();
     }
 
     public static void ReplaceUnits(beMobileMaze targetMaze, GameObject replacementPrefab)
@@ -82,7 +82,7 @@ public static class MazeEditorUtil
 
     public static void ReplaceUnit(beMobileMaze hostMaze, MazeUnit oldUnit, MazeUnit newUnit)
     {
-        #region prepare children lists 
+        #region prepare children lists
 
         int new_ChildCount = newUnit.transform.childCount;
 
@@ -95,7 +95,7 @@ public static class MazeEditorUtil
         for (int i = 0; i < old_ChildCount; i++)
         {
             var old_child = oldUnit.transform.GetChild(i);
-            
+
             old_children.Add(old_child.gameObject);
         }
 
@@ -110,7 +110,8 @@ public static class MazeEditorUtil
 
         foreach (var newChild in new_Children)
         {
-            if (old_children.Any((go) => go.name.Equals(newChild.name))) { 
+            if (old_children.Any((go) => go.name.Equals(newChild.name)))
+            {
 
                 var old_equivalent = old_children.Single((go) => go.name.Equals(newChild.name));
 
@@ -135,5 +136,124 @@ public static class MazeEditorUtil
     public static bool IsSet(OpenDirections value, OpenDirections flag)
     {
         return (value & flag) == flag;
+    }
+
+    public static void ResizeUnitByMeshModification(GameObject unit, UnitMeshModificationModel modificationModel)
+    {
+        var m = modificationModel;
+
+        var boxCollider = unit.GetComponent<BoxCollider>();
+
+        if (boxCollider != null) { 
+            boxCollider.size = m.RoomDimensions;
+            boxCollider.center = new Vector3(0, m.RoomDimensions.y / 2, 0);
+        }
+
+        for (int i = 0; i < unit.transform.childCount; i++)
+        {
+            var wall = unit.transform.GetChild(i);
+
+            Mesh mesh = GetMeshFrom(wall);
+
+            List<Vector3> vertices = null;
+
+            if (wall.name == MazeUnit.FLOOR)
+            {
+                vertices = new List<Vector3>()
+                {
+                    new Vector3(m.meshOrigin.x,      0, m.meshOrigin.z), 
+                    new Vector3(m.WidthEndPoint, 0, m.meshOrigin.z),
+                    new Vector3(m.meshOrigin.x,      0, m.DepthEndPoint),
+                    new Vector3(m.WidthEndPoint, 0, m.DepthEndPoint)
+                };
+               
+            }
+
+            if (wall.name == MazeUnit.TOP)
+            {
+                wall.transform.localPosition = new Vector3(0, m.RoomDimensions.y, 0);
+
+                vertices = new List<Vector3>()
+                {
+                    new Vector3(m.meshOrigin.x,         0, m.meshOrigin.z),
+                    new Vector3(m.WidthEndPoint,    0, m.meshOrigin.z),
+                    new Vector3(m.meshOrigin.x,         0, m.DepthEndPoint),
+                    new Vector3(m.WidthEndPoint,    0, m.DepthEndPoint)
+                };
+            }
+
+            if (wall.name == MazeUnit.NORTH)
+            {
+                wall.transform.localPosition = new Vector3(0, m.RoomDimensions.y / 2, m.RoomDimensions.z / 2);
+
+                vertices = new List<Vector3>()
+                {
+                    new Vector3(m.meshOrigin.x,         m.meshOrigin.y,           0),
+                    new Vector3(m.WidthEndPoint,    m.meshOrigin.y,           0),
+                    new Vector3(m.meshOrigin.x,         m.HeightEndPoint,      0),
+                    new Vector3(m.WidthEndPoint,    m.HeightEndPoint,     0)
+                };
+
+            }
+
+            if (wall.name == MazeUnit.SOUTH)
+            {
+                wall.transform.localPosition = new Vector3(0, m.RoomDimensions.y / 2, -m.RoomDimensions.z / 2);
+
+                vertices = new List<Vector3>()
+                {
+                    new Vector3(m.meshOrigin.x,         m.meshOrigin.y,        0),
+                    new Vector3(m.WidthEndPoint,    m.meshOrigin.y,        0),
+                    new Vector3(m.meshOrigin.x,         m.HeightEndPoint,  0),
+                    new Vector3(m.WidthEndPoint,    m.HeightEndPoint,  0)
+                };
+
+            }
+
+            if (wall.name == MazeUnit.WEST)
+            {
+                wall.transform.localPosition = new Vector3(-m.RoomDimensions.x / 2, m.RoomDimensions.y / 2, 0);
+
+                vertices = new List<Vector3>()
+                {
+                    new Vector3(0,   m.meshOrigin.y,         m.meshOrigin.z),
+                    new Vector3(0,   m.HeightEndPoint,   m.meshOrigin.z),
+                    new Vector3(0,   m.meshOrigin.y,         m.DepthEndPoint),
+                    new Vector3(0,   m.HeightEndPoint,   m.DepthEndPoint)
+                };
+            }
+
+            if (wall.name == MazeUnit.EAST)
+            {
+                wall.transform.localPosition = new Vector3(m.RoomDimensions.x / 2, m.RoomDimensions.y / 2, 0);
+
+                vertices = new List<Vector3>()
+                {
+                    new Vector3(0,   m.meshOrigin.y,         m.meshOrigin.z),
+                    new Vector3(0,   m.HeightEndPoint,   m.meshOrigin.z),
+                    new Vector3(0,   m.meshOrigin.y,         m.DepthEndPoint),
+                    new Vector3(0,   m.HeightEndPoint,   m.DepthEndPoint)
+                };
+            }
+
+            if (vertices != null)
+                mesh.SetVertices(vertices);
+
+            mesh.UploadMeshData(true);
+        }
+    }
+
+    const string MeshAssertionMessageFormat = "The unit you are trying to modify doesn't have the expected structure! Missing Mesh on {0}";
+    const string MeshFilterAssertionMessageFormat = "The unit you are trying to modify doesn't have the expected structure! Missing MeshFilter component on {0}";
+    private static Mesh GetMeshFrom(Transform wall)
+    {
+        var meshFilter = wall.gameObject.GetComponent<MeshFilter>();
+
+        Debug.Assert(meshFilter != null, string.Format(MeshFilterAssertionMessageFormat, wall.name));
+
+
+        Debug.Assert(meshFilter.sharedMesh != null, string.Format(MeshAssertionMessageFormat, wall.name));
+
+        return meshFilter.sharedMesh;
     }
 }
