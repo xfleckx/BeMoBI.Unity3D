@@ -59,7 +59,6 @@ public class MazeUnit : MonoBehaviour {
 		WaysOpen &= ~direction;
 	}
 
-
 	void OnTriggerEnter(Collider c)
 	{
 		var evt = new MazeUnitEvent(MazeUnitEventType.Entering, c, this); 
