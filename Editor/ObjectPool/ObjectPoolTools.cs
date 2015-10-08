@@ -116,6 +116,15 @@ public class ObjectPoolTools : EditorWindow
             EditorGUILayout.HelpBox("Category name empty or already existing!", MessageType.Error);
         }
 
+        if (GUILayout.Button("Save as object pool as prefab"))
+        {
+           var filePath = EditorUtility.SaveFilePanelInProject("Save object pool as prefab", "objectPool", "prefab", "");
+
+           var prefab = PrefabUtility.CreatePrefab(filePath, currentPool.gameObject);
+           
+           AssetDatabase.SaveAssets();
+        }
+
         EditorGUILayout.EndVertical();
     }
 
