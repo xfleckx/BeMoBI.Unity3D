@@ -40,7 +40,7 @@ public class ObjectPoolEditor : Editor {
                 var displayedProp = element.objectReferenceValue.name;
 
                 EditorGUI.LabelField(
-                    new Rect(rect.x, rect.y, 60, EditorGUIUtility.singleLineHeight),
+                    new Rect(rect.x, rect.y, rect.width, EditorGUIUtility.singleLineHeight),
                     displayedProp);
         };
     }
