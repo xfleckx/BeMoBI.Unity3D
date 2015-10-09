@@ -6,7 +6,7 @@ using System;
 public class ObjectPoolTools : EditorWindow
 { 
     [MenuItem("BeMoBI/Object Pool/Open Pool Editor")]
-    static void OpenPoolEditor()
+    public static void OpenPoolEditor()
     {
         var w = EditorWindow.CreateInstance<ObjectPoolTools>();
 
@@ -17,7 +17,11 @@ public class ObjectPoolTools : EditorWindow
         w.Show();
     }
 
-    private ObjectPool currentPool;  
+    private GameObject prefabReference;
+    private ObjectPool currentPool;
+
+    private Transform targetTransform;
+
     private void Initialize()
     {
         CheckIfAObjectPoolOrCategoryIsSelected();
@@ -32,6 +36,9 @@ public class ObjectPoolTools : EditorWindow
 
         currentPool = go.GetComponent<ObjectPool>();
 
+        // TODO get prefab connection if available!
+        //prefabReference = PrefabUtility.G
+
         if (currentPool != null)
             return typeof(ObjectPool);
 
@@ -40,7 +47,7 @@ public class ObjectPoolTools : EditorWindow
         if (selectedCategory != null)
             return typeof(Category);
 
-        return null;
+        return typeof(GameObject);
     }
 
     void OnGUI()
@@ -50,10 +57,10 @@ public class ObjectPoolTools : EditorWindow
         if(selected == null){ 
             renderUiForPoolSelectionOrCreation();
             return; 
-           
         }
 
-        if (selected == typeof(ObjectPool)) { 
+        if (selected == typeof(ObjectPool)) {
+            CheckCategoryListConsistency(currentPool);
             renderUiForPoolEditing();
             return;
 
@@ -63,8 +70,14 @@ public class ObjectPoolTools : EditorWindow
             renderUiForCategoryEditing();
             return;
         }
-    
+
+        if (selected == typeof(GameObject))
+        {
+            renderUiForTransformSelectionToObjectPool();
+            return;
+        }
     }
+
 
 
     #region Object pool
@@ -94,13 +107,51 @@ public class ObjectPoolTools : EditorWindow
                 }
             }
         }
-        //if (GUILayout.Button("Create Instance \n from prefab"))
+        
+    }
 
+    private void renderUiForTransformSelectionToObjectPool()
+    {
+        if(GUILayout.Button("Create Object Pool \n from current selection")){
+
+            var go = Selection.activeGameObject;
+
+            currentPool = go.AddComponent<ObjectPool>();
+
+            int childCount = go.transform.childCount;
+
+            for (int i = 0; i < childCount; i++)
+            {
+                var newCategoryHost = go.transform.GetChild(i);
+
+                var newCategory = newCategoryHost.gameObject.AddComponent<Category>();
+                
+                currentPool.Categories.Add(newCategory);
+
+                var objectCount = newCategory.transform.childCount;
+
+                for (int j = 0; j < objectCount; j++)
+                {
+                    var potentialObject = newCategory.transform.GetChild(j);
+
+                    var meshRenderer = potentialObject.GetComponentInChildren<MeshRenderer>();
+
+                    if (meshRenderer != null) { 
+                        newCategory.AssociatedObjects.Add(potentialObject.gameObject);
+                        potentialObject.gameObject.SetActive(false);
+                    }
+                }
+            }
+        } 
     }
 
     private void renderUiForPoolEditing()
     {
         EditorGUILayout.BeginVertical();
+
+        GUILayout.Label("Edit Object Pool", EditorStyles.boldLabel);
+
+        EditorGUILayout.Separator();
 
         newCategoryName = GUILayout.TextField(newCategoryName);
 
@@ -116,17 +167,65 @@ public class ObjectPoolTools : EditorWindow
             EditorGUILayout.HelpBox("Category name empty or already existing!", MessageType.Error);
         }
 
-        if (GUILayout.Button("Save as object pool as prefab"))
-        {
-           var filePath = EditorUtility.SaveFilePanelInProject("Save object pool as prefab", "objectPool", "prefab", "");
-
-           var prefab = PrefabUtility.CreatePrefab(filePath, currentPool.gameObject);
+        if (prefabReference == null) {
+            if (GUILayout.Button("Save as object pool as prefab"))
+            {
+                var filePath = EditorUtility.SaveFilePanelInProject("Save object pool as prefab", "objectPool", "prefab", "");
+                
+                prefabReference = PrefabUtility.CreatePrefab(filePath, currentPool.gameObject);
            
-           AssetDatabase.SaveAssets();
+                AssetDatabase.SaveAssets();
+            }
+        }
+        else
+        {
+            // TODO prefab updates!
+        }
+
+        EditorGUILayout.Space();
+
+        GUILayout.Label("Get Random Object from Category", EditorStyles.boldLabel);
+
+        EditorGUILayout.Separator();
+
+        EditorGUILayout.BeginHorizontal();
+
+        useTargetTransform = GUILayout.Toggle(useTargetTransform & targetTransform != null, "Use ");
+
+        targetTransform = EditorGUILayout.ObjectField(targetTransform, typeof(Transform), true) as Transform;
+
+        EditorGUILayout.EndHorizontal();
+
+        foreach (var item in currentPool.Categories)
+        {
+            EditorGUILayout.BeginHorizontal();
+
+            EditorGUILayout.Space();
+
+            EditorGUILayout.BeginVertical();
+
+            if (GUILayout.Button(item.name))
+            {
+                var original = item.Sample();
+
+                var clone = GameObject.Instantiate(original);
+
+                if (useTargetTransform) {
+                    
+                    clone.transform.ApplyTarget(targetTransform);
+                }
+
+                clone.SetActive(true);
+            }
+            
+            EditorGUILayout.EndVertical();
+            EditorGUILayout.EndHorizontal();
         }
 
         EditorGUILayout.EndVertical();
     }
+
+    private bool useTargetTransform = false;
 
     private void CreateNewPoolInScene(string name)
     {

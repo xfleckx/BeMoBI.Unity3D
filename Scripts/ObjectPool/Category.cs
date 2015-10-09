@@ -17,7 +17,7 @@ public class Category : MonoBehaviour {
         int max =  AssociatedObjects.Count;
         
         var randomIndex = UnityEngine.Random.Range(0,max);
-        Debug.Log(randomIndex);
+
         return AssociatedObjects[randomIndex];
     }
 
