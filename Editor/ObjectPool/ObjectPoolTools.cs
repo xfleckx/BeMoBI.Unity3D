@@ -135,8 +135,9 @@ public class ObjectPoolTools : EditorWindow
                     var potentialObject = newCategory.transform.GetChild(j);
 
                     var meshRenderer = potentialObject.GetComponentInChildren<MeshRenderer>();
+                    var skinnedMeshRenderer = potentialObject.GetComponentInChildren<SkinnedMeshRenderer>();
 
-                    if (meshRenderer != null) { 
+                    if (meshRenderer != null || skinnedMeshRenderer != null) { 
                         newCategory.AssociatedObjects.Add(potentialObject.gameObject);
                         potentialObject.gameObject.SetActive(false);
                     }
