@@ -9,8 +9,6 @@ public class CategoryEditor : Editor {
     Category instance;
 
     private int currentPreviewIndex = 0;
-    private int lastPreviewIndex = 0;
-
     private GameObject currentPreviewObject;
 
     public override void OnInspectorGUI()
@@ -39,8 +37,6 @@ public class CategoryEditor : Editor {
 
         if (GUILayout.Button("Previous"))
         {
-            lastPreviewIndex = currentPreviewIndex;
-
             currentPreviewIndex = currentPreviewIndex - 1 < 0 ? objectCount -1 : currentPreviewIndex - 1;
 
             SetPreviewObject(instance.AssociatedObjects[currentPreviewIndex]);
@@ -48,8 +44,6 @@ public class CategoryEditor : Editor {
 
         if (GUILayout.Button("Next"))
         {
-            lastPreviewIndex = currentPreviewIndex;
-
             currentPreviewIndex = currentPreviewIndex + 1 > objectCount - 1 ? 0 : currentPreviewIndex + 1 ;
 
             SetPreviewObject(instance.AssociatedObjects[currentPreviewIndex]);
