@@ -748,6 +748,7 @@ public class UnitMeshModificationModel
     {
         get { return roomDimensions; }
     }
+
     private Vector3 roomOrigin = Vector3.zero;
 
     private bool useCenterAsOrigin = true;
@@ -762,7 +763,7 @@ public class UnitMeshModificationModel
             }
             else
             {
-                return Vector3.zero;
+                return roomOrigin;
             }
         }
     }
