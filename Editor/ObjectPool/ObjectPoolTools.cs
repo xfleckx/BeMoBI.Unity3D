@@ -19,7 +19,7 @@ public class ObjectPoolTools : EditorWindow
 
     private GameObject prefabReference;
     private ObjectPool currentPool;
-
+    private GameObject lastPreviewObject;
     private Transform targetTransform;
 
     private void Initialize()
@@ -77,8 +77,6 @@ public class ObjectPoolTools : EditorWindow
             return;
         }
     }
-
-
 
     #region Object pool
 
@@ -187,6 +185,8 @@ public class ObjectPoolTools : EditorWindow
 
         GUILayout.Label("Get Random Object from Category", EditorStyles.boldLabel);
 
+        EditorGUILayout.HelpBox("Use this only for testing or preview purposes!", MessageType.Info);
+
         EditorGUILayout.Separator();
 
         EditorGUILayout.BeginHorizontal();
@@ -194,6 +194,8 @@ public class ObjectPoolTools : EditorWindow
         useTargetTransform = GUILayout.Toggle(useTargetTransform & targetTransform != null, "Use ");
 
         targetTransform = EditorGUILayout.ObjectField(targetTransform, typeof(Transform), true) as Transform;
+
+        GUILayout.Label("as target");
 
         EditorGUILayout.EndHorizontal();
 
@@ -207,6 +209,9 @@ public class ObjectPoolTools : EditorWindow
 
             if (GUILayout.Button(item.name))
             {
+                if (lastPreviewObject != null)
+                    DestroyImmediate(lastPreviewObject);
+
                 var original = item.Sample();
 
                 var clone = GameObject.Instantiate(original);
@@ -217,6 +222,8 @@ public class ObjectPoolTools : EditorWindow
                 }
 
                 clone.SetActive(true);
+
+                lastPreviewObject = clone;
             }
             
             EditorGUILayout.EndVertical();
