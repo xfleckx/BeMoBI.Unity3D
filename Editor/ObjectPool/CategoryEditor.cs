@@ -2,6 +2,7 @@
 using System.Collections;
 using UnityEditor;
 using UnityEditorInternal;
+using System.Linq;
 
 [CustomEditor(typeof(Category))]
 public class CategoryEditor : Editor {
@@ -10,7 +11,7 @@ public class CategoryEditor : Editor {
 
     private int currentPreviewIndex = 0;
     private GameObject currentPreviewObject;
-
+    private string requestedObjectName;
     public override void OnInspectorGUI()
     {
         instance = target as Category;
@@ -68,6 +69,17 @@ public class CategoryEditor : Editor {
         }
 
         EditorGUILayout.EndHorizontal();
+
+        GUILayout.Label("Get Object by it's name");
+
+        requestedObjectName = EditorGUILayout.TextField(requestedObjectName);
+
+        var instanceHasSuchAObject = instance.AssociatedObjects.Any((o) => o.name.Equals(requestedObjectName));
+
+        if (instanceHasSuchAObject && GUILayout.Button("Get..."))
+        {
+            SetPreviewObject(instance.GetObjectBy(requestedObjectName));
+        }
 
         EditorGUILayout.EndVertical(); 
     }

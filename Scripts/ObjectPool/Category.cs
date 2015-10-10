@@ -34,4 +34,30 @@ public class Category : MonoBehaviour {
 
         return tempSampling.Pop();
     }
+
+    public GameObject GetObjectBy(string requestedName)
+    {
+        var target = AssociatedObjects.Single((o) => o.name.Equals(requestedName));
+
+        if(target == null) { 
+
+           var targetTransform = this.transform.Find(name);
+
+            if (targetTransform == null)
+                throw new ArgumentException(string.Format("The request object with the \"{0}\" doesn't exist!", requestedName));
+
+            var hasMesh = targetTransform.GetComponentInChildren<MeshRenderer>() != null;
+            var hasSkinnedMesh = targetTransform.GetComponentInChildren<SkinnedMeshRenderer>() != null;
+
+
+            if (hasMesh || hasSkinnedMesh) {
+                AssociatedObjects.Add(targetTransform.gameObject);
+                return targetTransform.gameObject;
+            }
+            else
+                throw new ArgumentException(string.Format("The request object with the \"{0}\" exists but doesn't appear to be a visible object!"));
+        }
+
+        return target;
+    }
 }
