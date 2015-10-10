@@ -13,15 +13,22 @@ public class MazeCustomizer : EditorWindow
 
         window.Show();
     }
+    
+    public void Initialize(beMobileMaze maze)
+    {
+        selectedMaze = maze;
+    }
 
+
+    public float unitFloorOffset = 0f;
 
 
     void OnGUI()
     {
-        if(Selection.activeGameObject == null) {
+        if(selectedMaze == null && Selection.activeGameObject == null) {
             renderUiForNoMazeSelected();
             return;
-        };
+        }
 
         if(Selection.gameObjects.Length > 1)
         {
@@ -33,24 +40,121 @@ public class MazeCustomizer : EditorWindow
 
         if (selectedMaze != null)
         {
-            EditorGUILayout.BeginVertical();
+            EditorGUILayout.BeginHorizontal();
+
+            EditorGUILayout.BeginVertical(GUILayout.Width(200));
+
+            GUILayout.Label("Modify Maze Structure", EditorStyles.boldLabel);
 
             renderUiForSingleMazeSelected();
 
+            EditorGUILayout.EndVertical();
+
             EditorGUILayout.Space();
+
+            EditorGUILayout.BeginVertical();
+
+            GUILayout.Label("Modify Unit Appeareance", EditorStyles.boldLabel);
 
             renderUiForUnitSetCustomization();
 
             EditorGUILayout.EndVertical();
+
+            EditorGUILayout.EndHorizontal();
         }
         
     }
 
     GameObject lightPrefab;
-
+    Material FloorMaterial;
+    Material WallMaterial;
+    Material TopMaterial;
+    private void ApplyToAllMazeUnits(beMobileMaze maze, Action<MazeUnit> action)
+    {
+        foreach (var item in maze.Units)
+        {
+            action(item);
+        }
+    }
     private void renderUiForUnitSetCustomization()
     {
+        EditorGUILayout.Space();
+
         EditorGUILayout.BeginVertical();
+
+        GUILayout.Label("Change Materials for each unit");
+
+        #region Materials
+
+        EditorGUILayout.BeginHorizontal();
+        WallMaterial = EditorGUILayout.ObjectField("Wall: ", WallMaterial, typeof(Material), false) as Material;
+        if (WallMaterial != null && GUILayout.Button("Apply"))
+        {
+            ApplyToAllMazeUnits(selectedMaze, (u) =>
+            {
+
+                int c = u.transform.childCount;
+                for (int i = 0; i < c; i++)
+                {
+                    var child = u.transform.GetChild(i);
+
+                    if (child.name.Equals("East") ||
+                        child.name.Equals("West") ||
+                        child.name.Equals("North") ||
+                        child.name.Equals("South"))
+                    {
+                        var renderer = child.gameObject.GetComponent<Renderer>();
+                        renderer.material = WallMaterial;
+                    }
+                }
+            });
+        }
+
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        FloorMaterial = EditorGUILayout.ObjectField("Floor: ", FloorMaterial, typeof(Material), false) as Material;
+        if (FloorMaterial != null && GUILayout.Button("Apply"))
+        {
+            ApplyToAllMazeUnits(selectedMaze, (u) =>
+            {
+                int c = u.transform.childCount;
+                for (int i = 0; i < c; i++)
+                {
+                    var child = u.transform.GetChild(i);
+
+                    if (child.name.Equals("Floor"))
+                    {
+                        var renderer = child.gameObject.GetComponent<Renderer>();
+                        renderer.material = FloorMaterial;
+                    }
+                }
+            });
+        }
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        TopMaterial = EditorGUILayout.ObjectField("Top: ", TopMaterial, typeof(Material), false) as Material;
+        if (TopMaterial && GUILayout.Button("Apply"))
+        {
+            ApplyToAllMazeUnits(selectedMaze, (u) =>
+            {
+                int c = u.transform.childCount;
+                for (int i = 0; i < c; i++)
+                {
+                    var child = u.transform.GetChild(i);
+
+                    if (child.name.Equals("Top"))
+                    {
+                        var renderer = child.gameObject.GetComponent<Renderer>();
+                        renderer.material = TopMaterial;
+                    }
+                }
+            });
+        }
+        EditorGUILayout.EndHorizontal();
+
+        #endregion
 
         EditorGUILayout.LabelField("Lighting", EditorStyles.boldLabel);
 
@@ -91,8 +195,11 @@ public class MazeCustomizer : EditorWindow
 
     private void renderUiForSingleMazeSelected()
     {
-        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.Space();
+
         EditorGUILayout.BeginVertical();
+
+        GUILayout.Label("Replace Units");
 
         replacementPrefab = (GameObject) EditorGUILayout.ObjectField(replacementPrefab, typeof(UnityEngine.GameObject), false);
 
@@ -101,6 +208,7 @@ public class MazeCustomizer : EditorWindow
         string errorMessage = "No prefab selected!";
 
         if (replacementPrefab != null) { 
+
            mazeUnit = replacementPrefab.GetComponent<MazeUnit>();
 
         }
@@ -108,7 +216,6 @@ public class MazeCustomizer : EditorWindow
         {
             EditorGUILayout.HelpBox(errorMessage, MessageType.Error);
         }
-
 
         if (mazeUnit == null) {
 
@@ -137,7 +244,26 @@ public class MazeCustomizer : EditorWindow
             GUILayout.Box(previewTexture);
         }
 
-        EditorGUILayout.EndHorizontal();
+        GUILayout.Label("Change:", EditorStyles.boldLabel);
+
+        selectedMaze.RoomDimension = EditorGUILayout.Vector3Field("Room Dimension", selectedMaze.RoomDimension );
+
+        if (GUILayout.Button(new GUIContent("Resize (recommended)", "Resize the geometry"), GUILayout.Height(30)))
+        {
+            var modificationModel = new UnitMeshModificationModel(selectedMaze.RoomDimension, Vector3.zero ,true); 
+            ApplyToAllMazeUnits(selectedMaze, (u) => {
+
+                MazeEditorUtil.ResizeUnitByMeshModification(u.gameObject, modificationModel);
+            });
+        }
+
+        if (GUILayout.Button(new GUIContent("Rescale", "Rescale over the localScale value")))
+        {
+            MazeEditorUtil.Rescale(selectedMaze, selectedMaze.RoomDimension, unitFloorOffset);
+            MazeEditorUtil.RebuildGrid(selectedMaze);
+        }
+
+
     }
 
     private void RenderUIForRequestedPrefab<T, TC>(ref T targetPrefab, Type expectedComponent ) where T : UnityEngine.Object where TC : UnityEngine.MonoBehaviour
@@ -225,4 +351,5 @@ public class MazeCustomizer : EditorWindow
     const string ToolTip_Replace_Units = "The the configuration of each Unit will be obtained";
     const string MsgBox_Replace_Action = "This action will replace all existing Units of the selected maze but obtains the structure of the maze and the configuration of each unit.";
     #endregion
+
 }

@@ -7,6 +7,79 @@ using UnityEngine;
 
 public static class MazeEditorUtil
 {
+    public static void RebuildGrid(beMobileMaze maze)
+    {
+        var GridDim = CalcGridSize(maze);
+
+        if (!maze.Units.Any())
+        {
+            var existingUnits = maze.gameObject.GetComponentsInChildren<MazeUnit>();
+
+            foreach (var unit in existingUnits)
+            {
+                maze.Units.Add(unit);
+            }
+        }
+
+        maze.Grid = FillGridWith(maze.Units, (int)GridDim.x, (int)GridDim.y);
+    }
+
+
+    public static MazeUnit InitializeUnit(beMobileMaze maze, Vector2 tilePos, float unitFloorOffset, GameObject unit)
+    {
+        var tilePositionInLocalSpace = new Vector3(
+            (tilePos.x * maze.RoomDimension.x) + (maze.RoomDimension.x / 2f),
+            unitFloorOffset,
+            (tilePos.y * maze.RoomDimension.z) + (maze.RoomDimension.z / 2f));
+
+        // set the cubes parent to the game object for organizational purposes
+        unit.transform.parent = maze.transform;
+
+        //unit.transform.localPosition = maze.transform.position + maze.transform.TransformPoint(tilePositionInLocalSpace);
+        unit.transform.localPosition = tilePositionInLocalSpace;
+        // we scale the u to the tile size defined by the TileMap.TileWidth and TileMap.TileHeight fields 
+        unit.transform.localScale = new Vector3(maze.RoomDimension.x, maze.RoomDimension.y * maze.RoomHigthInMeter, maze.RoomDimension.z);
+
+        // give the u a assetName that represents it's location within the tile maze
+        unit.name = string.Format(maze.UnitNamePattern, tilePos.x, tilePos.y);
+
+        MazeUnit mazeUnit = unit.GetComponent<MazeUnit>();
+
+        mazeUnit.Initialize(tilePos);
+
+        return mazeUnit;
+    }
+
+    public static void Rescale(beMobileMaze maze, Vector3 newUnitScale, float floorOffset)
+    {
+        foreach (var item in maze.Units)
+        {
+            item.transform.localScale = newUnitScale;
+            InitializeUnit(maze, item.GridID, floorOffset, item.gameObject);
+        }
+    }
+    public static MazeUnit[,] FillGridWith(IEnumerable<MazeUnit> existingUnits, int columns, int rows)
+    {
+        var grid = new MazeUnit[columns, rows];
+
+        foreach (var unit in existingUnits)
+        {
+            var x = Mathf.FloorToInt(unit.GridID.x);
+            var y = Mathf.FloorToInt(unit.GridID.y);
+            grid[x, y] = unit;
+        }
+
+        return grid;
+    }
+
+    public static Vector2 CalcGridSize(beMobileMaze maze)
+    {
+        int rows = Mathf.FloorToInt(maze.MazeLengthInMeter / maze.RoomDimension.z);
+        int columns = Mathf.FloorToInt(maze.MazeWidthInMeter / maze.RoomDimension.x);
+
+        return new Vector2(columns, rows);
+    }
+
     /// <summary>
     /// Check if there are already unitsFound existing and put them into the new Grid
     /// </summary>

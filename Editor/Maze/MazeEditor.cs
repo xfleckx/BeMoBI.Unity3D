@@ -12,14 +12,14 @@ public enum MazeEditorMode { NONE, EDITING, SELECTION }
 public class MazeEditor : AMazeEditor
 {
     public const string STD_UNIT_PREFAB_NAME = "MazeUnit";
-     
-    public float unitFloorOffset = 0f;
-
+    
     public Material FloorMaterial;
     public Material WallMaterial;
     public Material TopMaterial;
      
     private HashSet<GameObject> currentSelection;
+
+    public float unitFloorOffset = 0f;
 
     private string PathToMazePrefab = string.Empty;
 
@@ -44,7 +44,7 @@ public class MazeEditor : AMazeEditor
 
         if(maze.Grid == null)
         {
-            RebuildGrid();
+            MazeEditorUtil.RebuildGrid(maze);
 
         }
 
@@ -60,23 +60,7 @@ public class MazeEditor : AMazeEditor
         }
     }
 
-    private void RebuildGrid()
-    {
-        var GridDim = CalcGridSize();
-
-        if (!maze.Units.Any())
-        {
-            var existingUnits = maze.gameObject.GetComponentsInChildren<MazeUnit>();
-
-            foreach (var unit in existingUnits)
-            {
-                maze.Units.Add(unit);
-            }
-        }
-
-        maze.Grid = FillGridWith(maze.Units, (int)GridDim.x, (int)GridDim.y);
-    }
-
+  
     public void OnDisable()
     {
         if (maze) {
@@ -97,7 +81,17 @@ public class MazeEditor : AMazeEditor
         }
         
         GUILayout.BeginVertical();
-        
+
+
+        if (GUILayout.Button("Open Customizer", GUILayout.Height(40)))
+        {
+            var window = CreateInstance<MazeCustomizer>();
+
+            window.Initialize(maze);
+
+            window.Show();
+        }
+
         GUILayout.BeginHorizontal();
         GUILayout.Label("Length of Maze");
         GUILayout.Label("m");
@@ -128,58 +122,61 @@ public class MazeEditor : AMazeEditor
 
         if (GUILayout.Button("Configure Grid"))
         {
-            RebuildGrid();
+            MazeEditorUtil.RebuildGrid(maze);
         }
+
 
         GUILayout.BeginHorizontal();
 
-        maze.RoomDimension = EditorGUILayout.Vector3Field("Room Dimension", new Vector3(maze.RoomDimension.x, maze.RoomHigthInMeter, maze.RoomDimension.z));
+        #region deprecated at this component see Customizer
+        //maze.RoomDimension = EditorGUILayout.Vector3Field("Room Dimension", new Vector3(maze.RoomDimension.x, maze.RoomHigthInMeter, maze.RoomDimension.z));
         
-        if (GUILayout.Button("Rescale"))
-        {
-            Rescale(maze, maze.RoomDimension);
-            RebuildGrid();
-        }
-
+        //if (GUILayout.Button("Rescale"))
+        //{
+        //    MazeEditorUtil.Rescale(maze, maze.RoomDimension, unitFloorOffset);
+        //    MazeEditorUtil.RebuildGrid(maze);
+        //}
+        #endregion
         GUILayout.EndHorizontal();
         
-        GUILayout.BeginHorizontal();
-        GUILayout.Label("Height of Rooms");
-        maze.RoomHigthInMeter = EditorGUILayout.FloatField(maze.RoomHigthInMeter, GUILayout.Width(50));
-        GUILayout.Label("m");
+        //GUILayout.BeginHorizontal();
 
-        if (GUILayout.Button("Reset Height"))
-        {
-            foreach (var item in maze.Units)
-            { 
-                int c = item.transform.childCount;
-                for (int i = 0; i < c; i++)
-                {
-                    var child = item.transform.GetChild(i);
+        //GUILayout.Label("Height of Rooms");
+        //maze.RoomHigthInMeter = EditorGUILayout.FloatField(maze.RoomHigthInMeter, GUILayout.Width(50));
+        //GUILayout.Label("m");
 
-                    if (child.name.Equals("East") || 
-                        child.name.Equals("West") || 
-                        child.name.Equals("North") || 
-                        child.name.Equals("South"))
-                    {
-                        child.localScale = new Vector3(child.localScale.x, maze.RoomHigthInMeter, child.localScale.z);
-                        child.localPosition = new Vector3(child.localPosition.x, maze.RoomHigthInMeter / 2, child.localPosition.z);
-                    }
+        //if (GUILayout.Button("Reset Height"))
+        //{
+        //    foreach (var item in maze.Units)
+        //    { 
+        //        int c = item.transform.childCount;
+        //        for (int i = 0; i < c; i++)
+        //        {
+        //            var child = item.transform.GetChild(i);
 
-                    if (child.name.Equals("Top"))
-                    {
-                        child.localPosition = new Vector3(child.localPosition.x, maze.RoomHigthInMeter, child.localPosition.z);
-                    }
-                }
+        //            if (child.name.Equals("East") || 
+        //                child.name.Equals("West") || 
+        //                child.name.Equals("North") || 
+        //                child.name.Equals("South"))
+        //            {
+        //                child.localScale = new Vector3(child.localScale.x, maze.RoomHigthInMeter, child.localScale.z);
+        //                child.localPosition = new Vector3(child.localPosition.x, maze.RoomHigthInMeter / 2, child.localPosition.z);
+        //            }
 
-                var boxCollider = item.GetComponent<BoxCollider>();
-                boxCollider.center = new Vector3(0, maze.RoomHigthInMeter / 2, 0);
-                boxCollider.size = new Vector3(1, maze.RoomHigthInMeter, 1);
-            }
+        //            if (child.name.Equals("Top"))
+        //            {
+        //                child.localPosition = new Vector3(child.localPosition.x, maze.RoomHigthInMeter, child.localPosition.z);
+        //            }
+        //        }
 
-        }
+        //        var boxCollider = item.GetComponent<BoxCollider>();
+        //        boxCollider.center = new Vector3(0, maze.RoomHigthInMeter / 2, 0);
+        //        boxCollider.size = new Vector3(1, maze.RoomHigthInMeter, 1);
+        //    }
 
-        GUILayout.EndHorizontal();
+        //}
+
+        //GUILayout.EndHorizontal();
         
         GUILayout.BeginHorizontal();
         maze.UnitNamePattern = EditorGUILayout.TextField("Unit Name Pattern", maze.UnitNamePattern);
@@ -295,71 +292,73 @@ public class MazeEditor : AMazeEditor
 
         }
 
-        EditorGUILayout.BeginHorizontal();
-        WallMaterial = EditorGUILayout.ObjectField("Wall: ", WallMaterial, typeof(Material), false) as Material;
-        if(WallMaterial != null && GUILayout.Button("Apply")){
-            ApplyToAllMazeUnits((u) => { 
+        #region deprecated at this component
+        //EditorGUILayout.BeginHorizontal();
+        //WallMaterial = EditorGUILayout.ObjectField("Wall: ", WallMaterial, typeof(Material), false) as Material;
+        //if(WallMaterial != null && GUILayout.Button("Apply")){
+        //    ApplyToAllMazeUnits((u) => { 
             
-               int c = u.transform.childCount;
-               for (int i = 0; i < c; i++)
-               {
-                   var child = u.transform.GetChild(i);
+        //       int c = u.transform.childCount;
+        //       for (int i = 0; i < c; i++)
+        //       {
+        //           var child = u.transform.GetChild(i);
 
-                   if (child.name.Equals("East") ||
-                       child.name.Equals("West") ||
-                       child.name.Equals("North") ||
-                       child.name.Equals("South"))
-                   {
-                       var renderer = child.gameObject.GetComponent<Renderer>();
-                       renderer.material = WallMaterial;
-                   }
-               }
-            });
-        }
+        //           if (child.name.Equals("East") ||
+        //               child.name.Equals("West") ||
+        //               child.name.Equals("North") ||
+        //               child.name.Equals("South"))
+        //           {
+        //               var renderer = child.gameObject.GetComponent<Renderer>();
+        //               renderer.material = WallMaterial;
+        //           }
+        //       }
+        //    });
+        //}
 
-        EditorGUILayout.EndHorizontal();
+        //EditorGUILayout.EndHorizontal();
 
-        EditorGUILayout.BeginHorizontal();
-        FloorMaterial = EditorGUILayout.ObjectField("Floor: ", FloorMaterial, typeof(Material), false) as Material;
-        if (FloorMaterial != null && GUILayout.Button("Apply"))
-        {
-            ApplyToAllMazeUnits((u) =>
-            {
-                int c = u.transform.childCount;
-                for (int i = 0; i < c; i++)
-                {
-                    var child = u.transform.GetChild(i);
+        //EditorGUILayout.BeginHorizontal();
+        //FloorMaterial = EditorGUILayout.ObjectField("Floor: ", FloorMaterial, typeof(Material), false) as Material;
+        //if (FloorMaterial != null && GUILayout.Button("Apply"))
+        //{
+        //    ApplyToAllMazeUnits((u) =>
+        //    {
+        //        int c = u.transform.childCount;
+        //        for (int i = 0; i < c; i++)
+        //        {
+        //            var child = u.transform.GetChild(i);
 
-                    if (child.name.Equals("Floor") )
-                    {
-                        var renderer = child.gameObject.GetComponent<Renderer>();
-                        renderer.material = FloorMaterial;
-                    }
-                }
-            });
-        }
-        EditorGUILayout.EndHorizontal();
+        //            if (child.name.Equals("Floor") )
+        //            {
+        //                var renderer = child.gameObject.GetComponent<Renderer>();
+        //                renderer.material = FloorMaterial;
+        //            }
+        //        }
+        //    });
+        //}
+        //EditorGUILayout.EndHorizontal();
 
-        EditorGUILayout.BeginHorizontal();
-        TopMaterial = EditorGUILayout.ObjectField("Top: ", TopMaterial, typeof(Material), false) as Material;
-        if (TopMaterial && GUILayout.Button("Apply"))
-        {
-            ApplyToAllMazeUnits((u) =>
-            {
-                int c = u.transform.childCount;
-                for (int i = 0; i < c; i++)
-                {
-                    var child = u.transform.GetChild(i);
+        //EditorGUILayout.BeginHorizontal();
+        //TopMaterial = EditorGUILayout.ObjectField("Top: ", TopMaterial, typeof(Material), false) as Material;
+        //if (TopMaterial && GUILayout.Button("Apply"))
+        //{
+        //    ApplyToAllMazeUnits((u) =>
+        //    {
+        //        int c = u.transform.childCount;
+        //        for (int i = 0; i < c; i++)
+        //        {
+        //            var child = u.transform.GetChild(i);
 
-                    if (child.name.Equals("Top"))
-                    {
-                        var renderer = child.gameObject.GetComponent<Renderer>();
-                        renderer.material = TopMaterial;
-                    }
-                }
-            });
-        }
-        EditorGUILayout.EndHorizontal();
+        //            if (child.name.Equals("Top"))
+        //            {
+        //                var renderer = child.gameObject.GetComponent<Renderer>();
+        //                renderer.material = TopMaterial;
+        //            }
+        //        }
+        //    });
+        //}
+        //EditorGUILayout.EndHorizontal();
+        #endregion
 
         GUILayout.EndVertical();
 
@@ -372,36 +371,7 @@ public class MazeEditor : AMazeEditor
             action(item);
         }
     }
-
-    private void Rescale(beMobileMaze focusedMaze, Vector3 newUnitScale)
-    {
-        foreach (var item in focusedMaze.Units)
-        {
-            InitializeUnit(focusedMaze, item.GridID, item.gameObject); 
-        }
-    }
-
-    public Vector2 CalcGridSize()
-    {
-        int rows = Mathf.FloorToInt(maze.MazeLengthInMeter / maze.RoomDimension.z);
-        int columns = Mathf.FloorToInt(maze.MazeWidthInMeter / maze.RoomDimension.x);
-
-        return new Vector2(columns, rows);
-    }
-
-    public MazeUnit[,] FillGridWith(IEnumerable<MazeUnit> existingUnits, int columns, int rows)
-    {
-        var grid = new MazeUnit[columns,rows];
-
-        foreach (var unit in existingUnits)
-        {  
-            var x = Mathf.FloorToInt(unit.GridID.x);
-            var y = Mathf.FloorToInt(unit.GridID.y);
-            grid[x, y] = unit;
-        }
-
-        return grid;
-    }
+    
 
     private void UpdatePrefabOfCurrentMaze()
     {
@@ -482,36 +452,12 @@ public class MazeEditor : AMazeEditor
             }
         }
 
-        var unit = this.InitializeUnit(maze, currentTilePosition, unitHost);
+        var unit = MazeEditorUtil.InitializeUnit(maze, currentTilePosition, unitFloorOffset,unitHost);
         maze.Grid[(int)currentTilePosition.x, (int)currentTilePosition.y] = unit;
         maze.Units.Add(unit);
 
     }
 
-    private MazeUnit InitializeUnit(beMobileMaze mazeHost, Vector2 tilePos, GameObject unit)
-    {
-        var tilePositionInLocalSpace = new Vector3(
-            (tilePos.x * mazeHost.RoomDimension.x) + (mazeHost.RoomDimension.x / 2f),
-            unitFloorOffset,
-            (tilePos.y * mazeHost.RoomDimension.z) + (mazeHost.RoomDimension.z / 2f));
-
-        // set the cubes parent to the game object for organizational purposes
-        unit.transform.parent = mazeHost.transform;
-
-        //unit.transform.localPosition = mazeHost.transform.position + mazeHost.transform.TransformPoint(tilePositionInLocalSpace);
-        unit.transform.localPosition = tilePositionInLocalSpace;
-        // we scale the u to the tile size defined by the TileMap.TileWidth and TileMap.TileHeight fields 
-        unit.transform.localScale = new Vector3(mazeHost.RoomDimension.x, mazeHost.RoomDimension.y * maze.RoomHigthInMeter, mazeHost.RoomDimension.z);
-        
-        // give the u a assetName that represents it's location within the tile mazeHost
-        unit.name = string.Format(maze.UnitNamePattern, tilePos.x, tilePos.y);
-
-        MazeUnit mazeUnit = unit.GetComponent<MazeUnit>();
-
-        mazeUnit.Initialize(tilePos);
-
-        return mazeUnit;
-    }
 
     /// <summary>
     /// Erases a block at the pre-calculated mouse hit position
@@ -1018,7 +964,7 @@ public abstract class AMazeEditor : Editor {
 
         // round the numbers to the nearest whole number using 5 decimal place precision
         pos = new Vector3((int)Math.Round(pos.x, 5, MidpointRounding.ToEven), (int)Math.Round(pos.y, 5, MidpointRounding.ToEven), (int)Math.Round(pos.z, 5, MidpointRounding.ToEven));
-        // do a check to ensure that the row and column are with the bounds of the tile mazeHost
+        // do a check to ensure that the row and column are with the bounds of the tile maze
         var col = (int)pos.x;
         var row = (int)pos.z;
         if (row < 0)
@@ -1058,9 +1004,9 @@ public abstract class AMazeEditor : Editor {
     }
 
     /// <summary>
-    /// Calculates the position of the mouse over the tile mazeHost in local space coordinates.
+    /// Calculates the position of the mouse over the tile maze in local space coordinates.
     /// </summary>
-    /// <returns>Returns true if the mouse is over the tile mazeHost.</returns>
+    /// <returns>Returns true if the mouse is over the tile maze.</returns>
     protected bool UpdateHitPosition()
     {
         // build a plane object that 
