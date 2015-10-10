@@ -2,6 +2,7 @@
 using System.Collections;
 using UnityEditor;
 using UnityEngine.UI;
+using System.Linq;
 
 [CustomEditor(typeof(VirtualRealityManager))]
 public class VRManagerInspector : Editor
@@ -21,15 +22,23 @@ public class VRManagerInspector : Editor
     }
 
     public void OnSceneGUI()
-    { 
+    {
+        vrcontroller = (VirtualRealityManager)target;
+
+        if (!vrcontroller.AvailableEnvironments.Any())
+            return;
+
         Handles.BeginGUI();
 
         GUILayout.Space(25);
 
-        GUILayout.BeginVertical(GUILayout.MaxWidth(75));
 
+        GUILayout.BeginVertical(GUILayout.MaxWidth(75));
+        
         GUILayout.Label("Choose Environment", EditorStyles.whiteLabel);
         GUILayout.Space(10);
+
+
         foreach (var item in vrcontroller.AvailableEnvironments)
         {
             GUILayout.BeginHorizontal();
