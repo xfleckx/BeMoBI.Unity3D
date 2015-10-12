@@ -112,6 +112,9 @@ public class HUDInstruction : Singleton<HUDInstruction>, ISerializationCallbackR
 		currentInstructionSet = new InstructionSet();
 		currentInstructionSet.instructions.AddLast(instruction);
 
+        if (!this.isActiveAndEnabled)
+            this.gameObject.SetActive(true);
+
 		ActivateRendering();
 		StartCoroutine(InstructionRendering());
 	}
