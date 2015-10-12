@@ -56,7 +56,7 @@ public class UnitCreator : EditorWindow
 
         if (GUILayout.Button("Create new Maze Unit (Room)", GUILayout.Height(35f)))
         {
-            if (expectedChildComponents != null)
+            if (expectedChildComponents == null)
                 Initialize();
 
             var resizeModel = new UnitMeshModificationModel(roomDimensions, roomOrigin, useCenterAsOrigin);
@@ -122,6 +122,8 @@ public class UnitCreator : EditorWindow
 
     private void CreateAsSeparatedMeshes(GameObject newUnit, UnitMeshModificationModel creationModel, Material material)
     {
+        var targetPath = EditorEnvironmentConstants.Get_MODEL_DIR_PATH() + Path.AltDirectorySeparatorChar + "MazeUnitElements" + Path.AltDirectorySeparatorChar;
+
         foreach (var item in expectedChildComponents)
         {
             var wall = new GameObject(item);
@@ -136,9 +138,7 @@ public class UnitCreator : EditorWindow
 
             if (item.Equals(MazeUnit.TOP))
             {
-                var topMesh = CreateTopMesh(creationModel);
-
-                meshFilter.mesh = topMesh;
+                meshFilter.mesh = CreateTopMesh(creationModel);
                 meshFilter.sharedMesh.name = MazeUnit.TOP;
                 wall.transform.localPosition = V(0, roomDimensions.y, 0);
             }
@@ -154,7 +154,6 @@ public class UnitCreator : EditorWindow
                 wall.transform.localPosition = V(0, roomDimensions.y / 2, roomDimensions.z / 2);
                 meshFilter.mesh = CreateNorthMesh(creationModel);
                 meshFilter.sharedMesh.name = MazeUnit.NORTH;
-
             }
 
             if (item.Equals(MazeUnit.SOUTH))
@@ -176,7 +175,16 @@ public class UnitCreator : EditorWindow
                 meshFilter.sharedMesh.name = MazeUnit.EAST;
                 wall.transform.localPosition = V(roomDimensions.x / 2, roomDimensions.y / 2, 0);
             }
+
+            var result = string.Format("{0}{1}_Mesh_{2}.asset", targetPath, item, creationModel.RoomDimensions.AsFileName());
+            Debug.Log(string.Format("create Mesh asset at: {0}", result));
+            SaveAsAsset(meshFilter.sharedMesh, result);
         }
+    }
+
+    private void SaveAsAsset(Mesh mesh, string targetPath)
+    {
+        AssetDatabase.CreateAsset(mesh, targetPath);
     }
 
     private Mesh CreateFloorMesh(UnitMeshModificationModel model)
