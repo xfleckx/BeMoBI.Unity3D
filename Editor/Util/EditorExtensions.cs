@@ -7,6 +7,13 @@ using UnityEditor;
 public static class EditorExtensions
 {
 
+    public static bool IsPrefab(this UnityEngine.Object o){
+        
+        var prefabType = PrefabUtility.GetPrefabType(o);
+
+        return prefabType == PrefabType.Prefab;
+    }
+
     public static int RenderAsSelectionBox<T>(this IEnumerable<T> list, int selectionIndex)
     {
         int optionCount = list.Count();
