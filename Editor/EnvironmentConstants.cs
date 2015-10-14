@@ -10,7 +10,7 @@ public class EditorEnvironmentConstants : ScriptableObject
     public const string ASSET_DIR = "Assets";
 
     public const string PREFABS_DIR = "Prefabs";
-    public const string PREFAB_EXTENSION = ".prefab";
+    public const string PREFAB_EXTENSION = "prefab";
     public const string MODELS_DIR = "Models";
 
     public static string Get_BASE_ASSET_PATH(){
