@@ -23,7 +23,8 @@ public class UnitCreator : EditorWindow
 
     private Vector3 roomDimensions = Vector3.one;
     private Vector3 roomOrigin = Vector3.zero;
-
+    private Vector3 doorDimension = Vector3.one;
+    private Vector3 doorOrigin = Vector3.zero;
 
     private bool useCenterAsOrigin = true;
     private bool addBoxCollider = true;
@@ -41,8 +42,77 @@ public class UnitCreator : EditorWindow
 
     }
 
+    private bool basicUnitSelected = true;
+
+    private bool doorSelected = false;
+    #region Toogle Button
+    public static bool ToggleButton(bool state, string label)
+    {
+        BuildStyle();
+
+        bool out_bool = false;
+
+        if (state)
+            out_bool = GUILayout.Button(label, toggled_style);
+        else
+            out_bool = GUILayout.Button(label);
+
+        if (out_bool)
+            return !state;
+        else
+            return state;
+    }
+
+    static GUIStyle toggled_style;
+    public GUIStyle StyleButtonToggled
+    {
+        get
+        {
+            BuildStyle();
+            return toggled_style;
+        }
+    }
+
+    static GUIStyle labelText_style;
+    public static GUIStyle StyleLabelText
+    {
+        get
+        {
+            BuildStyle();
+            return labelText_style;
+        }
+    }
+
+    private static void BuildStyle()
+    {
+        if (toggled_style == null)
+        {
+            toggled_style = new GUIStyle(GUI.skin.button);
+            toggled_style.normal.background = toggled_style.onActive.background;
+            toggled_style.normal.textColor = toggled_style.onActive.textColor;
+        }
+        if (labelText_style == null)
+        {
+            labelText_style = new GUIStyle(EditorGUIUtility.GetBuiltinSkin(EditorSkin.Inspector).textField);
+            labelText_style.normal = EditorGUIUtility.GetBuiltinSkin(EditorSkin.Inspector).button.onNormal;
+        }
+    }
+
+    #endregion
+
     void OnGUI()
     {
+        EditorGUILayout.BeginHorizontal();
+
+        basicUnitSelected = ToggleButton(!doorSelected, "Basic Unit");
+        doorSelected = ToggleButton(!basicUnitSelected, "Door");
+
+        EditorGUILayout.EndHorizontal();
+
+        #region basic Unit
+
+        if (basicUnitSelected) { 
+
         EditorGUILayout.BeginVertical();
         
         roomDimensions = EditorGUILayout.Vector3Field("Room Dimension", roomDimensions);
@@ -82,12 +152,29 @@ public class UnitCreator : EditorWindow
 
             Debug.Assert(AssetDatabase.IsValidFolder(targetPath), string.Format("Expected prefab folder at \"{0}\"", targetPath));
 
-            var targetFilePath = targetPath + Path.AltDirectorySeparatorChar + string.Format("{0}{1}", prefabName, EditorEnvironmentConstants.PREFAB_EXTENSION);
+            var targetFilePath = targetPath + Path.AltDirectorySeparatorChar + string.Format("{0}{1}", prefabName + roomDimensions.AsFileName(), EditorEnvironmentConstants.PREFAB_EXTENSION);
 
             PrefabUtility.CreatePrefab(targetFilePath, constructedUnit);
         }
 
         EditorGUILayout.EndVertical();
+        }
+        #endregion
+
+        #region door
+        
+        if (doorSelected)
+        {
+            doorDimension = EditorGUILayout.Vector2Field("Door Dimension (width x height)", doorDimension);
+            doorOrigin = EditorGUILayout.Vector3Field("Origin", doorOrigin);
+        }
+
+        if (GUILayout.Button("Create Door"))
+        {
+            
+        }
+
+        #endregion
     }
       
     private GameObject ConstructUnit(UnitMeshModificationModel creationModel)
@@ -180,6 +267,9 @@ public class UnitCreator : EditorWindow
             Debug.Log(string.Format("create Mesh asset at: {0}", result));
             SaveAsAsset(meshFilter.sharedMesh, result);
         }
+
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
     }
 
     private void SaveAsAsset(Mesh mesh, string targetPath)
@@ -680,7 +770,6 @@ public class UnitCreator : EditorWindow
 
         SceneView.onSceneGUIDelegate -= OnSceneGUI;
     }
-
 
     private void OnSceneGUI(SceneView sceneView)
     {
