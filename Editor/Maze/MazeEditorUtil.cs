@@ -58,6 +58,7 @@ public static class MazeEditorUtil
             InitializeUnit(maze, item.GridID, floorOffset, item.gameObject);
         }
     }
+  
     public static MazeUnit[,] FillGridWith(IEnumerable<MazeUnit> existingUnits, int columns, int rows)
     {
         var grid = new MazeUnit[columns, rows];
@@ -140,7 +141,7 @@ public static class MazeEditorUtil
         foreach (var existingUnit in targetMaze.Units)
         {
             var newUnitFromPrefab = PrefabUtility.InstantiatePrefab(replacementPrefab) as GameObject;
-
+            
             PrefabUtility.DisconnectPrefabInstance(newUnitFromPrefab);
 
             //newUnitFromPrefab.hideFlags = HideFlags.HideAndDontSave;
@@ -153,7 +154,7 @@ public static class MazeEditorUtil
         }
     }
 
-    public static void ReplaceUnit(beMobileMaze hostMaze, MazeUnit oldUnit, MazeUnit newUnit)
+    public static void ReplaceUnit(beMobileMaze hostMaze, MazeUnit oldUnit, MazeUnit newUnit, bool ignoreOldScaling = true)
     {
         #region prepare children lists
 
@@ -185,7 +186,6 @@ public static class MazeEditorUtil
         {
             if (old_children.Any((go) => go.name.Equals(newChild.name)))
             {
-
                 var old_equivalent = old_children.Single((go) => go.name.Equals(newChild.name));
 
                 newChild.transform.parent = old_equivalent.transform.parent;
@@ -194,12 +194,17 @@ public static class MazeEditorUtil
                 newChild.transform.localScale = Vector3.one;
 
                 newChild.SetActive(old_equivalent.activeSelf);
-
+                
                 old_equivalent.transform.parent = null;
+
+                // TODO Bug here -> localScaling remains in a strange way!
             }
         }
 
-        oldUnit.transform.localScale = hostMaze.RoomDimension;
+        if (!ignoreOldScaling)
+            oldUnit.transform.localScale = hostMaze.RoomDimension;
+        else
+            oldUnit.transform.localScale = Vector3.one;
 
         foreach (var item in old_children)
         {

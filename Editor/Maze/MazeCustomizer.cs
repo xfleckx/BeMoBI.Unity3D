@@ -36,10 +36,21 @@ public class MazeCustomizer : EditorWindow
             return;
         }
 
-        selectedMaze = Selection.activeGameObject.GetComponent<beMobileMaze>();
+        if(Selection.activeGameObject != null)
+            selectedMaze = Selection.activeGameObject.GetComponent<beMobileMaze>();
 
         if (selectedMaze != null)
         {
+            EditorGUILayout.BeginHorizontal();
+
+            GUILayout.Label("Selected Maze:");
+
+            selectedMaze = EditorGUILayout.ObjectField(selectedMaze, typeof(beMobileMaze), true) as beMobileMaze;
+
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.Space();
+
             EditorGUILayout.BeginHorizontal();
 
             EditorGUILayout.BeginVertical(GUILayout.Width(200));
@@ -194,9 +205,7 @@ public class MazeCustomizer : EditorWindow
     private beMobileMaze selectedMaze;
 
     private void renderUiForSingleMazeSelected()
-    {
-        EditorGUILayout.Space();
-
+    { 
         EditorGUILayout.BeginVertical();
 
         GUILayout.Label("Replace Units");
@@ -244,24 +253,33 @@ public class MazeCustomizer : EditorWindow
             GUILayout.Box(previewTexture);
         }
 
-        GUILayout.Label("Change:", EditorStyles.boldLabel);
-
-        selectedMaze.RoomDimension = EditorGUILayout.Vector3Field("Room Dimension", selectedMaze.RoomDimension );
-
-        if (GUILayout.Button(new GUIContent("Resize (recommended)", "Resize the geometry"), GUILayout.Height(30)))
+        if (GUILayout.Button(new GUIContent("Save as new prefab?", "Creates a new prefab instead of overwriting the old one!")))
         {
-            var modificationModel = new UnitMeshModificationModel(selectedMaze.RoomDimension, Vector3.zero ,true); 
-            ApplyToAllMazeUnits(selectedMaze, (u) => {
+            var targetPath = EditorUtility.SaveFilePanelInProject("Save new maze prefab", "ResizedMaze", EditorEnvironmentConstants.PREFAB_EXTENSION, "sdfsfd");
 
-                MazeEditorUtil.ResizeUnitByMeshModification(u.gameObject, modificationModel);
-            });
+            if(targetPath != null)
+                PrefabUtility.CreatePrefab(targetPath, selectedMaze.gameObject);
         }
 
-        if (GUILayout.Button(new GUIContent("Rescale", "Rescale over the localScale value")))
-        {
-            MazeEditorUtil.Rescale(selectedMaze, selectedMaze.RoomDimension, unitFloorOffset);
-            MazeEditorUtil.RebuildGrid(selectedMaze);
-        }
+        // Resize currently through replacement of Units!
+        //GUILayout.Label("Change:", EditorStyles.boldLabel);
+
+        //selectedMaze.RoomDimension = EditorGUILayout.Vector3Field("Room Dimension", selectedMaze.RoomDimension );
+
+        //if (GUILayout.Button(new GUIContent("Resize (recommended)", "Resize the geometry"), GUILayout.Height(30)))
+        //{
+        //    var modificationModel = new UnitMeshModificationModel(selectedMaze.RoomDimension, Vector3.zero ,true); 
+        //    ApplyToAllMazeUnits(selectedMaze, (u) => {
+
+        //        MazeEditorUtil.ResizeUnitByMeshModification(u.gameObject, modificationModel);
+        //    });
+        //}
+
+        //if (GUILayout.Button(new GUIContent("Rescale", "Rescale over the localScale value")))
+        //{
+        //    MazeEditorUtil.Rescale(selectedMaze, selectedMaze.RoomDimension, unitFloorOffset);
+        //    MazeEditorUtil.RebuildGrid(selectedMaze);
+        //}
 
 
     }
@@ -303,7 +321,30 @@ public class MazeCustomizer : EditorWindow
         Debug.Assert(replacementPrefab != null && selectedMaze != null);
 
         MazeEditorUtil.ReplaceUnits(selectedMaze, replacementPrefab);
+
+        var newUnitFromPrefab = PrefabUtility.InstantiatePrefab(replacementPrefab) as GameObject;
+
+        var combinedBounds = new Bounds();
+        var renderers = newUnitFromPrefab.GetComponentsInChildren<MeshRenderer>();
+
+        foreach (var render in renderers)
+        {
+            combinedBounds.Encapsulate(render.bounds);
+        }
+
+        selectedMaze.RoomDimension = combinedBounds.size;
+
+        var gridDim = MazeEditorUtil.CalcGridSize(selectedMaze);
         
+        MazeEditorUtil.ReconfigureGrid(selectedMaze, gridDim.x, gridDim.y);
+
+        foreach (var unit in selectedMaze.Units)
+        {
+            MazeEditorUtil.InitializeUnit(selectedMaze, unit.GridID, 0f, unit.gameObject);
+        }
+
+        GameObject.DestroyImmediate(newUnitFromPrefab.gameObject);
+
     }
 
     private void AddLightingToMaze()
@@ -332,19 +373,54 @@ public class MazeCustomizer : EditorWindow
         }
     }
 
+    private void renderUiForNoMazeSelected()
+    {
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.HelpBox("No Maze selected! \n Please create one or select one from scene!", MessageType.Info);
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginVertical();
+
+        var mazesInScene = Resources.FindObjectsOfTypeAll<beMobileMaze>();
+
+        GUILayout.Space(5);
+
+        GUILayout.Label(string.Format("Mazes found at the current scene:"));
+
+        foreach (var item in mazesInScene)
+        {
+            if (!item.gameObject.IsPrefab() && GUILayout.Button(item.name))
+            {
+                Selection.activeGameObject = item.gameObject;
+            }
+        }
+
+        GUILayout.Space(5);
+
+        GUILayout.Label(string.Format("Mazes found as prefabs:"));
+
+        foreach (var item in mazesInScene)
+        {
+            if (item.gameObject.IsPrefab() && GUILayout.Button(item.name))
+            {
+                var instance = PrefabUtility.InstantiatePrefab(item) as beMobileMaze;
+
+                Selection.activeGameObject = instance.gameObject;
+            }
+        }
+        EditorGUILayout.EndVertical();
+
+    }
+
     #region TODO
     private void renderUiForMultipleMazesSelected()
     {
          
     }
 
-    private void renderUiForNoMazeSelected()
-    {
-        
-
-    }
     #endregion
 
+   
 
     #region constants
 
