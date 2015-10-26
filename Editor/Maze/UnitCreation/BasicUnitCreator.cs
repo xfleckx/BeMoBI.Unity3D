@@ -16,6 +16,14 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
         private bool addBoxCollider = true;
         private bool createAsWholeMesh = false;
 
+        public override string CreatorName
+        {
+            get
+            {
+                return "Maze Unit";
+            }
+        }
+
         public override void Initialize()
         {
             expectedChildComponents = new List<string>() { MazeUnit.TOP, MazeUnit.FLOOR, MazeUnit.NORTH, MazeUnit.SOUTH, MazeUnit.WEST, MazeUnit.EAST };
@@ -72,19 +80,15 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
             boxCollider.center = new Vector3(0, dimension.y / 2, 0);
 
             boxCollider.size = dimension;
-
-            var prototype = GameObject.CreatePrimitive(PrimitiveType.Plane);
-            prototype.hideFlags = HideFlags.HideAndDontSave;
-            var prototypeMeshRenderer = prototype.GetComponent<MeshRenderer>();
-            var material = prototypeMeshRenderer.sharedMaterial;
+            
+            var material = GetPrototypeMaterial();
 
             if (!createAsWholeMesh)
                 CreateAsSeparatedMeshes(newUnit, creationModel, material);
 
             if (createAsWholeMesh)
                 CreateAsAWhole(newUnit, creationModel, material);
-
-            DestroyImmediate(prototype);
+             
 
             return newUnit;
         }

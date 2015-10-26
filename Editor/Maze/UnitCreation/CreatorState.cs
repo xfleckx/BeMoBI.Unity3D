@@ -10,6 +10,8 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
 {
     public abstract class CreatorState : ScriptableObject
     {
+        public virtual string CreatorName { get { return "CreatorName"; } }
+
         protected Vector3 dimension = Vector3.one;
 
         public Vector3 Dimension
@@ -63,11 +65,18 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
                 var targetFilePath = targetPath + Path.AltDirectorySeparatorChar +
                     string.Format("{0}{1}", prefabName + dimension.AsPartFileName(), EditorEnvironmentConstants.PREFAB_EXTENSION);
 
-                PrefabUtility.CreatePrefab(targetFilePath, constructedUnit);
+                OnBeforeCreatePrefab();
+
+                prefabReference = PrefabUtility.CreatePrefab(targetFilePath, constructedUnit);
+
             }
 
         }
 
+        protected virtual void OnBeforeCreatePrefab()
+        {
+            // nothing to do here
+        }
 
         #region Helper
 
@@ -77,6 +86,8 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
             prototype.hideFlags = HideFlags.HideAndDontSave;
             var prototypeMeshRenderer = prototype.GetComponent<MeshRenderer>();
             var material = prototypeMeshRenderer.sharedMaterial;
+            
+            GameObject.DestroyImmediate(prototype);
 
             return material;
         }

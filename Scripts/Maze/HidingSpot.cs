@@ -5,7 +5,7 @@ public class HidingSpot : MonoBehaviour
 {
     public enum Direction { Vertical, Horizontal }
 
-    public float revealSpeedFactor = 0.1f;
+    public float revealSpeedFactor = 0.01f;
 
     public GameObject DoorA;
     public GameObject DoorB;
@@ -17,7 +17,7 @@ public class HidingSpot : MonoBehaviour
     private const float DIRECTION_REVEAL = -1f;
 
     private float direction = -1f;
-    public float HIDDEN = 0.5f; // equal to start scaling
+    public float HIDDEN = 1f; // equal to start scaling
     public float REVEALING = 0; // equal to scaled to invisibility
 
     // should between 0 1;

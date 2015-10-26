@@ -107,8 +107,8 @@ public class UnitCreator : EditorWindow
     {
         EditorGUILayout.BeginHorizontal();
 
-        basicUnitSelected =  ToggleButton(!hidingSpotSelected, "Basic Unit");
-        hidingSpotSelected =  ToggleButton(!basicUnitSelected, "Door");
+        basicUnitSelected =  ToggleButton(!hidingSpotSelected, baseUnitCreator.CreatorName);
+        hidingSpotSelected =  ToggleButton(!basicUnitSelected, hidingSpotCreator.CreatorName);
         
         EditorGUILayout.EndHorizontal();
 
