@@ -12,6 +12,7 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
     {
         public override void Initialize()
         { 
+            // for this unit it does nothing...
         }
 
         public override Rect OnGUI()
@@ -23,47 +24,37 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
 
                 if (GUILayout.Button("Create Hiding Spot"))
                 {
-                    var newUnit = new GameObject("HidingSpot");
-
-                    //var creationModel = new HidingSpotModificationModel(this.doorMovingDirection, );
-
-                    newUnit.AddComponent<MazeUnit>();
-
-                    var boxCollider = newUnit.AddComponent<BoxCollider>();
-
-                    boxCollider.center = new Vector3(0, Dimension.y / 2, 0);
-
-                    boxCollider.size = Dimension;
-
-                    //var prototype = GameObject.CreatePrimitive(PrimitiveType.Plane);
-                    //prototype.hideFlags = HideFlags.HideAndDontSave;
-                    //var prototypeMeshRenderer = prototype.GetComponent<MeshRenderer>();
-                    //var material = prototypeMeshRenderer.sharedMaterial;
-
-
-
-                    //DestroyImmediate(prototype);
+                    Construct();
                 }
 
                 EditorGUILayout.Space();
 
-                prefabName = EditorGUILayout.TextField("Prefab Name:", prefabName);
-
-                if (constructedUnit != null && prefabReference == null && GUILayout.Button("Save as Prefab"))
-                {
-                    var targetPath = EditorEnvironmentConstants.Get_PREFAB_DIR_PATH();
-
-                    Debug.Assert(AssetDatabase.IsValidFolder(targetPath), string.Format("Expected prefab folder at \"{0}\"", targetPath));
-
-                    var targetFilePath = targetPath + Path.AltDirectorySeparatorChar +
-                        string.Format("{0}{1}", prefabName + dimension.AsPartFileName(), EditorEnvironmentConstants.PREFAB_EXTENSION);
-
-                    PrefabUtility.CreatePrefab(targetFilePath, constructedUnit);
-                }
+                Render_SaveAsPrefab_Option();
 
             EditorGUILayout.EndVertical();
 
             return rect;
+        }
+
+
+        private void Construct()
+        {
+            var newUnit = new GameObject("HidingSpot");
+
+            //var creationModel = new HidingSpotModificationModel(this.doorMovingDirection, );
+
+            newUnit.AddComponent<MazeUnit>();
+
+            var boxCollider = newUnit.AddComponent<BoxCollider>();
+
+            boxCollider.center = new Vector3(0, Dimension.y / 2, 0);
+
+            boxCollider.size = Dimension;
+
+            var prototypeMaterial = GetPrototypeMaterial();
+
+
+            DestroyImmediate(prototypeMaterial);
         }
 
     }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using UnityEditor;
@@ -49,7 +50,36 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
 
         public abstract Rect OnGUI();
 
+        protected void Render_SaveAsPrefab_Option()
+        {
+            prefabName = EditorGUILayout.TextField("Prefab Name:", prefabName);
+
+            if (constructedUnit != null && prefabReference == null && GUILayout.Button("Save as Prefab"))
+            {
+                var targetPath = EditorEnvironmentConstants.Get_PREFAB_DIR_PATH();
+
+                Debug.Assert(AssetDatabase.IsValidFolder(targetPath), string.Format("Expected prefab folder at \"{0}\"", targetPath));
+
+                var targetFilePath = targetPath + Path.AltDirectorySeparatorChar +
+                    string.Format("{0}{1}", prefabName + dimension.AsPartFileName(), EditorEnvironmentConstants.PREFAB_EXTENSION);
+
+                PrefabUtility.CreatePrefab(targetFilePath, constructedUnit);
+            }
+
+        }
+
+
         #region Helper
+
+        protected Material GetPrototypeMaterial()
+        {
+            var prototype = GameObject.CreatePrimitive(PrimitiveType.Plane);
+            prototype.hideFlags = HideFlags.HideAndDontSave;
+            var prototypeMeshRenderer = prototype.GetComponent<MeshRenderer>();
+            var material = prototypeMeshRenderer.sharedMaterial;
+
+            return material;
+        }
 
         protected Vector3 V(float x, float y, float z)
         {

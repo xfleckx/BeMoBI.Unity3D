@@ -54,18 +54,7 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
 
                 EditorGUILayout.Space();
 
-                prefabName = EditorGUILayout.TextField("Prefab Name:", prefabName);
-
-                if (constructedUnit != null && prefabReference == null && GUILayout.Button("Save as Prefab"))
-                {
-                    var targetPath = EditorEnvironmentConstants.Get_PREFAB_DIR_PATH();
-
-                    Debug.Assert(AssetDatabase.IsValidFolder(targetPath), string.Format("Expected prefab folder at \"{0}\"", targetPath));
-
-                    var targetFilePath = targetPath + Path.AltDirectorySeparatorChar + string.Format("{0}{1}", prefabName + dimension.AsPartFileName(), EditorEnvironmentConstants.PREFAB_EXTENSION);
-
-                    prefabReference = PrefabUtility.CreatePrefab(targetFilePath, constructedUnit);
-                }
+                Render_SaveAsPrefab_Option();
 
             EditorGUILayout.EndVertical();
 
