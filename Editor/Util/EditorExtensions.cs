@@ -6,7 +6,6 @@ using UnityEditor;
  
 public static class EditorExtensions
 {
-
     public static bool IsPrefab(this UnityEngine.Object o){
         
         var prefabType = PrefabUtility.GetPrefabType(o);

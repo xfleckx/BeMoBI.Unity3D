@@ -264,7 +264,7 @@ public class MazeCustomizer : EditorWindow
         // Resize currently through replacement of Units!
         //GUILayout.Label("Change:", EditorStyles.boldLabel);
 
-        //selectedMaze.RoomDimension = EditorGUILayout.Vector3Field("Room Dimension", selectedMaze.RoomDimension );
+        //selectedMaze.RoomDimension = EditorGUILayout.Vector3Field("Room dimension", selectedMaze.RoomDimension );
 
         //if (GUILayout.Button(new GUIContent("Resize (recommended)", "Resize the geometry"), GUILayout.Height(30)))
         //{

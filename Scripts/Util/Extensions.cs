@@ -14,7 +14,7 @@ public static class Extensions
         origin.transform.localScale = targetTransform.localScale;
     }
 
-    public static string AsFileName(this Vector3 v){
+    public static string AsPartFileName(this Vector3 v){
        
         var fileNameCompatibleString = string.Format("{0}x{1}x{2}", v.x, v.y, v.z);
 

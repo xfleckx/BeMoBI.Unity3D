@@ -129,7 +129,7 @@ public class MazeEditor : AMazeEditor
         GUILayout.BeginHorizontal();
 
         #region deprecated at this component see Customizer
-        //maze.RoomDimension = EditorGUILayout.Vector3Field("Room Dimension", new Vector3(maze.RoomDimension.x, maze.RoomHigthInMeter, maze.RoomDimension.z));
+        //maze.RoomDimension = EditorGUILayout.Vector3Field("Room dimension", new Vector3(maze.RoomDimension.x, maze.RoomHigthInMeter, maze.RoomDimension.z));
         
         //if (GUILayout.Button("Rescale"))
         //{

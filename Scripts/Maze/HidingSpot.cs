@@ -7,8 +7,9 @@ public class HidingSpot : MonoBehaviour
 
     public float revealSpeedFactor = 0.1f;
 
-    public GameObject Top;
-    public GameObject Bottom;
+    public GameObject DoorA;
+    public GameObject DoorB;
+    public Vector3 roomSize;
 
     public Direction DoorMovingDirection = Direction.Vertical;
 
@@ -49,28 +50,28 @@ public class HidingSpot : MonoBehaviour
     {
         Debug.Log(string.Format("Source {0} - Target {1}", currentState, targetState));
 
-        var topTransform = Top.transform.localScale;
+        var topTransform = DoorA.transform.localScale;
 
         while (TargetStateNotReached(currentState += direction * revealSpeedFactor))
         {
             yield return new WaitForFixedUpdate();
 
-            var newTransform = Vector3.one;
+            var newScaleState = Vector3.one;
 
             switch (DoorMovingDirection)
             {
                 case Direction.Vertical:
-                    newTransform = new Vector3(topTransform.x, currentState, topTransform.z);
+                    newScaleState = new Vector3(topTransform.x, currentState, topTransform.z);
                     break;
                 case Direction.Horizontal:
-                    newTransform = new Vector3(currentState, topTransform.y, topTransform.z);
+                    newScaleState = new Vector3(currentState, topTransform.y, topTransform.z);
                     break;
                 default:
                     break;
             }
 
-            Top.transform.localScale = newTransform;
-            Bottom.transform.localScale = newTransform;
+            DoorA.transform.localScale = newScaleState;
+            DoorB.transform.localScale = newScaleState;
         }
 
         currentState = targetState;
@@ -87,5 +88,16 @@ public class HidingSpot : MonoBehaviour
             return true;
 
         return false;
+    }
+
+    void OnDrawGizmos()
+    {
+        var temp = Gizmos.matrix;
+
+        Gizmos.matrix = transform.localToWorldMatrix;
+
+        Gizmos.DrawWireCube(new Vector3(transform.position.x, -transform.position.y / 2, transform.position.z), roomSize);
+
+        Gizmos.matrix = temp;
     }
 }
