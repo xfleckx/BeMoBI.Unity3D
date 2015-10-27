@@ -157,7 +157,7 @@ public static class MazeEditorUtil
         }
     }
 
-    public static void ReplaceUnit(beMobileMaze hostMaze, MazeUnit oldUnit, MazeUnit newUnit, bool ignoreOldScaling = true)
+    public static void ReplaceUnit(beMobileMaze hostMaze, MazeUnit oldUnit, MazeUnit newUnit, bool ignoreOldScaling = true, bool forceRecalculationOfComponentPosition = true)
     {
         #region prepare children lists
 
@@ -184,6 +184,13 @@ public static class MazeEditorUtil
         }
 
         #endregion
+        
+        if (!ignoreOldScaling)
+            oldUnit.transform.localScale = hostMaze.RoomDimension;
+        else
+            oldUnit.transform.localScale = Vector3.one;
+
+        var dimension = hostMaze.RoomDimension;
 
         foreach (var newChild in new_Children)
         {
@@ -193,7 +200,43 @@ public static class MazeEditorUtil
 
                 newChild.transform.parent = old_equivalent.transform.parent;
 
-                newChild.transform.localPosition = newChild.transform.position;
+                if (!forceRecalculationOfComponentPosition)
+                {
+                    //obtain old wall position
+                    newChild.transform.localPosition = newChild.transform.position;
+                }
+                else
+                {
+                    if (old_equivalent.name.Equals(MazeUnit.TOP))
+                    {
+                        newChild.transform.localPosition = new Vector3(0, dimension.y, 0);
+                    }
+
+                    if (old_equivalent.name.Equals(MazeUnit.NORTH))
+                    {
+                        newChild.transform.localPosition = new Vector3(0, dimension.y / 2, dimension.z / 2);
+                    }
+
+                    if (old_equivalent.name.Equals(MazeUnit.SOUTH))
+                    {
+                        newChild.transform.localPosition = new Vector3(0, dimension.y / 2, -dimension.z / 2);
+                    }
+
+                    if (old_equivalent.name.Equals(MazeUnit.WEST))
+                    {
+                        newChild.transform.localPosition = new Vector3(-dimension.x / 2, dimension.y / 2, 0);
+                    }
+
+                    if (old_equivalent.name.Equals(MazeUnit.EAST))
+                    {
+                        newChild.transform.localPosition = new Vector3(dimension.x / 2, dimension.y / 2, 0);
+                    }
+
+                    if (old_equivalent.name.Equals(MazeUnit.FLOOR))
+                    {
+                    }
+                }
+                
                 newChild.transform.localScale = Vector3.one;
 
                 newChild.SetActive(old_equivalent.activeSelf);
@@ -203,11 +246,6 @@ public static class MazeEditorUtil
                 // TODO Bug here -> localScaling remains in a strange way!
             }
         }
-
-        if (!ignoreOldScaling)
-            oldUnit.transform.localScale = hostMaze.RoomDimension;
-        else
-            oldUnit.transform.localScale = Vector3.one;
 
         foreach (var item in old_children)
         {
