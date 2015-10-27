@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System;
 
 public class HidingSpot : MonoBehaviour
 {
@@ -90,13 +91,25 @@ public class HidingSpot : MonoBehaviour
         return false;
     }
 
+    public Action<HidingSpot, GameObject> HidingSpotEntered;
+    private void OnHidingSpotEntered(HidingSpot spot, GameObject entered)
+    {
+        if(HidingSpotEntered != null)
+            HidingSpotEntered(spot, entered);
+    }
+    
+    public void DoorStepEntered(Collider collider)
+    {
+        OnHidingSpotEntered(this, collider.gameObject);
+    }
+     
     void OnDrawGizmos()
     {
         var temp = Gizmos.matrix;
 
         Gizmos.matrix = transform.localToWorldMatrix;
 
-        Gizmos.DrawWireCube(new Vector3(transform.position.x, -transform.position.y / 2, transform.position.z), roomSize);
+        Gizmos.DrawWireCube(new Vector3(transform.position.x, roomSize.y / 2, transform.position.z), roomSize);
 
         Gizmos.matrix = temp;
     }

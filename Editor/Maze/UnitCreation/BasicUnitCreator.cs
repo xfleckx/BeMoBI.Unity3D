@@ -27,13 +27,19 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
         public override void Initialize()
         {
             expectedChildComponents = new List<string>() { MazeUnit.TOP, MazeUnit.FLOOR, MazeUnit.NORTH, MazeUnit.SOUTH, MazeUnit.WEST, MazeUnit.EAST };
+            roomDimension = Vector3.one;
+        }
+
+        protected override void OnRoomDimensionUpdate()
+        {
+            // does nothing...
         }
 
         public override Rect OnGUI()
         {
             var rect = EditorGUILayout.BeginVertical();
 
-                dimension = EditorGUILayout.Vector3Field("Room dimension", dimension);
+                roomDimension = EditorGUILayout.Vector3Field("Room roomDimension", roomDimension);
                 pivotOrigin = EditorGUILayout.Vector3Field("Origin", pivotOrigin);
 
                 useCenterAsOrigin = EditorGUILayout.ToggleLeft("Use the Center as origin!", useCenterAsOrigin);
@@ -47,13 +53,13 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
                     if (expectedChildComponents == null)
                         Initialize();
 
-                    var resizeModel = new UnitMeshModificationModel(dimension, pivotOrigin, useCenterAsOrigin);
+                    var resizeModel = new UnitMeshModificationModel(roomDimension, pivotOrigin, useCenterAsOrigin);
                     constructedUnit = ConstructUnit(resizeModel);
                 }
 
                 if (GUILayout.Button("Resize Unit (Room)"))
                 {
-                    var resizeModel = new UnitMeshModificationModel(dimension, pivotOrigin, useCenterAsOrigin);
+                    var resizeModel = new UnitMeshModificationModel(roomDimension, pivotOrigin, useCenterAsOrigin);
 
                     MazeEditorUtil.ResizeUnitByMeshModification(constructedUnit, resizeModel);
                 }
@@ -73,13 +79,15 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
         {
             var newUnit = new GameObject("MazeUnit");
 
-            newUnit.AddComponent<MazeUnit>();
+            var mazeUnit = newUnit.AddComponent<MazeUnit>();
+            
+            mazeUnit.Initialize(RoomDimension);
 
             var boxCollider = newUnit.AddComponent<BoxCollider>();
 
-            boxCollider.center = new Vector3(0, dimension.y / 2, 0);
+            boxCollider.center = new Vector3(0, roomDimension.y / 2, 0);
 
-            boxCollider.size = dimension;
+            boxCollider.size = roomDimension;
             
             var material = GetPrototypeMaterial();
 
@@ -88,17 +96,19 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
 
             if (createAsWholeMesh)
                 CreateAsAWhole(newUnit, creationModel, material);
-             
-
+            
             return newUnit;
+        }
+
+        protected override void OnBeforeCreatePrefab()
+        {
+            // Nothing to do - all meshes are saved after creation
         }
 
         #region create Mesh in separate pieces
 
         private void CreateAsSeparatedMeshes(GameObject newUnit, UnitMeshModificationModel creationModel, Material material)
         {
-            var targetPath = EditorEnvironmentConstants.Get_MODEL_DIR_PATH() + Path.AltDirectorySeparatorChar + "MazeUnitElements" + Path.AltDirectorySeparatorChar;
-
             foreach (var item in expectedChildComponents)
             {
                 var wall = new GameObject(item);
@@ -115,7 +125,7 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
                 {
                     meshFilter.mesh = CreateTopMesh(creationModel);
                     meshFilter.sharedMesh.name = MazeUnit.TOP;
-                    wall.transform.localPosition = V(0, dimension.y, 0);
+                    wall.transform.localPosition = V(0, roomDimension.y, 0);
                 }
 
                 if (item.Equals(MazeUnit.FLOOR))
@@ -126,7 +136,7 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
 
                 if (item.Equals(MazeUnit.NORTH))
                 {
-                    wall.transform.localPosition = V(0, dimension.y / 2, dimension.z / 2);
+                    wall.transform.localPosition = V(0, roomDimension.y / 2, roomDimension.z / 2);
                     meshFilter.mesh = CreateNorthMesh(creationModel);
                     meshFilter.sharedMesh.name = MazeUnit.NORTH;
                 }
@@ -134,35 +144,30 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
                 if (item.Equals(MazeUnit.SOUTH))
                 {
                     meshFilter.mesh = CreateSouthMesh(creationModel);
-                    meshFilter.sharedMesh.name = MazeUnit.SOUTH; wall.transform.localPosition = V(0, dimension.y / 2, -dimension.z / 2);
+                    meshFilter.sharedMesh.name = MazeUnit.SOUTH; wall.transform.localPosition = V(0, roomDimension.y / 2, -roomDimension.z / 2);
                 }
 
                 if (item.Equals(MazeUnit.WEST))
                 {
                     meshFilter.mesh = CreateWestMesh(creationModel);
                     meshFilter.sharedMesh.name = MazeUnit.WEST;
-                    wall.transform.localPosition = V(-dimension.x / 2, dimension.y / 2, 0);
+                    wall.transform.localPosition = V(-roomDimension.x / 2, roomDimension.y / 2, 0);
                 }
 
                 if (item.Equals(MazeUnit.EAST))
                 {
                     meshFilter.mesh = CreateEastMesh(creationModel);
                     meshFilter.sharedMesh.name = MazeUnit.EAST;
-                    wall.transform.localPosition = V(dimension.x / 2, dimension.y / 2, 0);
+                    wall.transform.localPosition = V(roomDimension.x / 2, roomDimension.y / 2, 0);
                 }
 
-                var result = string.Format("{0}{1}_Mesh_{2}.asset", targetPath, item, creationModel.RoomDimensions.AsPartFileName());
-                Debug.Log(string.Format("create Mesh asset at: {0}", result));
+                var result = string.Format("{0}{1}_Mesh_{2}.asset", AssetPath, item, creationModel.RoomDimensions.AsPartFileName());
+                
                 SaveAsAsset(meshFilter.sharedMesh, result);
             }
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-        }
-
-        private void SaveAsAsset(Mesh mesh, string targetPath)
-        {
-            AssetDatabase.CreateAsset(mesh, targetPath);
         }
 
         private Mesh CreateFloorMesh(UnitMeshModificationModel model)
@@ -646,7 +651,7 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
         }
 
         #endregion
-
+         
     }
 
     public class UnitMeshModificationModel

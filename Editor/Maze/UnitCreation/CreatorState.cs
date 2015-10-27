@@ -12,13 +12,30 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
     {
         public virtual string CreatorName { get { return "CreatorName"; } }
 
-        protected Vector3 dimension = Vector3.one;
+        public virtual string AssetSubPath { get { return "MazeUnitElements"; } }
 
-        public Vector3 Dimension
-        {
-            get { return dimension; }
-            set { dimension = value; }
+        public virtual string AssetPath { 
+            get { 
+            return EditorEnvironmentConstants.Get_MODEL_DIR_PATH() + Path.AltDirectorySeparatorChar + AssetSubPath + Path.AltDirectorySeparatorChar;
+            } 
         }
+
+        protected Vector3 roomDimension = Vector3.one;
+        /// <summary>
+        /// Orientation for creating Maze Elements which are intented to be added as children of Maze Units
+        /// </summary>
+        public Vector3 RoomDimension
+        {
+            get { return roomDimension; }
+            set {
+                if (value != roomDimension) { 
+                    roomDimension = value;
+                    OnRoomDimensionUpdate();
+                }
+            }
+        }
+
+        protected abstract void OnRoomDimensionUpdate();
 
         protected Vector3 pivotOrigin = Vector3.zero;
         public Vector3 PivotOrigin
@@ -34,14 +51,14 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
             set { prefabName = value; }
         }
 
-        protected GameObject constructedUnit;
+        protected GameObject constructedUnit = null;
         public GameObject ConstructedUnit
         {
             get { return constructedUnit; }
             set { constructedUnit = value; }
         }
 
-        protected GameObject prefabReference;
+        protected GameObject prefabReference = null;
         public GameObject PrefabReference
         {
             get { return prefabReference; }
@@ -56,29 +73,47 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
         {
             prefabName = EditorGUILayout.TextField("Prefab Name:", prefabName);
 
-            if (constructedUnit != null && prefabReference == null && GUILayout.Button("Save as Prefab"))
+            if (constructedUnit != null && prefabReference == null)
             {
-                var targetPath = EditorEnvironmentConstants.Get_PREFAB_DIR_PATH();
+                if ((prefabName != null && prefabName != String.Empty) && GUILayout.Button("Save as Prefab")) { 
 
-                Debug.Assert(AssetDatabase.IsValidFolder(targetPath), string.Format("Expected prefab folder at \"{0}\"", targetPath));
+                    var targetPath = EditorEnvironmentConstants.Get_PREFAB_DIR_PATH();
 
-                var targetFilePath = targetPath + Path.AltDirectorySeparatorChar +
-                    string.Format("{0}{1}", prefabName + dimension.AsPartFileName(), EditorEnvironmentConstants.PREFAB_EXTENSION);
+                    Debug.Assert(AssetDatabase.IsValidFolder(targetPath), string.Format("Expected prefab folder at \"{0}\"", targetPath));
 
-                OnBeforeCreatePrefab();
+                    var targetFilePath = targetPath + Path.AltDirectorySeparatorChar +
+                        string.Format("{0}{1}", prefabName + roomDimension.AsPartFileName(), EditorEnvironmentConstants.PREFAB_EXTENSION);
 
-                prefabReference = PrefabUtility.CreatePrefab(targetFilePath, constructedUnit);
+                    OnBeforeCreatePrefab();
+
+                    prefabReference = PrefabUtility.CreatePrefab(targetFilePath, constructedUnit);
+
+                }
+                else
+                {
+                    EditorGUILayout.HelpBox("Please enter a name to enable\n\"Save as prefab\"", MessageType.Info);
+                }
 
             }
 
         }
 
-        protected virtual void OnBeforeCreatePrefab()
-        {
-            // nothing to do here
-        }
+        protected abstract void OnBeforeCreatePrefab();
 
         #region Helper
+
+        protected void SaveAsAsset(Mesh mesh, string targetPath, bool refreshDatabase = false)
+        {
+            Debug.Log(string.Format("create Mesh asset at: {0}", targetPath));
+
+            AssetDatabase.CreateAsset(mesh, targetPath);
+
+            if (refreshDatabase) { 
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+            }
+        }
+
 
         protected Material GetPrototypeMaterial()
         {

@@ -46,6 +46,8 @@ public class UnitCreator : EditorWindow
 
     private bool hidingSpotSelected = false;
 
+    private UnityEngine.Object lastSelection;
+
     private HidingSpotCreator hidingSpotCreator;
     private BasicUnitCreator baseUnitCreator;
 
@@ -105,6 +107,11 @@ public class UnitCreator : EditorWindow
 
     void OnGUI()
     {
+        var currentSelection = Selection.activeGameObject;
+
+        if (currentSelection != null && (lastSelection != null || lastSelection != currentSelection))
+            OnUpdateSelection(currentSelection);
+
         EditorGUILayout.BeginHorizontal();
 
         basicUnitSelected =  ToggleButton(!hidingSpotSelected, baseUnitCreator.CreatorName);
@@ -127,6 +134,20 @@ public class UnitCreator : EditorWindow
         }
 
         #endregion
+    }
+
+    private void OnUpdateSelection(GameObject selection)
+    { 
+        var mazeUnit = selection.GetComponent<MazeUnit>();
+        
+        if (mazeUnit != null)
+        {
+            var dimension = mazeUnit.Dimension; 
+            baseUnitCreator.RoomDimension = dimension;
+            hidingSpotCreator.RoomDimension = dimension;
+        }
+
+        lastSelection = selection;
     }
       
     public void OnEnable()

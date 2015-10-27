@@ -11,11 +11,20 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
 {
     public class HidingSpotCreator : CreatorState
     {
+
         Vector3 socketOffset;
         float socketHeight = 0.55f;
-        float doorOffset = -0.3f;
         GameObject socketPrefab;
+        GameObject socketInstance;
         bool useCustomSocket = false;
+
+        Vector2 doorDimension;
+        float doorOffset = -0.3f;
+        Vector3 doorColliderDimension;
+        private float doorStepWidth = 0.05f;
+
+        Mesh leftDoor;
+        Mesh rightDoor;
 
         public override string CreatorName
         {
@@ -30,18 +39,39 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
             // for this unit it does nothing...
         }
 
+        protected override void OnRoomDimensionUpdate()
+        {
+            doorDimension = new Vector2(RoomDimension.x, RoomDimension.y);
+            doorColliderDimension = new Vector3(doorDimension.x, doorDimension.y, doorStepWidth);
+        }
+
         public override Rect OnGUI()
         {
             var rect = EditorGUILayout.BeginVertical();
+            {
+                roomDimension = EditorGUILayout.Vector3Field("Room Dimension", roomDimension);
 
-                dimension = EditorGUILayout.Vector2Field("Spot Door dimension (width x height)", dimension);
+                EditorGUILayout.Space();
+
+                doorDimension = EditorGUILayout.Vector2Field("Spot Door Dimension (width x height)", doorDimension);
+
+                doorStepWidth = EditorGUILayout.FloatField("Door Step Width", doorStepWidth);
+
                 doorOffset = EditorGUILayout.FloatField("Door position", doorOffset);
+
+                doorColliderDimension = EditorGUILayout.Vector3Field("Door Collider", doorColliderDimension);
+            
+                EditorGUILayout.Space();
+
                 socketOffset = EditorGUILayout.Vector3Field("Socket position", socketOffset);
+
                 socketHeight = EditorGUILayout.FloatField("Socket height", socketHeight);
 
                 socketPrefab = EditorGUILayout.ObjectField("Custom socket:", socketPrefab, typeof(GameObject), false, null) as GameObject;
 
                 useCustomSocket = EditorGUILayout.Toggle("Use custom socket", useCustomSocket) && (socketPrefab != null);
+
+                EditorGUILayout.Space();
 
                 if (GUILayout.Button("Create Hiding Spot", GUILayout.Height(25f)))
                 {
@@ -52,17 +82,25 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
 
                 Render_SaveAsPrefab_Option();
 
-                pivotOrigin = EditorGUILayout.Vector3Field("Pivot Origin", pivotOrigin);
-
+                // pivotOrigin = EditorGUILayout.Vector3Field("Pivot Origin", pivotOrigin);
+            }
             EditorGUILayout.EndVertical();
 
             return rect;
         }
 
         protected override void OnBeforeCreatePrefab()
-        {
-            // save meshes as Assets
+        { 
+            var leftDoorTargetPath = string.Format("{0}{1}_Mesh_{2}.asset", AssetPath, "LeftDoorPanel", roomDimension.AsPartFileName());
+            
+            SaveAsAsset(leftDoor, leftDoorTargetPath);
 
+            var rightDoorTargetPath = string.Format("{0}{1}_Mesh_{2}.asset", AssetPath, "RightDoorPanel", roomDimension.AsPartFileName());
+            
+            SaveAsAsset(rightDoor, rightDoorTargetPath);
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
         }
 
         private GameObject Construct()
@@ -73,41 +111,49 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
             
             var prototypeMaterial = GetPrototypeMaterial();
             
-            float doorPanelWidth = dimension.x / 2f;
-            float doorPanelHeight = dimension.y;
+            float doorPanelWidth = roomDimension.x / 2f;
+            float doorPanelHeight = roomDimension.y;
 
-            var leftDoorMesh = CreateDoorPlane(doorPanelWidth, doorPanelHeight, Vector3.zero, Vector3.left);
-            var rightDoorMesh = CreateDoorPlane(doorPanelWidth, doorPanelHeight, Vector3.zero, Vector3.right);
+            leftDoor = CreateDoorPlane(doorPanelWidth, doorPanelHeight, Vector3.zero, Vector3.left);
+            rightDoor = CreateDoorPlane(doorPanelWidth, doorPanelHeight, Vector3.zero, Vector3.right);
 
             var door = new GameObject("Door");
             door.transform.parent = spotHost.transform;
             door.transform.localPosition = new Vector3(0, 0, doorOffset);
+            door.AddComponent<SpotDoor>();
 
             var doorCollider = door.AddComponent<BoxCollider>();
-
-            doorCollider.center = new Vector3(0, Dimension.y / 2, 0.001f);
-
-            doorCollider.size = Dimension;
+            doorCollider.isTrigger = true;
+            doorCollider.center = new Vector3(0, roomDimension.y / 2, 0);
+            doorCollider.size = doorColliderDimension;
 
             var panelLeft = new GameObject("Left_Panel");
             panelLeft.transform.parent = door.transform;
-            AddMesh(panelLeft, leftDoorMesh, prototypeMaterial);
-            panelLeft.transform.localPosition = new Vector3(dimension.x / 2, 0, 0);
+            AddMesh(panelLeft, leftDoor, prototypeMaterial);
+            panelLeft.transform.localPosition = new Vector3(roomDimension.x / 2, 0, 0);
 
             var panelRight = new GameObject("Right_Panel");
             panelRight.transform.parent = door.transform;
-            AddMesh(panelRight, rightDoorMesh, prototypeMaterial);
-            panelRight.transform.localPosition = new Vector3(-dimension.x / 2, 0, 0);
+            AddMesh(panelRight, rightDoor, prototypeMaterial);
+            panelRight.transform.localPosition = new Vector3(-roomDimension.x / 2, 0, 0);
 
-            hidingSpotController.roomSize = Dimension;
+            hidingSpotController.roomSize = RoomDimension;
             hidingSpotController.DoorA = panelLeft;
             hidingSpotController.DoorB = panelRight;
             hidingSpotController.DoorMovingDirection = HidingSpot.Direction.Horizontal;
 
-            var socket = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            socket.transform.parent = spotHost.transform;
-            socket.transform.localPosition = socketOffset;
-            socket.transform.localScale = new Vector3(0.2f, socketHeight, 0.2f);
+            if (!useCustomSocket) {
+                socketInstance = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                socketInstance.transform.localPosition = new Vector3(socketOffset.x, socketHeight / 2, socketOffset.z);
+                socketInstance.transform.localScale = new Vector3(0.2f, socketHeight, 0.2f);
+            }
+            else
+            {
+                socketInstance = PrefabUtility.InstantiatePrefab(socketPrefab) as GameObject;
+                socketInstance.transform.localPosition = socketOffset;
+            }
+
+            socketInstance.transform.parent = spotHost.transform;
 
             return spotHost;
         }
