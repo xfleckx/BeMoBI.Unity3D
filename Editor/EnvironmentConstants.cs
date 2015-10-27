@@ -22,8 +22,13 @@ public class EditorEnvironmentConstants : ScriptableObject
         return Get_BASE_ASSET_PATH() + Path.AltDirectorySeparatorChar + PREFABS_DIR;
     }
 
-    public static string Get_MODEL_DIR_PATH()
+    public static string Get_ASSET_MODEL_DIR_PATH()
     {
         return Get_BASE_ASSET_PATH() + Path.AltDirectorySeparatorChar + MODELS_DIR;
+    }
+
+    public static string Get_PROJECT_MODEL_DIR_PATH()
+    {
+        return ASSET_DIR + Path.AltDirectorySeparatorChar + MODELS_DIR;
     }
 }

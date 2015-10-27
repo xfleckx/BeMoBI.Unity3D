@@ -16,7 +16,7 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
 
         public virtual string AssetPath { 
             get { 
-            return EditorEnvironmentConstants.Get_MODEL_DIR_PATH() + Path.AltDirectorySeparatorChar + AssetSubPath + Path.AltDirectorySeparatorChar;
+                return EditorEnvironmentConstants.Get_PROJECT_MODEL_DIR_PATH() + Path.AltDirectorySeparatorChar + AssetSubPath + Path.AltDirectorySeparatorChar;
             } 
         }
 
