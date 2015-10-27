@@ -48,7 +48,7 @@ public static class MazeEditorUtil
 
         MazeUnit mazeUnit = unit.GetComponent<MazeUnit>();
 
-        mazeUnit.Initialize(tilePos);
+        mazeUnit.Initialize(tilePos, maze.RoomDimension);
 
         return mazeUnit;
     }

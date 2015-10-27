@@ -29,11 +29,21 @@ public class MazeUnit : MonoBehaviour {
 	[SerializeField]
 	public Vector2 GridID;
 
-	public void Initialize(Vector2 tilePos)
+    protected Vector3 dimension;
+    public Vector3 Dimension { get { return dimension; } }
+
+	public void Initialize(Vector2 tilePos, Vector3 newDimension)
 	{
-		GridID = tilePos; 
+		GridID = tilePos;
+        dimension = newDimension;
 	}
 
+    public void Initialize(Vector3 newDimension)
+    {
+        GridID = Vector2.zero;
+        dimension = newDimension;
+    }
+ 
 	public virtual void Open(OpenDirections direction)
 	{
 		var directionName = Enum.GetName(typeof(OpenDirections), direction);
