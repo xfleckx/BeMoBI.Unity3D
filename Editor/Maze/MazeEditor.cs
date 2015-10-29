@@ -110,14 +110,7 @@ public class MazeEditor : AMazeEditor
 
         if (GUILayout.Button("Search for Units")) 
         {
-            var unitsFound = maze.gameObject.GetComponentsInChildren<MazeUnit>();
-
-            foreach (var unit in unitsFound)
-            {
-                if (!maze.Units.Contains(unit))
-                    maze.Units.Add(unit);
-            }
-
+            MazeEditorUtil.SearchForUnitsIn(maze);
         }
 
         if (GUILayout.Button("Configure Grid"))
