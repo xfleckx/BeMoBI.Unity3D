@@ -5,6 +5,37 @@ using System;
 
 public class EditorEnvironmentConstants : ScriptableObject
 {
+    [InitializeOnLoadMethod]
+    public static void AssertThatAllDirectoriesExist()
+    {
+        CreateWhenNotExist(Get_BASE_ASSET_PATH());
+        CreateWhenNotExist(Get_PREFAB_DIR_PATH());
+        CreateWhenNotExist(Get_ASSET_MODEL_DIR_PATH());
+        CreateWhenNotExist(Get_PROJECT_MODEL_DIR_PATH());
+    }
+
+    public static void CreateWhenNotExist(string expectedPathRelativeToAssetDirectory){
+
+        if (expectedPathRelativeToAssetDirectory == String.Empty)
+            return;
+
+        string parentFolder = String.Empty;
+        string folderName = String.Empty;
+
+        GetParentFolder(expectedPathRelativeToAssetDirectory, out parentFolder, out folderName);
+
+        if (!AssetDatabase.IsValidFolder(expectedPathRelativeToAssetDirectory))
+            AssetDatabase.CreateFolder(parentFolder, folderName);
+
+    }
+
+    private static void GetParentFolder(string path, out string parentFolder, out string folderName)
+    {
+        int lastSeperator = path.LastIndexOf(Path.AltDirectorySeparatorChar);
+        parentFolder = path.Substring(0, lastSeperator);
+        folderName = path.Substring(lastSeperator + 1, path.Length - lastSeperator - 1);
+    }
+
     public const string ASSET_PACKAGE_NAME = "BeMoBI.Unity3D";
 
     public const string ASSET_DIR = "Assets";
@@ -31,4 +62,10 @@ public class EditorEnvironmentConstants : ScriptableObject
     {
         return ASSET_DIR + Path.AltDirectorySeparatorChar + MODELS_DIR;
     }
+
+    public static string Get_PROJECT_PREFAB_DIR_PATH()
+    {
+        return ASSET_DIR + Path.AltDirectorySeparatorChar + PREFABS_DIR;
+    }
+
 }
