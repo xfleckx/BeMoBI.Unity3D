@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using System;
+using System.Linq;
 
 public class MazeCustomizer : EditorWindow
 {
@@ -319,6 +320,9 @@ public class MazeCustomizer : EditorWindow
     private void CallReplaceAlgorithm()
     {
         Debug.Assert(replacementPrefab != null && selectedMaze != null);
+
+        if (selectedMaze.Units.Count == 0 || selectedMaze.Units.Any((u) => u == null))
+            MazeEditorUtil.SearchForUnitsIn(selectedMaze);
 
         MazeEditorUtil.ReplaceUnits(selectedMaze, replacementPrefab);
 
