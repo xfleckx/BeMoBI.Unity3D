@@ -631,8 +631,8 @@ public class MazeEditor : AMazeEditor
         if (currentSelection != null) { 
             foreach (var item in currentSelection)
             {
-                var pos = item.transform.localPosition + new Vector3(0, maze.RoomHigthInMeter / 2, 0);
-                Gizmos.DrawCube(pos, new Vector3(maze.RoomDimension.x, maze.RoomHigthInMeter, maze.RoomDimension.z));    
+                var pos = item.transform.localPosition + new Vector3(0, maze.RoomDimension.y / 2, 0);
+                Gizmos.DrawCube(pos, new Vector3(maze.RoomDimension.x, maze.RoomDimension.y, maze.RoomDimension.z));    
             }
         }
 
@@ -907,9 +907,9 @@ public abstract class AMazeEditor : Editor {
 
         Gizmos.color = MarkerColor;
         
-        var pos = MarkerPosition + new Vector3(0, maze.RoomHigthInMeter / 2, 0);
+        var pos = MarkerPosition + new Vector3(0, maze.RoomDimension.y / 2, 0);
         
-        Gizmos.DrawWireCube(pos, new Vector3(maze.RoomDimension.x, maze.RoomHigthInMeter, maze.RoomDimension.z) * 1.1f);
+        Gizmos.DrawWireCube(pos, new Vector3(maze.RoomDimension.x, maze.RoomDimension.y, maze.RoomDimension.z) * 1.1f);
 
         var temp = Handles.matrix;
         
