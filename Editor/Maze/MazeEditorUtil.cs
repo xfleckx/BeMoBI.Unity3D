@@ -40,8 +40,6 @@ public static class MazeEditorUtil
 
         //unit.transform.localPosition = maze.transform.position + maze.transform.TransformPoint(tilePositionInLocalSpace);
         unit.transform.localPosition = tilePositionInLocalSpace;
-        // we scale the u to the tile size defined by the TileMap.TileWidth and TileMap.TileHeight fields 
-        unit.transform.localScale = new Vector3(maze.RoomDimension.x, maze.RoomDimension.y * maze.RoomHigthInMeter, maze.RoomDimension.z);
 
         // give the u a assetName that represents it's location within the tile maze
         unit.name = string.Format(maze.UnitNamePattern, tilePos.x, tilePos.y);
@@ -147,8 +145,6 @@ public static class MazeEditorUtil
             
             PrefabUtility.DisconnectPrefabInstance(newUnitFromPrefab);
 
-            //newUnitFromPrefab.hideFlags = HideFlags.HideAndDontSave;
-
             var newUnit = newUnitFromPrefab.GetComponent<MazeUnit>();
 
             ReplaceUnit(targetMaze, existingUnit, newUnit);
@@ -157,101 +153,100 @@ public static class MazeEditorUtil
         }
     }
 
-    public static void ReplaceUnit(beMobileMaze hostMaze, MazeUnit oldUnit, MazeUnit newUnit, bool ignoreOldScaling = true, bool forceRecalculationOfComponentPosition = true)
+    public static void ReplaceUnit(beMobileMaze hostMaze, MazeUnit obtainedUnit, MazeUnit unitContainingReplacements, bool resetScaling = true, bool forceRecalculationOfComponentPosition = true)
     {
         #region prepare children lists
 
-        int new_ChildCount = newUnit.transform.childCount;
+        int new_ChildCount = unitContainingReplacements.transform.childCount;
 
         List<GameObject> new_Children = new List<GameObject>();
 
-        int old_ChildCount = oldUnit.transform.childCount;
+        int old_ChildCount = obtainedUnit.transform.childCount;
 
-        List<GameObject> old_children = new List<GameObject>();
+        List<GameObject> existing_children = new List<GameObject>();
 
         for (int i = 0; i < old_ChildCount; i++)
         {
-            var old_child = oldUnit.transform.GetChild(i);
+            var old_child = obtainedUnit.transform.GetChild(i);
 
-            old_children.Add(old_child.gameObject);
+            existing_children.Add(old_child.gameObject);
         }
 
         for (int i = 0; i < new_ChildCount; i++)
         {
-            var new_child = newUnit.transform.GetChild(i);
+            var new_child = unitContainingReplacements.transform.GetChild(i);
 
             new_Children.Add(new_child.gameObject);
         }
 
         #endregion
-        
-        if (!ignoreOldScaling)
-            oldUnit.transform.localScale = hostMaze.RoomDimension;
-        else
-            oldUnit.transform.localScale = Vector3.one;
 
-        var dimension = hostMaze.RoomDimension;
-
-        foreach (var newChild in new_Children)
+        if (resetScaling)
         {
-            if (old_children.Any((go) => go.name.Equals(newChild.name)))
+            obtainedUnit.transform.localScale = Vector3.one;
+        }
+        
+        var dimension = unitContainingReplacements.Dimension;
+
+        var boxCollider = obtainedUnit.GetComponent<BoxCollider>();
+
+        boxCollider.size = dimension;
+        boxCollider.center = new Vector3(0, boxCollider.size.y /2, 0);
+
+        foreach (var replacementPart in new_Children)
+        {
+            if (existing_children.Any((go) => go.name.Equals(replacementPart.name)))
             {
-                var old_equivalent = old_children.Single((go) => go.name.Equals(newChild.name));
+                var old_equivalent = existing_children.Single((go) => go.name.Equals(replacementPart.name));
 
-                newChild.transform.parent = old_equivalent.transform.parent;
+                if (resetScaling)
+                    old_equivalent.transform.localScale = Vector3.one;
 
-                if (!forceRecalculationOfComponentPosition)
-                {
-                    //obtain old wall position
-                    newChild.transform.localPosition = newChild.transform.position;
-                }
-                else
-                {
-                    if (old_equivalent.name.Equals(MazeUnit.TOP))
-                    {
-                        newChild.transform.localPosition = new Vector3(0, dimension.y, 0);
-                    }
+                replacementPart.transform.SetParent(old_equivalent.transform.parent, false);
 
-                    if (old_equivalent.name.Equals(MazeUnit.NORTH))
-                    {
-                        newChild.transform.localPosition = new Vector3(0, dimension.y / 2, dimension.z / 2);
-                    }
-
-                    if (old_equivalent.name.Equals(MazeUnit.SOUTH))
-                    {
-                        newChild.transform.localPosition = new Vector3(0, dimension.y / 2, -dimension.z / 2);
-                    }
-
-                    if (old_equivalent.name.Equals(MazeUnit.WEST))
-                    {
-                        newChild.transform.localPosition = new Vector3(-dimension.x / 2, dimension.y / 2, 0);
-                    }
-
-                    if (old_equivalent.name.Equals(MazeUnit.EAST))
-                    {
-                        newChild.transform.localPosition = new Vector3(dimension.x / 2, dimension.y / 2, 0);
-                    }
-
-                    if (old_equivalent.name.Equals(MazeUnit.FLOOR))
-                    {
-                    }
-                }
-                
-                newChild.transform.localScale = Vector3.one;
-
-                newChild.SetActive(old_equivalent.activeSelf);
-                
                 old_equivalent.transform.parent = null;
 
-                // TODO Bug here -> localScaling remains in a strange way!
+                if (old_equivalent.name.Equals(MazeUnit.TOP))
+                {
+                    replacementPart.transform.localPosition = new Vector3(0, dimension.y, 0);
+                }
+
+                if (old_equivalent.name.Equals(MazeUnit.NORTH))
+                {
+                    replacementPart.transform.localPosition = new Vector3(0, dimension.y / 2, dimension.z / 2);
+                }
+
+                if (old_equivalent.name.Equals(MazeUnit.SOUTH))
+                {
+                    replacementPart.transform.localPosition = new Vector3(0, dimension.y / 2, -dimension.z / 2);
+                }
+
+                if (old_equivalent.name.Equals(MazeUnit.WEST))
+                {
+                    replacementPart.transform.localPosition = new Vector3(-dimension.x / 2, dimension.y / 2, 0);
+                }
+
+                if (old_equivalent.name.Equals(MazeUnit.EAST))
+                {
+                    replacementPart.transform.localPosition = new Vector3(dimension.x / 2, dimension.y / 2, 0);
+                }
+
+                if (old_equivalent.name.Equals(MazeUnit.FLOOR))
+                {
+                    replacementPart.transform.localPosition = new Vector3(0, 0, 0);
+                }
+                
+                replacementPart.SetActive(old_equivalent.activeSelf);
             }
         }
 
-        foreach (var item in old_children)
+        foreach (var item in existing_children)
         {
             UnityEngine.Object.DestroyImmediate(item.gameObject);
         }
     }
+
+
     public static bool IsSet(OpenDirections value, OpenDirections flag)
     {
         return (value & flag) == flag;
@@ -374,5 +369,16 @@ public static class MazeEditorUtil
         Debug.Assert(meshFilter.sharedMesh != null, string.Format(MeshAssertionMessageFormat, wall.name));
 
         return meshFilter.sharedMesh;
+    }
+
+    internal static void SearchForUnitsIn(beMobileMaze maze)
+    {
+        var unitsFound = maze.gameObject.GetComponentsInChildren<MazeUnit>();
+
+        foreach (var unit in unitsFound)
+        {
+            if (!maze.Units.Contains(unit))
+                maze.Units.Add(unit);
+        }
     }
 }
