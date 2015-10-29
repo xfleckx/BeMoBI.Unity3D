@@ -16,13 +16,7 @@ public class beMobileMaze : MonoBehaviour
     [SerializeField]
 	public float MazeLengthInMeter = 10f;
     [SerializeField]
-	public float RoomHigthInMeter = 2;
-    [SerializeField]
 	public Vector3 RoomDimension = new Vector3(1.3f, 2, 1.3f);
-    [SerializeField]
-    public Vector2 EdgeDimension = new Vector2(0.1f, 0.1f);
-    [SerializeField]
-    public float WallThicknessInMeter = 0.1f;
 
     public int Rows { get { return Grid != null ? Grid.GetLength(1) : 0; } }
 
