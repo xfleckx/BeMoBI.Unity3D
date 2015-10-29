@@ -26,22 +26,26 @@ public class MazeCustomizer : EditorWindow
 
     void OnGUI()
     {
-        if(selectedMaze == null && Selection.activeGameObject == null) {
+
+        if (Selection.activeGameObject != null)
+            selectedMaze = Selection.activeGameObject.GetComponent<beMobileMaze>();
+
+        if(selectedMaze == null) {
             renderUiForNoMazeSelected();
             return;
         }
 
-        if(Selection.gameObjects.Length > 1)
+        if(Selection.gameObjects.Length > 1 && Selection.gameObjects.All((o) => o.GetComponent<beMobileMaze>() != null))
         {
             renderUiForMultipleMazesSelected();
             return;
         }
 
-        if(Selection.activeGameObject != null)
-            selectedMaze = Selection.activeGameObject.GetComponent<beMobileMaze>();
 
         if (selectedMaze != null)
         {
+            lastSelectedMaze = selectedMaze;
+
             EditorGUILayout.BeginHorizontal();
 
             GUILayout.Label("Selected Maze:");
@@ -282,7 +286,6 @@ public class MazeCustomizer : EditorWindow
         //    MazeEditorUtil.RebuildGrid(selectedMaze);
         //}
 
-
     }
 
     private void RenderUIForRequestedPrefab<T, TC>(ref T targetPrefab, Type expectedComponent ) where T : UnityEngine.Object where TC : UnityEngine.MonoBehaviour
@@ -357,11 +360,15 @@ public class MazeCustomizer : EditorWindow
         {
             var top = unit.gameObject.transform.FindChild("Top"); 
 
-            var newLightInstance = PrefabUtility.InstantiatePrefab(lightPrefab) as GameObject;
+            var newLighthost = PrefabUtility.InstantiatePrefab(lightPrefab) as GameObject;
+            var newLightInstance = newLighthost.GetComponent<TopLighting>();
+
+            PrefabUtility.DisconnectPrefabInstance(newLighthost);
 
             newLightInstance.transform.parent = top.transform;
             newLightInstance.transform.localPosition = new Vector3(0, -0.001f, 0);
             newLightInstance.transform.localScale = new Vector3(selectedMaze.RoomDimension.x, 1, selectedMaze.RoomDimension.z);
+            newLightInstance.ToggleLightDirection(unit.WaysOpen);
         }
     }
 
@@ -419,17 +426,16 @@ public class MazeCustomizer : EditorWindow
     #region TODO
     private void renderUiForMultipleMazesSelected()
     {
-         
+        EditorGUILayout.HelpBox("Editing of multiple mazes is currently not supported", MessageType.Info);
     }
 
     #endregion
-
-   
 
     #region constants
 
     const string ToolTip_Replace_Units = "The the configuration of each Unit will be obtained";
     const string MsgBox_Replace_Action = "This action will replace all existing Units of the selected maze but obtains the structure of the maze and the configuration of each unit.";
+    private beMobileMaze lastSelectedMaze;
     #endregion
 
 }
