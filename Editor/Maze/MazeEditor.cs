@@ -29,15 +29,12 @@ public class MazeEditor : AMazeEditor
     private bool modeAddEnabled = false;
     private bool modeRemoveEnabled = false;
 
-    private float newWallWidth = 0.003f;
-
     private UnityEngine.Object referenceToPrefab;
 
     private MazeEditorMode ActiveMode = MazeEditorMode.NONE;
 
     private MazeUnit lastAddedUnit;
      
-      
     public void OnEnable()
     { 
         maze = (beMobileMaze)target;
@@ -45,7 +42,6 @@ public class MazeEditor : AMazeEditor
         if(maze.Grid == null)
         {
             MazeEditorUtil.RebuildGrid(maze);
-
         }
 
         referenceToPrefab = PrefabUtility.GetPrefabParent(maze.gameObject);
@@ -69,11 +65,6 @@ public class MazeEditor : AMazeEditor
         }
     }
 
-    protected override void OnHeaderGUI()
-    {
-        //base.OnHeaderGUI();
-    }
-
     public override void OnInspectorGUI()
     {
         if (maze == null) {
@@ -82,6 +73,17 @@ public class MazeEditor : AMazeEditor
         
         GUILayout.BeginVertical();
 
+        GUILayout.Label("Properties", EditorStyles.boldLabel);
+        
+        EditorGUILayout.LabelField("Length of Maze (m)", maze.MazeLengthInMeter.ToString());
+ 
+        EditorGUILayout.LabelField("Width of Maze (m)", maze.MazeWidthInMeter.ToString());
+
+        EditorGUILayout.LabelField("Units:", maze.Units.Count.ToString());
+
+        EditorGUILayout.LabelField("Room size (m):", maze.RoomDimension.ToString());
+
+        EditorGUILayout.Space();
 
         if (GUILayout.Button("Open Customizer", GUILayout.Height(40)))
         {
@@ -91,89 +93,6 @@ public class MazeEditor : AMazeEditor
 
             window.Show();
         }
-
-        GUILayout.BeginHorizontal();
-        GUILayout.Label("Length of Maze");
-        GUILayout.Label("m");
-        maze.MazeLengthInMeter = EditorGUILayout.FloatField(maze.MazeLengthInMeter, GUILayout.Width(50));
-         
-        GUILayout.EndHorizontal();
-
-        GUILayout.BeginHorizontal();
-        GUILayout.Label("Width of Maze");
-
-        GUILayout.Label("m");
-        maze.MazeWidthInMeter = EditorGUILayout.FloatField(maze.MazeWidthInMeter, GUILayout.Width(50));
-         
-
-        GUILayout.EndHorizontal();
-
-        if (GUILayout.Button("Search for Units")) 
-        {
-            MazeEditorUtil.SearchForUnitsIn(maze);
-        }
-
-        if (GUILayout.Button("Configure Grid"))
-        {
-            MazeEditorUtil.RebuildGrid(maze);
-        }
-
-
-        GUILayout.BeginHorizontal();
-
-        #region deprecated at this component see Customizer
-        //maze.RoomDimension = EditorGUILayout.Vector3Field("Room dimension", new Vector3(maze.RoomDimension.x, maze.RoomHigthInMeter, maze.RoomDimension.z));
-        
-        //if (GUILayout.Button("Rescale"))
-        //{
-        //    MazeEditorUtil.Rescale(maze, maze.RoomDimension, unitFloorOffset);
-        //    MazeEditorUtil.RebuildGrid(maze);
-        //}
-        #endregion
-        GUILayout.EndHorizontal();
-        
-        //GUILayout.BeginHorizontal();
-
-        //GUILayout.Label("Height of Rooms");
-        //maze.RoomHigthInMeter = EditorGUILayout.FloatField(maze.RoomHigthInMeter, GUILayout.Width(50));
-        //GUILayout.Label("m");
-
-        //if (GUILayout.Button("Reset Height"))
-        //{
-        //    foreach (var item in maze.Units)
-        //    { 
-        //        int c = item.transform.childCount;
-        //        for (int i = 0; i < c; i++)
-        //        {
-        //            var child = item.transform.GetChild(i);
-
-        //            if (child.name.Equals("East") || 
-        //                child.name.Equals("West") || 
-        //                child.name.Equals("North") || 
-        //                child.name.Equals("South"))
-        //            {
-        //                child.localScale = new Vector3(child.localScale.x, maze.RoomHigthInMeter, child.localScale.z);
-        //                child.localPosition = new Vector3(child.localPosition.x, maze.RoomHigthInMeter / 2, child.localPosition.z);
-        //            }
-
-        //            if (child.name.Equals("Top"))
-        //            {
-        //                child.localPosition = new Vector3(child.localPosition.x, maze.RoomHigthInMeter, child.localPosition.z);
-        //            }
-        //        }
-
-        //        var boxCollider = item.GetComponent<BoxCollider>();
-        //        boxCollider.center = new Vector3(0, maze.RoomHigthInMeter / 2, 0);
-        //        boxCollider.size = new Vector3(1, maze.RoomHigthInMeter, 1);
-        //    }
-
-        //}
-
-        //GUILayout.EndHorizontal();
-        
-        GUILayout.BeginHorizontal();
-        maze.UnitNamePattern = EditorGUILayout.TextField("Unit Name Pattern", maze.UnitNamePattern);
-        GUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
 
@@ -186,7 +105,7 @@ public class MazeEditor : AMazeEditor
                     topTransform.gameObject.SetActive(true);
             }
         }
-         
+
         if (GUILayout.Button("Open Maze Roof"))
         {
             foreach (var unit in maze.Units)
@@ -199,69 +118,19 @@ public class MazeEditor : AMazeEditor
 
         EditorGUILayout.EndHorizontal();
 
-        EditorGUILayout.BeginHorizontal();
-
-        newWallWidth = EditorGUILayout.FloatField("New Width for Walls", newWallWidth);
-
-        if (GUILayout.Button("Rescale Wall width"))
+        if (GUILayout.Button("Search for Units")) 
         {
-            var transforms = new List<Transform>();
-
-            foreach (var unit in maze.Units)
-            {
-                transforms.Add(unit.transform.FindChild("North"));
-                transforms.Add(unit.transform.FindChild("South"));
-                transforms.Add(unit.transform.FindChild("West"));
-                transforms.Add(unit.transform.FindChild("East"));
-
-                foreach (var item in transforms)
-                {
-                    var temp = item.transform.localScale;
-                    item.transform.localScale = new Vector3(temp.x, temp.y, newWallWidth);
-                }
-
-                transforms.Clear();
-            }
+            MazeEditorUtil.SearchForUnitsIn(maze);
         }
 
-        EditorGUILayout.EndHorizontal();
-
-        if (GUILayout.Button("Change Wall Positions"))
+        if (GUILayout.Button("Configure Grid"))
         {
-            foreach (var unit in maze.Units)
-            {
-                var north = unit.transform.FindChild("North");
-                north.localPosition = new Vector3(0, north.localPosition.y, 0.495f);
-                var south = unit.transform.FindChild("South");
-                south.localPosition = new Vector3(0, south.localPosition.y, -0.495f);
-                var west = unit.transform.FindChild("West");
-                west.localPosition = new Vector3(-0.495f, west.localPosition.y, 0.005f);
-                var east = unit.transform.FindChild("East");
-                east.localPosition = new Vector3(0.495f, east.localPosition.y, 0.005f);
-            }
+            MazeEditorUtil.RebuildGrid(maze);
         }
-
-        //if (GUILayout.Button("Clone Maze", GUILayout.Width(255)))
-        //{
-        //    var clone = GameObject.Instantiate(maze);
-        //}
-
-        //if (GUILayout.Button("Create Maze Prefab", GUILayout.Width(255)))
-        //{
-        //    SavePrefabAndCreateCompanionFolder();
-        //}
 
         if (referenceToPrefab && GUILayout.Button("Update Prefab"))
         {
             UpdatePrefabOfCurrentMaze();
-        }
-
-        if (GUILayout.Button("Correct Unit Positions"))
-        {
-            foreach (var unit in maze.Units)
-            {
-                unit.transform.localPosition = unit.transform.position;
-            }
         }
 
         if (GUILayout.Button("Repair Unit List"))
@@ -284,74 +153,6 @@ public class MazeEditor : AMazeEditor
             }
 
         }
-
-        #region deprecated at this component
-        //EditorGUILayout.BeginHorizontal();
-        //WallMaterial = EditorGUILayout.ObjectField("Wall: ", WallMaterial, typeof(Material), false) as Material;
-        //if(WallMaterial != null && GUILayout.Button("Apply")){
-        //    ApplyToAllMazeUnits((u) => { 
-            
-        //       int c = u.transform.childCount;
-        //       for (int i = 0; i < c; i++)
-        //       {
-        //           var child = u.transform.GetChild(i);
-
-        //           if (child.name.Equals("East") ||
-        //               child.name.Equals("West") ||
-        //               child.name.Equals("North") ||
-        //               child.name.Equals("South"))
-        //           {
-        //               var renderer = child.gameObject.GetComponent<Renderer>();
-        //               renderer.material = WallMaterial;
-        //           }
-        //       }
-        //    });
-        //}
-
-        //EditorGUILayout.EndHorizontal();
-
-        //EditorGUILayout.BeginHorizontal();
-        //FloorMaterial = EditorGUILayout.ObjectField("Floor: ", FloorMaterial, typeof(Material), false) as Material;
-        //if (FloorMaterial != null && GUILayout.Button("Apply"))
-        //{
-        //    ApplyToAllMazeUnits((u) =>
-        //    {
-        //        int c = u.transform.childCount;
-        //        for (int i = 0; i < c; i++)
-        //        {
-        //            var child = u.transform.GetChild(i);
-
-        //            if (child.name.Equals("Floor") )
-        //            {
-        //                var renderer = child.gameObject.GetComponent<Renderer>();
-        //                renderer.material = FloorMaterial;
-        //            }
-        //        }
-        //    });
-        //}
-        //EditorGUILayout.EndHorizontal();
-
-        //EditorGUILayout.BeginHorizontal();
-        //TopMaterial = EditorGUILayout.ObjectField("Top: ", TopMaterial, typeof(Material), false) as Material;
-        //if (TopMaterial && GUILayout.Button("Apply"))
-        //{
-        //    ApplyToAllMazeUnits((u) =>
-        //    {
-        //        int c = u.transform.childCount;
-        //        for (int i = 0; i < c; i++)
-        //        {
-        //            var child = u.transform.GetChild(i);
-
-        //            if (child.name.Equals("Top"))
-        //            {
-        //                var renderer = child.gameObject.GetComponent<Renderer>();
-        //                renderer.material = TopMaterial;
-        //            }
-        //        }
-        //    });
-        //}
-        //EditorGUILayout.EndHorizontal();
-        #endregion
 
         GUILayout.EndVertical();
 
