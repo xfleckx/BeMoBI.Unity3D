@@ -8,16 +8,24 @@ using UnityEngine;
 
 namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
 {
-    public abstract class CreatorState : ScriptableObject
+    public abstract class CreatorState<T> : ScriptableObject where T : MonoBehaviour
     {
         public virtual string CreatorName { get { return "CreatorName"; } }
 
         public virtual string AssetSubPath { get { return "MazeUnitElements"; } }
 
-        public virtual string AssetPath { 
+        public virtual string AssetModelsPath { 
             get { 
-                return EditorEnvironmentConstants.Get_PROJECT_MODEL_DIR_PATH() + Path.AltDirectorySeparatorChar + AssetSubPath + Path.AltDirectorySeparatorChar;
+                return EditorEnvironmentConstants.Get_PROJECT_MODEL_DIR_PATH() + Path.AltDirectorySeparatorChar + AssetSubPath;
             } 
+        }
+
+        public virtual string AssetPrefabPath
+        {
+            get
+            {
+                return EditorEnvironmentConstants.Get_PROJECT_PREFAB_DIR_PATH() + Path.AltDirectorySeparatorChar + AssetSubPath;
+            }
         }
 
         protected Vector3 roomDimension = Vector3.one;
@@ -51,8 +59,8 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
             set { prefabName = value; }
         }
 
-        protected GameObject constructedUnit = null;
-        public GameObject ConstructedUnit
+        protected T constructedUnit = null;
+        public T ConstructedUnit
         {
             get { return constructedUnit; }
             set { constructedUnit = value; }
@@ -69,7 +77,7 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
 
         public abstract Rect OnGUI();
 
-        protected void Render_SaveAsPrefab_Option()
+        protected void Render_SaveAsPrefab_Option<O>(O instance) where O : MonoBehaviour
         {
             prefabName = EditorGUILayout.TextField("Prefab Name:", prefabName);
 
@@ -77,17 +85,18 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
             {
                 if ((prefabName != null && prefabName != String.Empty) && GUILayout.Button("Save as Prefab")) { 
 
-                    var targetPath = EditorEnvironmentConstants.Get_PREFAB_DIR_PATH();
+                    var targetPath = EditorEnvironmentConstants.Get_PROJECT_PREFAB_DIR_PATH();
 
                     Debug.Assert(AssetDatabase.IsValidFolder(targetPath), string.Format("Expected prefab folder at \"{0}\"", targetPath));
 
                     var targetFilePath = targetPath + Path.AltDirectorySeparatorChar +
-                        string.Format("{0}{1}", prefabName + roomDimension.AsPartFileName(), EditorEnvironmentConstants.PREFAB_EXTENSION);
+                        string.Format("{0}.{1}", prefabName + roomDimension.AsPartFileName(), EditorEnvironmentConstants.PREFAB_EXTENSION);
+
+                    EditorEnvironmentConstants.CreateWhenNotExist(targetPath);
 
                     OnBeforeCreatePrefab();
 
-                    prefabReference = PrefabUtility.CreatePrefab(targetFilePath, constructedUnit);
-
+                    prefabReference = PrefabUtility.CreatePrefab(targetFilePath, instance.gameObject);
                 }
                 else
                 {
@@ -105,6 +114,10 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
         protected void SaveAsAsset(Mesh mesh, string targetPath, bool refreshDatabase = false)
         {
             Debug.Log(string.Format("create Mesh asset at: {0}", targetPath));
+            
+            var targetDirectory = Path.GetDirectoryName(targetPath);
+
+            EditorEnvironmentConstants.CreateWhenNotExist(targetDirectory);
 
             AssetDatabase.CreateAsset(mesh, targetPath);
 
