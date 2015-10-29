@@ -146,6 +146,15 @@ public class UnitCreator : EditorWindow
             hidingSpotCreator.RoomDimension = dimension;
         }
 
+        var maze = selection.GetComponent<beMobileMaze>();
+        
+        if (maze != null)
+        {
+            var dimension = maze.RoomDimension;
+            baseUnitCreator.RoomDimension = dimension;
+            hidingSpotCreator.RoomDimension = dimension;
+        }
+
         lastSelection = selection;
     }
       
