@@ -179,7 +179,7 @@ public class PathEditor : AMazeEditor {
         var temp = Gizmos.matrix;
         Gizmos.matrix = maze.transform.localToWorldMatrix;
         Gizmos.color = Color.blue;
-        Gizmos.DrawWireCube(MarkerPosition + new Vector3(0, maze.RoomHigthInMeter / 2, 0), new Vector3(maze.RoomDimension.x, maze.RoomHigthInMeter, maze.RoomDimension.z) * 1.1f);
+        Gizmos.DrawWireCube(MarkerPosition + new Vector3(0, maze.RoomDimension.y / 2, 0), new Vector3(maze.RoomDimension.x, maze.RoomDimension.y, maze.RoomDimension.z) * 1.1f);
         Gizmos.matrix = temp;
     }
 
@@ -530,7 +530,7 @@ public class PathEditor : AMazeEditor {
 
         if (instance.PathElements.Count > 0)
         {
-            var hoveringDistance = new Vector3(0f, maze.RoomHigthInMeter, 0f);
+            var hoveringDistance = new Vector3(0f, maze.RoomDimension.y, 0f);
 
             var start = instance.PathElements.First().Value.Unit.transform;
             Handles.color = Color.blue;
