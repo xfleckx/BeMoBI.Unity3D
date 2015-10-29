@@ -29,6 +29,7 @@ public class MazeUnit : MonoBehaviour {
 	[SerializeField]
 	public Vector2 GridID;
 
+    [SerializeField]
     protected Vector3 dimension;
     public Vector3 Dimension { get { return dimension; } }
 
@@ -83,9 +84,10 @@ public class MazeUnit : MonoBehaviour {
 		SendMessageUpwards("RecieveUnitEvent", evt, SendMessageOptions.DontRequireReceiver);
 	}
 
+    private Vector3 cubeGizmoSize = new Vector3(0.001f, 0.001f, 0.001f);
     void OnDrawGizmos()
     {
-        Gizmos.DrawCube(transform.position, new Vector3( 0.01f,0.01f,0.01f));
+        Gizmos.DrawCube(transform.position, cubeGizmoSize);
     }
 
 }
