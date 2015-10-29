@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
 {
-    public class HidingSpotCreator : CreatorState
+    public class HidingSpotCreator : CreatorState<HidingSpot>
     {
 
         Vector3 socketOffset;
@@ -80,9 +80,10 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
 
                 EditorGUILayout.Space();
 
-                Render_SaveAsPrefab_Option();
-
-                // pivotOrigin = EditorGUILayout.Vector3Field("Pivot Origin", pivotOrigin);
+                if (constructedUnit != null)
+                {
+                    Render_SaveAsPrefab_Option(constructedUnit);
+                }
             }
             EditorGUILayout.EndVertical();
 
@@ -90,12 +91,16 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
         }
 
         protected override void OnBeforeCreatePrefab()
-        { 
-            var leftDoorTargetPath = string.Format("{0}{1}_Mesh_{2}.asset", AssetPath, "LeftDoorPanel", roomDimension.AsPartFileName());
+        {
+            EditorEnvironmentConstants.CreateWhenNotExist(AssetModelsPath);
+
+            var namePattern = "{0}{1}{2}_Mesh_{3}.asset";
+
+            var leftDoorTargetPath = string.Format(namePattern, AssetModelsPath, Path.AltDirectorySeparatorChar ,"LeftDoorPanel", roomDimension.AsPartFileName());
             
             SaveAsAsset(leftDoor, leftDoorTargetPath);
 
-            var rightDoorTargetPath = string.Format("{0}{1}_Mesh_{2}.asset", AssetPath, "RightDoorPanel", roomDimension.AsPartFileName());
+            var rightDoorTargetPath = string.Format(namePattern, AssetModelsPath, Path.AltDirectorySeparatorChar, "RightDoorPanel", roomDimension.AsPartFileName());
             
             SaveAsAsset(rightDoor, rightDoorTargetPath);
 
@@ -103,7 +108,7 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
             AssetDatabase.Refresh();
         }
 
-        private GameObject Construct()
+        private HidingSpot Construct()
         {
             var spotHost = new GameObject("HidingSpot");
             
@@ -155,7 +160,7 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
 
             socketInstance.transform.parent = spotHost.transform;
 
-            return spotHost;
+            return hidingSpotController;
         }
 
         private void AddMesh(GameObject host, Mesh mesh, Material material)

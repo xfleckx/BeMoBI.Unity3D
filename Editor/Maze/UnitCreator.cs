@@ -22,19 +22,18 @@ public class UnitCreator : EditorWindow
 
     void Initialize()
     {
-
         if (hidingSpotCreator == null) { 
-            hidingSpotCreator = CreateAndInitialize<HidingSpotCreator>();
+            hidingSpotCreator = CreateAndInitialize<HidingSpotCreator, HidingSpot>();
         }
 
         if (baseUnitCreator == null){
-            baseUnitCreator = CreateAndInitialize<BasicUnitCreator>();
+            baseUnitCreator = CreateAndInitialize<BasicUnitCreator, MazeUnit>();
         }
     }
 
-    private T CreateAndInitialize<T>() where T : CreatorState
+    private CS CreateAndInitialize<CS, T>() where CS : CreatorState<T> where T : MonoBehaviour
     {
-        var t = CreateInstance<T>();
+        var t = CreateInstance<CS>();
         t.hideFlags = HideFlags.HideAndDontSave;
 
         t.Initialize();
@@ -104,7 +103,7 @@ public class UnitCreator : EditorWindow
     }
 
     #endregion
-
+    
     void OnGUI()
     {
         var currentSelection = Selection.activeGameObject;
@@ -152,6 +151,8 @@ public class UnitCreator : EditorWindow
       
     public void OnEnable()
     {
+        Initialize();
+
         if (SceneView.onSceneGUIDelegate == null)
             SceneView.onSceneGUIDelegate += OnSceneGUI;
     }

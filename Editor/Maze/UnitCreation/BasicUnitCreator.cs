@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
 {
-    public class BasicUnitCreator : CreatorState
+    public class BasicUnitCreator : CreatorState<MazeUnit>
     {
         List<String> expectedChildComponents;
 
@@ -34,7 +34,7 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
         {
             // does nothing...
         }
-
+        
         public override Rect OnGUI()
         {
             var rect = EditorGUILayout.BeginVertical();
@@ -61,21 +61,21 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
                 {
                     var resizeModel = new UnitMeshModificationModel(roomDimension, pivotOrigin, useCenterAsOrigin);
 
-                    MazeEditorUtil.ResizeUnitByMeshModification(constructedUnit, resizeModel);
+                    MazeEditorUtil.ResizeUnitByMeshModification(constructedUnit.gameObject, resizeModel);
                 }
 
-                constructedUnit = EditorGUILayout.ObjectField("Created Unit", constructedUnit, typeof(GameObject), true) as GameObject;
+                constructedUnit = EditorGUILayout.ObjectField("Created Unit", constructedUnit, typeof(GameObject), true) as MazeUnit;
 
                 EditorGUILayout.Space();
 
-                Render_SaveAsPrefab_Option();
+                Render_SaveAsPrefab_Option<MazeUnit>(constructedUnit);
 
             EditorGUILayout.EndVertical();
 
             return rect;
         }
 
-        private GameObject ConstructUnit(UnitMeshModificationModel creationModel)
+        private MazeUnit ConstructUnit(UnitMeshModificationModel creationModel)
         {
             var newUnit = new GameObject("MazeUnit");
 
@@ -97,7 +97,7 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
             if (createAsWholeMesh)
                 CreateAsAWhole(newUnit, creationModel, material);
             
-            return newUnit;
+            return mazeUnit;
         }
 
         protected override void OnBeforeCreatePrefab()
@@ -161,7 +161,7 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
                     wall.transform.localPosition = V(roomDimension.x / 2, roomDimension.y / 2, 0);
                 }
 
-                var result = string.Format("{0}{1}_Mesh_{2}.asset", AssetPath, item, creationModel.RoomDimensions.AsPartFileName());
+                var result = string.Format("{0}{1}{2}_Mesh_{3}.asset", AssetModelsPath, Path.AltDirectorySeparatorChar, item, creationModel.RoomDimensions.AsPartFileName());
                 
                 SaveAsAsset(meshFilter.sharedMesh, result);
             }
