@@ -3,7 +3,6 @@ using UnityEditor;
 using System.Collections.Generic;
 using System;
 using System.IO;
-using TUBerlin.Bpn.BeMoBI.EditorGUIExtensions;
 using Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation;
 
 public class UnitCreator : EditorWindow

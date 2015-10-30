@@ -44,8 +44,6 @@ public class MazeCustomizer : EditorWindow
 
         if (selectedMaze != null)
         {
-            lastSelectedMaze = selectedMaze;
-
             EditorGUILayout.BeginHorizontal();
 
             GUILayout.Label("Selected Maze:");
@@ -435,7 +433,7 @@ public class MazeCustomizer : EditorWindow
 
     const string ToolTip_Replace_Units = "The the configuration of each Unit will be obtained";
     const string MsgBox_Replace_Action = "This action will replace all existing Units of the selected maze but obtains the structure of the maze and the configuration of each unit.";
-    private beMobileMaze lastSelectedMaze;
+ 
     #endregion
 
 }
