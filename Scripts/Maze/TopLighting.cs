@@ -26,7 +26,7 @@ public class TopLighting : MonoBehaviour {
         string directionName = Enum.GetName(typeof(OpenDirections), direction);
 
         var target = this.transform.FindChild(directionName);
-
+        
         if(target == null){
             Debug.Assert(target != null, string.Format("This component should have an child with the name: {0}", target));
             return;
