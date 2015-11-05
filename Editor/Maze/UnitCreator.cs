@@ -18,7 +18,7 @@ public class UnitCreator : EditorWindow
 
         window.Show();
     }
-
+    
     void Initialize()
     {
         if (hidingSpotCreator == null) { 
@@ -161,12 +161,15 @@ public class UnitCreator : EditorWindow
     {
         Initialize();
 
+        Selection.selectionChanged += Repaint;
+
         if (SceneView.onSceneGUIDelegate == null)
             SceneView.onSceneGUIDelegate += OnSceneGUI;
     }
 
     public void OnDisable()
     {
+        Selection.selectionChanged -= Repaint;
         SceneView.onSceneGUIDelegate -= OnSceneGUI;
     }
 
