@@ -235,7 +235,16 @@ public static class MazeEditorUtil
                 {
                     replacementPart.transform.localPosition = new Vector3(0, 0, 0);
                 }
-                
+
+
+                var meshRenderer = replacementPart.GetComponent<MeshRenderer>();
+                var oldMeshRenderer = old_equivalent.GetComponent<MeshRenderer>();
+
+                if (meshRenderer != null && oldMeshRenderer != null)
+                {
+                    meshRenderer.sharedMaterials = oldMeshRenderer.sharedMaterials;
+                }
+
                 replacementPart.SetActive(old_equivalent.activeSelf);
             }
         }
