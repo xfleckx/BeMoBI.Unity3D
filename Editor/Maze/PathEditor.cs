@@ -116,16 +116,6 @@ public class PathEditor : AMazeEditor {
             RemoveObjectHideOut();
         }
 
-        if (instance.HideOut != null && instance.HideOut.enabled && GUILayout.Button("Hide HideOut"))
-        {
-            instance.DisableHideOut();
-        }
-
-        if (instance.HideOut != null && !instance.HideOut.enabled && GUILayout.Button("Show HideOut"))
-        {
-            instance.EnableHideOut();
-        }
-
         EditorGUILayout.EndVertical();
 
         if (EditorModeProcessEvent != null)

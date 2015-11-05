@@ -20,12 +20,19 @@ public class MazeCustomizer : EditorWindow
         selectedMaze = maze;
     }
 
+    void OnEnable()
+    {
+        Selection.selectionChanged += Repaint;
+    }
 
-    public float unitFloorOffset = 0f;
-
+    void OnDisable()
+    {
+        Selection.selectionChanged -= Repaint;
+    }
 
     void OnGUI()
     {
+        EditorGUILayout.BeginVertical();
 
         if (Selection.activeGameObject != null)
             selectedMaze = Selection.activeGameObject.GetComponent<beMobileMaze>();
@@ -49,6 +56,14 @@ public class MazeCustomizer : EditorWindow
             GUILayout.Label("Selected Maze:");
 
             selectedMaze = EditorGUILayout.ObjectField(selectedMaze, typeof(beMobileMaze), true) as beMobileMaze;
+            prefabOfSelectedMaze = PrefabUtility.GetPrefabParent(selectedMaze);
+
+
+            if (GUILayout.Button("Other..."))
+            {
+                selectedMaze = null;
+                Repaint();
+            }
 
             EditorGUILayout.EndHorizontal();
 
@@ -76,8 +91,60 @@ public class MazeCustomizer : EditorWindow
 
             EditorGUILayout.EndHorizontal();
         }
-        
+
+        EditorGUILayout.Space();
+
+        EditorGUILayout.Space();
+
+        EditorGUILayout.LabelField("Compatibility options - (these might be removed in later versions)");
+
+        EditorGUILayout.BeginHorizontal();
+
+        if (GUILayout.Button("Remove Hideouts"))
+        {
+            RemoveStaticHideOuts(selectedMaze);
+        }
+
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.Separator();
+
+        if (prefabOfSelectedMaze != null)
+        {
+            if (GUILayout.Button("Update Prefab", GUILayout.Height(35)))
+            {
+                PrefabUtility.ReplacePrefab(selectedMaze.gameObject, prefabOfSelectedMaze, ReplacePrefabOptions.ConnectToPrefab);
+                AssetDatabase.SaveAssets();
+            }
+        }
+        else
+        {
+            EditorGUILayout.HelpBox("The Maze has no prefab reference! \n Create one!", MessageType.Warning);
+        }
+
+
+        EditorGUILayout.EndVertical();
     }
+
+    private void RemoveStaticHideOuts(beMobileMaze maze)
+    {
+        var componentsToRemove = selectedMaze.transform.GetComponentsInChildren<PathInMaze>();
+
+        componentsToRemove.ApplyToAll(
+            (p) =>
+                {
+                    maze.Units.Remove(p.HideOut);
+
+                    var temp = p.HideOut;
+                    
+                    p.HideOut = null;
+                    
+                    DestroyImmediate(temp);
+
+                    p.HideOutReplacement.gameObject.SetActive(true);
+                }
+            );
+    } 
 
     GameObject lightPrefab;
     Material FloorMaterial;
@@ -206,6 +273,7 @@ public class MazeCustomizer : EditorWindow
     GameObject replacementPrefab;
 
     private beMobileMaze selectedMaze;
+    private UnityEngine.Object prefabOfSelectedMaze;
 
     private void renderUiForSingleMazeSelected()
     { 
