@@ -92,20 +92,11 @@ public class VirtualRealityManager : MonoBehaviour {
 		Vector3 env01 = new Vector3(x0, 0, z1);
 		Vector3 env10 = new Vector3(x1, 0, z0);
 
-		float dotSize = 1f;
+        Gizmos.DrawLine(env00, env01);
+        Gizmos.DrawLine(env00, env10);
+        Gizmos.DrawLine(env10, env11);
+        Gizmos.DrawLine(env01, env11);
 
-#if UNITY_EDITOR
-        var temp = Handles.matrix;
-        Handles.matrix = transform.localToWorldMatrix;
-
-		Handles.DrawDottedLine(env00, env01, dotSize);
-		Handles.DrawDottedLine(env00, env10, dotSize);
-		Handles.DrawDottedLine(env10, env11, dotSize);
-		Handles.DrawDottedLine(env01, env11, dotSize);
-
-        Handles.matrix = temp;
-#endif
-        
 		Vector3 bz_length_Size = new Vector3(BorderZoneWidth, 0, HighQualityZoneLength + 2 * BorderZoneWidth);
 		Vector3 bz_Width_Size = new Vector3(HighQualityZoneWidth + 2 * BorderZoneWidth, 0, BorderZoneWidth);
 
