@@ -245,16 +245,16 @@ public class MazeCustomizer : EditorWindow
 
         RenderUIForRequestedPrefab<GameObject, TopLighting>(ref lightPrefab, typeof(TopLighting));
 
-        if (GUILayout.Button("Add Lighting to each unit.", GUILayout.Height(50f)))
+        if (lightPrefab != null && GUILayout.Button("Add Lighting to each unit.", GUILayout.Height(50f)))
         {
             AddLightingToMaze();
         }
-
-
+        
         if (GUILayout.Button("Remove Lighting to each unit.", GUILayout.Height(20f)))
         {
             RemoveLightingFromMaze();
         }
+
         EditorGUILayout.EndHorizontal();
 
         if (lightPrefab)
@@ -433,8 +433,22 @@ public class MazeCustomizer : EditorWindow
 
             newLightInstance.transform.parent = top.transform;
             newLightInstance.transform.localPosition = new Vector3(0, -0.001f, 0);
-            newLightInstance.transform.localScale = new Vector3(selectedMaze.RoomDimension.x, 1, selectedMaze.RoomDimension.z);
-            newLightInstance.ToggleLightDirection(unit.WaysOpen);
+
+            ConfigureTopLightBasedOnUnitConfiguration(unit, newLightInstance);
+        }
+    }
+    
+    public void ConfigureTopLightBasedOnUnitConfiguration(MazeUnit unit, TopLighting topLight)
+    {
+        var unitChildren = unit.transform.AllChildren();
+        var lightChildren = topLight.transform.AllChildren();
+
+        foreach (var lightChild in lightChildren)
+        {
+            var corresponding = unitChildren.Where((u) => u.name.Equals(lightChild.name)).FirstOrDefault();
+           
+            if (corresponding != null) 
+                lightChild.SetActive(!corresponding.activeSelf);
         }
     }
 
@@ -445,8 +459,9 @@ public class MazeCustomizer : EditorWindow
             var top = unit.gameObject.transform.FindChild("Top");
 
             var lightning = top.FindChild("TopLighting");
-
-            DestroyImmediate(lightning.gameObject);
+            
+            if(lightning != null)
+                DestroyImmediate(lightning.gameObject);
         }
     }
 

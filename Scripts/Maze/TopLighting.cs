@@ -36,6 +36,7 @@ public class TopLighting : MonoBehaviour {
         target.gameObject.SetActive(!state);
     }
 
+
     public void OnDrawGizmos()
     {
         var temp = Gizmos.matrix;

@@ -1,5 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System;
 
 public static class Extensions
 {
@@ -27,4 +30,20 @@ public static class Extensions
 
         return fileNameCompatibleString.Replace('.', '_');
     }
+
+    public static List<GameObject> AllChildren(this Transform transform)
+    {
+        var childCount = transform.childCount;
+
+        List<GameObject> result = new List<GameObject>();
+
+        for (int i = 0; i < childCount; i++)
+        {
+            var child = transform.GetChild(i).gameObject;
+            result.Add(child);
+        }
+
+        return result;
+    }
+
 }
