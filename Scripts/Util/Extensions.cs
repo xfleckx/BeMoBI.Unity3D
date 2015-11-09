@@ -20,4 +20,11 @@ public static class Extensions
 
         return fileNameCompatibleString.Replace('.', '_');
     }
+
+    public static string AsPartFileName(this Vector2 v)
+    {
+        var fileNameCompatibleString = string.Format("{0}x{1}", v.x, v.y);
+
+        return fileNameCompatibleString.Replace('.', '_');
+    }
 }
