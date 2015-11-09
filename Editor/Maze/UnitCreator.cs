@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
+using System.Linq;
 using System;
 using System.IO;
 using Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation;
@@ -14,21 +15,34 @@ public class UnitCreator : EditorWindow
 
         window.titleContent = new GUIContent("Unit Creator");
         
-        window.Initialize();
-
         window.Show();
     }
     
     void Initialize()
     {
-        if (hidingSpotCreator == null) { 
-            hidingSpotCreator = CreateAndInitialize<HidingSpotCreator, HidingSpot>();
-        }
+        if(availableCreators == null)
+            availableCreators = new List<ICreatorState>();
+       
+        var baseUnitCreator = CreateAndInitialize<BasicUnitCreator, MazeUnit>();
+        
+        if (!availableCreators.Contains(baseUnitCreator))
+            availableCreators.Add(baseUnitCreator);
 
-        if (baseUnitCreator == null){
-            baseUnitCreator = CreateAndInitialize<BasicUnitCreator, MazeUnit>();
-        }
+        var hidingSpotCreator = CreateAndInitialize<HidingSpotCreator, HidingSpot>();
+        
+        if(!availableCreators.Contains(hidingSpotCreator))
+             availableCreators.Add(hidingSpotCreator); 
+
+        var topLightCreator = CreateAndInitialize<TopLightCreator, TopLighting>();
+
+        if (!availableCreators.Contains(topLightCreator))
+            availableCreators.Add(topLightCreator);
+
+        if (currentVisibleCreator == null)
+            currentVisibleCreator = baseUnitCreator;
     }
+
+    List<ICreatorState> availableCreators;
 
     private CS CreateAndInitialize<CS, T>() where CS : CreatorState<T> where T : MonoBehaviour
     {
@@ -40,14 +54,12 @@ public class UnitCreator : EditorWindow
         return t;
     }
 
-    private bool basicUnitSelected = true;
-
-    private bool hidingSpotSelected = false;
-
     private UnityEngine.Object lastSelection;
+    
+    private TopLightCreator topLightCreator; 
 
-    private HidingSpotCreator hidingSpotCreator;
-    private BasicUnitCreator baseUnitCreator;
+    [SerializeField]
+    private ICreatorState currentVisibleCreator;
 
     #region Toogle Button
     public bool ToggleButton(bool state, string label)
@@ -77,15 +89,7 @@ public class UnitCreator : EditorWindow
     }
 
     static GUIStyle labelText_style;
-    private string doorPrefabName;
-    public static GUIStyle StyleLabelText
-    {
-        get
-        {
-            return labelText_style;
-        }
-    }
-
+  
     private void BuildStyle()
     {
         if (toggled_style == null)
@@ -105,6 +109,8 @@ public class UnitCreator : EditorWindow
     
     void OnGUI()
     {
+        BuildStyle();
+
         var currentSelection = Selection.activeGameObject;
 
         if (currentSelection != null && (lastSelection != null || lastSelection != currentSelection))
@@ -112,26 +118,31 @@ public class UnitCreator : EditorWindow
 
         EditorGUILayout.BeginHorizontal();
 
-        basicUnitSelected =  ToggleButton(!hidingSpotSelected, baseUnitCreator.CreatorName);
-        hidingSpotSelected =  ToggleButton(!basicUnitSelected, hidingSpotCreator.CreatorName);
-        
-        EditorGUILayout.EndHorizontal();
+        EditorGUILayout.BeginVertical(GUILayout.Width(40));
 
-        #region basic Unit
+        GUILayout.Space(4);
 
-        if (basicUnitSelected) {
-            baseUnitCreator.OnGUI();
-        }
-        #endregion
-
-        #region HidingSpot Creation
-        
-        if (hidingSpotSelected)
+        foreach (var item in availableCreators)
         {
-            hidingSpotCreator.OnGUI();
-        }
+            GUIStyle style;
 
-        #endregion
+            if(item.Equals(currentVisibleCreator))
+                style = toggled_style;
+            else
+                style = GUI.skin.button;
+
+            if (GUILayout.Button(item.CreatorName, style))
+            {
+                currentVisibleCreator = item;
+            }
+        }
+         
+        EditorGUILayout.EndVertical();
+        
+        if(currentVisibleCreator != null)
+            currentVisibleCreator.OnGUI();
+
+        EditorGUILayout.EndHorizontal();
     }
 
     private void OnUpdateSelection(GameObject selection)
@@ -140,9 +151,12 @@ public class UnitCreator : EditorWindow
         
         if (mazeUnit != null)
         {
-            var dimension = mazeUnit.Dimension; 
-            baseUnitCreator.RoomDimension = dimension;
-            hidingSpotCreator.RoomDimension = dimension;
+            var dimension = mazeUnit.Dimension;
+
+            foreach (var item in availableCreators)
+            {
+                item.RoomDimension = dimension;
+            }
         }
 
         var maze = selection.GetComponent<beMobileMaze>();
@@ -150,8 +164,11 @@ public class UnitCreator : EditorWindow
         if (maze != null)
         {
             var dimension = maze.RoomDimension;
-            baseUnitCreator.RoomDimension = dimension;
-            hidingSpotCreator.RoomDimension = dimension;
+
+            foreach (var item in availableCreators)
+            {
+                item.RoomDimension = dimension;
+            }
         }
 
         lastSelection = selection;

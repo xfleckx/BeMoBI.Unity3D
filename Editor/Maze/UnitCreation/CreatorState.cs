@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
 {
-    public abstract class CreatorState<T> : ScriptableObject where T : MonoBehaviour
+    public abstract class CreatorState<T> : ScriptableObject, ICreatorState where T : MonoBehaviour
     {
         public virtual string CreatorName { get { return "CreatorName"; } }
 
