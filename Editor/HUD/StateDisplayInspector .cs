@@ -32,6 +32,7 @@ namespace Assets.BeMoBI.Unity3D.Editor.HUD
             {
                 instance.SetState(state_id, message, (State_Info_Type) state_type);
             }
+
             EditorGUILayout.EndVertical();
 
         }
