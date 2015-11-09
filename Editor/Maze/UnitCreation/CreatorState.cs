@@ -97,6 +97,10 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
                     OnBeforeCreatePrefab();
 
                     prefabReference = PrefabUtility.CreatePrefab(targetFilePath, instance.gameObject);
+
+                    AssetDatabase.SaveAssets();
+
+                    DestroyImmediate(instance.gameObject);
                 }
                 else
                 {
