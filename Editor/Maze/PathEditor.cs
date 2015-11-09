@@ -84,32 +84,34 @@ public class PathEditor : AMazeEditor {
 
         EditorGUILayout.Separator();
 
-        LandmarkScaling = EditorGUILayout.Vector3Field("Landmark Scale", LandmarkScaling);
-        LandmarkOffset = EditorGUILayout.Vector3Field("Landmark Offset", LandmarkOffset);
-        EditorGUILayout.BeginHorizontal();
+        //LandmarkScaling = EditorGUILayout.Vector3Field("Landmark Scale", LandmarkScaling);
+        //LandmarkOffset = EditorGUILayout.Vector3Field("Landmark Offset", LandmarkOffset);
         
-        if (GUILayout.Button("Deploy Landmarks"))
-        {
-            DeployLandmarks();
-        }
-        if (GUILayout.Button("Set Offset"))
-        {
-            instance.Landmarks.ForEach(lm => lm.transform.localPosition = lm.transform.localPosition + LandmarkOffset);
-        }
+        //EditorGUILayout.BeginHorizontal();
+        
+        //if (GUILayout.Button("Deploy Landmarks"))
+        //{
+        //    DeployLandmarks();
+        //}
+        //if (GUILayout.Button("Set Offset"))
+        //{
+        //    instance.Landmarks.ForEach(lm => lm.transform.localPosition = lm.transform.localPosition + LandmarkOffset);
+        //}
 
-        EditorGUILayout.EndHorizontal();
+        //EditorGUILayout.EndHorizontal();
 
-        if (GUILayout.Button("Remove Landmarks"))
-        {
-            RemoveLandmarks();
-        }
+        //if (GUILayout.Button("Remove Landmarks"))
+        //{
+        //    RemoveLandmarks();
+        //}
 
-        EditorGUILayout.Separator();
+        //EditorGUILayout.Separator();
 
-        if (instance.HideOut == null && GUILayout.Button("Deploy Object HideOut"))
-        {
-            DeployObjectHideOut();
-        }
+        //if (instance.HideOut == null && GUILayout.Button("Deploy Object HideOut"))
+        //{
+        //    DeployObjectHideOut();
+        //}
+        EditorGUILayout.LabelField("Legacy options:");
 
         if (instance.HideOut != null && GUILayout.Button("Remove Object HideOut"))
         {
@@ -122,15 +124,15 @@ public class PathEditor : AMazeEditor {
             EditorModeProcessEvent(Event.current);
     }
 
-    private void DeployLandmarks()
-    {
-        var tUnits = instance.PathElements.Values.Where((pe) => pe.Type == UnitType.T);
+    //private void DeployLandmarks()
+    //{
+    //    var tUnits = instance.PathElements.Values.Where((pe) => pe.Type == UnitType.T);
 
-        foreach (var unit in tUnits)
-        {
-            DeployLandmark(unit);
-        }
-    }
+    //    foreach (var unit in tUnits)
+    //    {
+    //        DeployLandmark(unit);
+    //    }
+    //}
 
     private void RemoveLandmarks()
     {
@@ -288,6 +290,7 @@ public class PathEditor : AMazeEditor {
         instance.PathElements.Add(newUnit.GridID, newElement);
     }
 
+    [Obsolete("Should be moved to a Customizer/EditorWindow")]
     private void DeployLandmark(PathElement element)
     {
         var filePathToLandmarkAsset = string.Format("{0}Landmark.prefab",PathToPrefabs);
@@ -358,6 +361,7 @@ public class PathEditor : AMazeEditor {
         
     }
 
+    [Obsolete("Not longer in use! HideOuts are not necessarily part of the maze!")]
     private void DeployObjectHideOut()
     {
         var pathEnd = instance.PathElements.Last();
