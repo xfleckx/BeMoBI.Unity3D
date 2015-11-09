@@ -133,15 +133,17 @@ public class MazeCustomizer : EditorWindow
         componentsToRemove.ApplyToAll(
             (p) =>
                 {
-                    maze.Units.Remove(p.HideOut);
+                    if (p.HideOut != null) { 
+                        maze.Units.Remove(p.HideOut);
 
-                    var temp = p.HideOut;
+                        var temp = p.HideOut;
                     
-                    p.HideOut = null;
+                        p.HideOut = null;
                     
-                    DestroyImmediate(temp);
+                        DestroyImmediate(temp.gameObject);
 
-                    p.HideOutReplacement.gameObject.SetActive(true);
+                        p.HideOutReplacement.gameObject.SetActive(true);
+                    }
                 }
             );
     } 
