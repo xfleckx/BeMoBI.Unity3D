@@ -131,7 +131,6 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
             }
         }
 
-
         protected Material GetPrototypeMaterial()
         {
             var prototype = GameObject.CreatePrimitive(PrimitiveType.Plane);
@@ -148,6 +147,7 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
         {
             return new Vector3(x, y, z);
         }
+
         protected Vector2 V(float x, float y)
         {
             return new Vector2(x, y);

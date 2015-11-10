@@ -4,10 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
-
 public class VirtualRealityManager : MonoBehaviour {
 
 	//VR Real World Dimension for MoCap Systems
@@ -17,37 +13,19 @@ public class VirtualRealityManager : MonoBehaviour {
 	
 	[SerializeField]
 	public List<EnvironmentController> AvailableEnvironments = new List<EnvironmentController>();
-
-	[SerializeField]
-	public List<EnvironmentController> ActiveEnvironments = new List<EnvironmentController>();
 	
-	// Update is called once per frame
-	void Update () {
-
-		if (Input.GetKey(KeyCode.KeypadEnter))
-		{
-			Debug.Log("Enter hit");
-		}
-	}
-
-   /// <summary>
-   /// Change the whole world to exactly one environment
-   /// </summary>
-   /// <param name="worldName"></param>
+    /// <summary>
+    /// Change the whole world to exactly one environment
+    /// </summary>
+    /// <param name="worldName"></param>
 	public EnvironmentController ChangeWorld(string worldName)
 	{
+        AvailableEnvironments.ForEach((e) => e.gameObject.SetActive(false)); 
+
 		if (AvailableEnvironments.Any((i) => i.Title.Equals(worldName))) {
-
-			if (this.ActiveEnvironments.Any())
-				this.ActiveEnvironments.ForEach((i) => i.gameObject.SetActive(false));
-
-			this.ActiveEnvironments.Clear();
+           
 			var enabledEnvironment = AvailableEnvironments.First((i) => i.Title.Equals(worldName));
-
-			enabledEnvironment.gameObject.SetActive(true);
-			
-			this.ActiveEnvironments.Add(enabledEnvironment);
-			
+            
 			return enabledEnvironment;
 		}
 
@@ -55,11 +33,13 @@ public class VirtualRealityManager : MonoBehaviour {
 	}
 
 	/// <summary>
-	/// Combine multiple environments - TODO HalleV and Maze
+	/// Combine multiple environments
 	/// </summary>
 	/// <param name="names"></param>
 	public void CombineEnvironments(params string[] names)
-	{  
+	{
+        AvailableEnvironments.ForEach((e) => e.gameObject.SetActive(false)); 
+
 		foreach (var item in names)
 		{
 			var environment = this.AvailableEnvironments.First((i) => i.Title.Equals(item));

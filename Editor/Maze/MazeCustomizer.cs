@@ -133,7 +133,7 @@ public class MazeCustomizer : EditorWindow
         componentsToRemove.ApplyToAll(
             (p) =>
                 {
-                    if (p.HideOut != null) { 
+                    if (p.HideOut != null) {
                         maze.Units.Remove(p.HideOut);
 
                         var temp = p.HideOut;

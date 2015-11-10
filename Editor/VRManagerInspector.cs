@@ -9,29 +9,41 @@ public class VRManagerInspector : Editor
 {
     private VirtualRealityManager vrcontroller;
 
+    void OnEnable()
+    {
+        LookUpEnvironments();
+    }
+
+    private void LookUpEnvironments()
+    {
+        vrcontroller = (VirtualRealityManager) target;
+
+        var environments = vrcontroller.transform.AllChildren().Where(
+            (e) => e.GetComponent<EnvironmentController>() != null)
+            .Select((e) => e.GetComponent<EnvironmentController>());
+
+        vrcontroller.AvailableEnvironments.Clear();
+        vrcontroller.AvailableEnvironments.AddRange(environments);
+    }
+
     public override void OnInspectorGUI()
     {
-        vrcontroller = (VirtualRealityManager)target;
+        if(vrcontroller == null)
+            vrcontroller = (VirtualRealityManager)target;
 
         base.OnInspectorGUI();
-
-        EditorGUILayout.BeginVertical();
-
-        EditorGUILayout.EndVertical();
-
     }
 
     public void OnSceneGUI()
     {
         vrcontroller = (VirtualRealityManager)target;
 
-        if (!vrcontroller.AvailableEnvironments.Any())
+        if (!vrcontroller.AvailableEnvironments.Any((c) => c != null))
             return;
 
         Handles.BeginGUI();
 
         GUILayout.Space(25);
-
 
         GUILayout.BeginVertical(GUILayout.MaxWidth(75));
         
@@ -42,8 +54,12 @@ public class VRManagerInspector : Editor
         foreach (var item in vrcontroller.AvailableEnvironments)
         {
             GUILayout.BeginHorizontal();
-            
-            item.enabled = GUILayout.Toggle(item.enabled, "");
+
+            var state = item.gameObject.activeSelf;
+
+            state = GUILayout.Toggle(state, "");
+
+            item.gameObject.SetActive(state);
 
             if (GUILayout.Button(item.Title, GUILayout.Width(75)))
             {
