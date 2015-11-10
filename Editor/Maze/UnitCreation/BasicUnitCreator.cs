@@ -48,6 +48,8 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
 
                 createAsWholeMesh = EditorGUILayout.ToggleLeft("Create as whole Mesh", createAsWholeMesh);
 
+                useUVTestMaterial = EditorGUILayout.ToggleLeft("Use UV Test material", useUVTestMaterial);
+
                 if (GUILayout.Button("Create new Maze Unit (Room)", GUILayout.Height(35f)))
                 {
                     if (expectedChildComponents == null)
@@ -89,7 +91,12 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
 
             boxCollider.size = roomDimension;
             
-            var material = GetPrototypeMaterial();
+            Material material;
+
+            if (useUVTestMaterial)
+                material = GetUVTestMaterial();
+            else
+                material = GetPrototypeMaterial();
 
             if (!createAsWholeMesh)
                 CreateAsSeparatedMeshes(newUnit, creationModel, material);
@@ -98,6 +105,14 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
                 CreateAsAWhole(newUnit, creationModel, material);
             
             return mazeUnit;
+        }
+
+        private Material GetUVTestMaterial()
+        {
+           if(uv_material == null)
+                uv_material = AssetDatabase.LoadAssetAtPath("Assets/Materials/uv_test.mat", typeof(Material)) as Material;
+
+           return uv_material;
         }
 
         protected override void OnBeforeCreatePrefab()
@@ -118,8 +133,9 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
                 var meshFilter = wall.AddComponent<MeshFilter>();
 
                 var meshRenderer = wall.AddComponent<MeshRenderer>();
-
+                 
                 meshRenderer.material = material;
+
 
                 if (item.Equals(MazeUnit.TOP))
                 {
@@ -160,7 +176,7 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
                     meshFilter.sharedMesh.name = MazeUnit.EAST;
                     wall.transform.localPosition = V(roomDimension.x / 2, roomDimension.y / 2, 0);
                 }
-
+                 
                 var result = string.Format("{0}{1}{2}_Mesh_{3}.asset", AssetModelsPath, Path.AltDirectorySeparatorChar, item, creationModel.RoomDimensions.AsPartFileName());
                 
                 SaveAsAsset(meshFilter.sharedMesh, result);
@@ -178,40 +194,33 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
 
             var vertices = new List<Vector3>()
         {
-            V(m.meshOrigin.x,      0, m.meshOrigin.z), 
+            V(m.meshOrigin.x,  0, m.meshOrigin.z), 
             V(m.WidthEndPoint, 0, m.meshOrigin.z),
-            V(m.meshOrigin.x,      0, m.DepthEndPoint),
+            V(m.meshOrigin.x,  0, m.DepthEndPoint),
             V(m.WidthEndPoint, 0, m.DepthEndPoint)
         };
 
             mesh.SetVertices(vertices);
 
             var triangles = new List<int>()
-        {
-            0,2,1,
-            2,3,1
-        };
+            {
+                0,2,1, // First triangle - count the 
+                2,3,1 // Second triangle
+            };
 
             mesh.SetTriangles(triangles, 0);
 
             var normals = new List<Vector3>()
-        {
-            Vector3.up,
-            Vector3.up,
-            Vector3.up,
-            Vector3.up
-        };
+            {
+                Vector3.up,
+                Vector3.up,
+                Vector3.up,
+                Vector3.up
+            };
 
             mesh.SetNormals(normals);
 
-            var uvs = new List<Vector2>()
-        {
-            Vector2.zero,
-            V(0, 1),
-            Vector2.one,
-            V(1, 0)
-        };
-
+            var uvs = MeshUtilities.GetPlaneUVs();
 
             mesh.SetUVs(0, uvs);
 
@@ -255,13 +264,7 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
 
             mesh.SetNormals(normals);
 
-            var uvs = new List<Vector2>()
-        {
-            Vector2.zero,
-            V(0, 1),
-            Vector2.one,
-            V(1, 0)
-        };
+            var uvs = MeshUtilities.GetPlaneUVs();
 
             mesh.SetUVs(0, uvs);
 
@@ -306,13 +309,7 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
 
             mesh.SetNormals(normals);
 
-            var uvs = new List<Vector2>()
-        {
-            Vector2.zero,
-            V(0, 1),
-            Vector2.one,
-            V(1, 0)
-        };
+            var uvs = MeshUtilities.GetPlaneUVs();
 
             mesh.SetUVs(0, uvs);
 
@@ -339,29 +336,24 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
             mesh.SetVertices(vertices);
 
             var triangles = new List<int>()
-        {
-            1,2,0,
-            1,3,2
-        };
+            {
+                1,2,0,
+                1,3,2
+            };
 
             mesh.SetTriangles(triangles, 0);
 
             var normals = new List<Vector3>()
-        {Vector3.forward, 
-            Vector3.forward, 
-            Vector3.forward, 
-            Vector3.forward 
-        };
+            {
+                Vector3.forward, 
+                Vector3.forward, 
+                Vector3.forward, 
+                Vector3.forward
+            };
 
             mesh.SetNormals(normals);
 
-            var uvs = new List<Vector2>()
-        {
-            Vector2.zero,
-            V(0, 1),
-            Vector2.one,
-            V(1, 0)
-        };
+            var uvs = MeshUtilities.GetInvertPlaneUVs();
 
             mesh.SetUVs(0, uvs);
 
@@ -407,13 +399,7 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
 
             mesh.SetNormals(normals);
 
-            var uvs = new List<Vector2>()
-        {
-            Vector2.zero,
-            V(0, 1),
-            Vector2.one,
-            V(1, 0)
-        };
+            var uvs = MeshUtilities.GetPlaneUVs();
 
             mesh.SetUVs(0, uvs);
 
@@ -448,21 +434,16 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
             mesh.SetTriangles(triangles, 0);
 
             var normals = new List<Vector3>()
-        { Vector3.left,
-            Vector3.left,
-            Vector3.left,
-            Vector3.left 
-        };
+            { 
+                Vector3.left,
+                Vector3.left,
+                Vector3.left,
+                Vector3.left 
+            };
 
             mesh.SetNormals(normals);
 
-            var uvs = new List<Vector2>()
-        {
-            Vector2.zero,
-            V(0, 1),
-            Vector2.one,
-            V(1, 0)
-        };
+            var uvs = MeshUtilities.GetPlaneUVs();
 
             mesh.SetUVs(0, uvs);
 
@@ -474,6 +455,8 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
         }
 
         #endregion
+
+
 
         #region create Mesh as a whole thing
 
@@ -651,7 +634,11 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
         }
 
         #endregion
-         
+
+
+        public bool useUVTestMaterial { get; set; }
+
+        public Material uv_material { get; set; }
     }
 
     public class UnitMeshModificationModel
