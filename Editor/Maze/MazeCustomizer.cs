@@ -393,7 +393,16 @@ public class MazeCustomizer : EditorWindow
         Debug.Assert(replacementPrefab != null && selectedMaze != null);
 
         if (selectedMaze.Units.Count == 0 || selectedMaze.Units.Any((u) => u == null))
-            MazeEditorUtil.SearchForUnitsIn(selectedMaze);
+            MazeEditorUtil.CacheUnitsIn(selectedMaze);
+
+        var mazeUnitComponentOfPrefab = replacementPrefab.GetComponent<MazeUnit>();
+
+        // make sure that the old values are available!
+        MazeEditorUtil.ReconfigureGrid(selectedMaze, selectedMaze.MazeWidthInMeter, selectedMaze.MazeLengthInMeter);
+
+        MazeEditorUtil.CheckAndUpdateMazeDefinitionOn(selectedMaze, mazeUnitComponentOfPrefab.Dimension);
+
+        MazeEditorUtil.ReconfigureGrid(selectedMaze, selectedMaze.MazeWidthInMeter, selectedMaze.MazeLengthInMeter);
 
         MazeEditorUtil.ReplaceUnits(selectedMaze, replacementPrefab);
 

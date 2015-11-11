@@ -12,17 +12,9 @@ public static class MazeEditorUtil
 {
     public static void RebuildGrid(beMobileMaze maze)
     {
-        var GridDim = CalcGridSize(maze);
+        CacheUnitsIn(maze);
 
-        if (!maze.Units.Any())
-        {
-            var existingUnits = maze.gameObject.GetComponentsInChildren<MazeUnit>();
-
-            foreach (var unit in existingUnits)
-            {
-                maze.Units.Add(unit);
-            }
-        }
+        var GridDim = CalcGridSize(maze); 
 
         maze.Grid = FillGridWith(maze.Units, (int)GridDim.x, (int)GridDim.y);
     }
@@ -59,7 +51,20 @@ public static class MazeEditorUtil
             InitializeUnit(maze, item.GridID, floorOffset, item.gameObject);
         }
     }
-  
+
+    public static void CheckAndUpdateMazeDefinitionOn(beMobileMaze maze, Vector3 dimension)
+    {
+        var newBoundarySize_X = maze.Grid.GetLength(0) + ((dimension.x * maze.Grid.GetLength(0)) - maze.Grid.GetLength(0));
+
+        if (newBoundarySize_X > maze.MazeWidthInMeter)
+            maze.MazeWidthInMeter = (float)Math.Ceiling(newBoundarySize_X);
+
+        var newBoundarySize_Y = maze.Grid.GetLength(1) + (dimension.z * maze.Grid.GetLength(1)) - maze.Grid.GetLength(1); // z is the lenght! y is up!
+        if (newBoundarySize_Y > maze.MazeLengthInMeter)
+            maze.MazeLengthInMeter = (float)Math.Ceiling(newBoundarySize_Y);
+
+    }
+
     public static MazeUnit[,] FillGridWith(IEnumerable<MazeUnit> existingUnits, int columns, int rows)
     {
         var grid = new MazeUnit[columns, rows];
@@ -380,14 +385,14 @@ public static class MazeEditorUtil
         return meshFilter.sharedMesh;
     }
 
-    internal static void SearchForUnitsIn(beMobileMaze maze)
+
+    internal static void CacheUnitsIn(beMobileMaze maze)
     {
         var unitsFound = maze.gameObject.GetComponentsInChildren<MazeUnit>();
 
-        foreach (var unit in unitsFound)
-        {
-            if (!maze.Units.Contains(unit))
-                maze.Units.Add(unit);
-        }
+        maze.Units.Clear();
+
+        maze.Units.AddRange(unitsFound);
+
     }
 }

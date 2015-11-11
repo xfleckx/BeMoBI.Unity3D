@@ -120,7 +120,7 @@ public class MazeEditor : AMazeEditor
 
         if (GUILayout.Button("Search for Units")) 
         {
-            MazeEditorUtil.SearchForUnitsIn(maze);
+            MazeEditorUtil.CacheUnitsIn(maze);
         }
 
         if (GUILayout.Button("Configure Grid"))
