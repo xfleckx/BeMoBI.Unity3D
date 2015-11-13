@@ -59,7 +59,7 @@ public static class MazeEditorUtil
         if (newBoundarySize_X > maze.MazeWidthInMeter)
             maze.MazeWidthInMeter = (float)Math.Ceiling(newBoundarySize_X);
 
-        var newBoundarySize_Y = maze.Grid.GetLength(1) + (dimension.z * maze.Grid.GetLength(1)) - maze.Grid.GetLength(1); // z is the lenght! y is up!
+        var newBoundarySize_Y = maze.Grid.GetLength(1) + (dimension.z * maze.Grid.GetLength(1) - maze.Grid.GetLength(1)); // z is the lenght! y is up!
         if (newBoundarySize_Y > maze.MazeLengthInMeter)
             maze.MazeLengthInMeter = (float)Math.Ceiling(newBoundarySize_Y);
 
