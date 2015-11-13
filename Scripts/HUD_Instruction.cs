@@ -6,9 +6,9 @@ using System.IO;
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
-public class HUDInstruction : Singleton<HUDInstruction>, ISerializationCallbackReceiver {
+public class HUD_Instruction : Singleton<HUD_Instruction>, ISerializationCallbackReceiver {
 
-	private const string referenceError = "Please reference Unity GUI Text and Raw Image Components to HUDInstruction instance!";
+	private const string referenceError = "Please reference Unity GUI Text and Raw Image Components to HUD_Instruction instance!";
     
 	public InstructionSet currentInstructionSet;
 
