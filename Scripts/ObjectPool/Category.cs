@@ -24,7 +24,8 @@ public class Category : MonoBehaviour {
     /// <summary>
     /// Set will be sampled until its empty than it resets and starts again.
     /// </summary>
-    /// <returns></returns>
+    /// <remarks>Don't forget to reset the sampling secquence!</remarks>
+    /// <returns>An Object from this category</returns>
     public GameObject SampleWithoutReplacement()
     {
         if (tempSampling == null || tempSampling.Count == 0) { 
@@ -33,6 +34,15 @@ public class Category : MonoBehaviour {
         }
 
         return tempSampling.Pop();
+    }
+
+    /// <summary>
+    /// Cleanup a sampling sequence
+    /// </summary>
+    public void ResetSamplingSequence()
+    {
+        tempSampling.Clear();
+        tempSampling = null;
     }
 
     public GameObject GetObjectBy(string requestedName)
