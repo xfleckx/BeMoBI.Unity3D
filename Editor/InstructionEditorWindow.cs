@@ -7,7 +7,7 @@ using System.IO;
 
 public class InstructionEditorWindow : EditorWindow {
 
-    public HUDInstruction HudController;
+    public HUD_Instruction HudController;
     private string fileName = string.Empty;
     private int setSelectionIndex = 0;
 

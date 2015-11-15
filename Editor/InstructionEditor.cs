@@ -4,14 +4,14 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine.UI;
 
-[CustomEditor(typeof(HUDInstruction))]
+[CustomEditor(typeof(HUD_Instruction))]
 public class InstructionEditor : Editor {
 
     private bool showHUDElementReferences = false;
     private int selectedSetIndex = 0;
     public override void OnInspectorGUI()
     {
-        HUDInstruction instructions = (HUDInstruction)target;
+        HUD_Instruction instructions = (HUD_Instruction)target;
 
         EditorGUILayout.BeginVertical();
 
