@@ -25,7 +25,10 @@ public class VirtualRealityManager : MonoBehaviour {
 		if (AvailableEnvironments.Any((i) => i.Title.Equals(worldName))) {
            
 			var enabledEnvironment = AvailableEnvironments.First((i) => i.Title.Equals(worldName));
-            
+
+            if(enabledEnvironment != null)
+                enabledEnvironment.gameObject.SetActive(true);
+
 			return enabledEnvironment;
 		}
 
