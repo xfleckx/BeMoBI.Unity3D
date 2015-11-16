@@ -12,6 +12,8 @@ public class HidingSpot : MonoBehaviour
     public GameObject DoorB;
     public Vector3 roomSize;
 
+    public GameObject Socket;
+
     public Direction DoorMovingDirection = Direction.Vertical;
 
     private const float DIRECTION_HIDE = 1f;
@@ -53,7 +55,7 @@ public class HidingSpot : MonoBehaviour
 
         var topTransform = DoorA.transform.localScale;
 
-        while (TargetStateNotReached(currentState += direction * revealSpeedFactor))
+        while (TargetStateNotReached(currentState += direction * revealSpeedFactor * Time.deltaTime))
         {
             yield return new WaitForFixedUpdate();
 
@@ -102,7 +104,17 @@ public class HidingSpot : MonoBehaviour
     {
         OnHidingSpotEntered(this, collider.gameObject);
     }
-     
+    
+    public Transform GetSocket()
+    {
+        if (Socket != null)
+            return Socket.transform;
+
+        Debug.Log("Socket GameObject reference missing!");
+
+        return null;
+    }
+
     void OnDrawGizmos()
     {
         Gizmos.DrawWireCube(new Vector3(transform.position.x, roomSize.y / 2, transform.position.z), roomSize);

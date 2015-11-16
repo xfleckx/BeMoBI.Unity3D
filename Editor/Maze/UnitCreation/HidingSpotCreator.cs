@@ -151,6 +151,11 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
                 socketInstance = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 socketInstance.transform.localPosition = new Vector3(socketOffset.x, socketHeight / 2, socketOffset.z);
                 socketInstance.transform.localScale = new Vector3(0.2f, socketHeight, 0.2f);
+
+                hidingSpotController.Socket = new GameObject("Socket");
+                hidingSpotController.Socket.transform.SetParent(socketInstance.transform);
+                hidingSpotController.Socket.transform.localPosition = new Vector3(socketOffset.x, socketHeight, socketOffset.z);
+                hidingSpotController.Socket.transform.localScale = Vector3.one;
             }
             else
             {
