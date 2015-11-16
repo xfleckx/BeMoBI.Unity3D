@@ -176,7 +176,9 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
                     meshFilter.sharedMesh.name = MazeUnit.EAST;
                     wall.transform.localPosition = V(roomDimension.x / 2, roomDimension.y / 2, 0);
                 }
-                 
+
+                wall.AddComponent<MeshCollider>(); 
+
                 var result = string.Format("{0}{1}{2}_Mesh_{3}.asset", AssetModelsPath, Path.AltDirectorySeparatorChar, item, creationModel.RoomDimensions.AsPartFileName());
                 
                 SaveAsAsset(meshFilter.sharedMesh, result);
