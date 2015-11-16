@@ -105,12 +105,6 @@ public class HidingSpot : MonoBehaviour
      
     void OnDrawGizmos()
     {
-        var temp = Gizmos.matrix;
-
-        Gizmos.matrix = transform.localToWorldMatrix;
-
         Gizmos.DrawWireCube(new Vector3(transform.position.x, roomSize.y / 2, transform.position.z), roomSize);
-
-        Gizmos.matrix = temp;
     }
 }
