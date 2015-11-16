@@ -46,7 +46,8 @@ public class TopLightCreator : CreatorState<TopLighting>
 
     public override void Initialize()
     {
-        // nothing to do here
+        // make sure that lightingDimension equals RoomDimension on first window creation
+        OnRoomDimensionUpdate();
     }
 
     public override Rect OnGUI()
@@ -109,8 +110,7 @@ public class TopLightCreator : CreatorState<TopLighting>
         light.range = roomDimension.y;
         
         var panelMesh_Z_Length = CreateLightPanelMeshForNorthAndSouth();
-
-
+        
         var NorthSouthMeshPath = string.Format("{0}{1}{2}_Mesh_{3}_{4}.asset", AssetModelsPath, Path.AltDirectorySeparatorChar, "NorthSouth", lightingDimension.AsPartFileName(), spotPlaneWidth.ToString().Replace('.', '_'));
 
         SaveAsAsset(panelMesh_Z_Length, NorthSouthMeshPath);
