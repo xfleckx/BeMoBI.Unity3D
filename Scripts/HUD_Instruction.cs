@@ -6,23 +6,18 @@ using System.IO;
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
-public class HUD_Instruction : Singleton<HUD_Instruction>, ISerializationCallbackReceiver {
+public class HUD_Instruction : Singleton<HUD_Instruction> {
 
 	private const string referenceError = "Please reference Unity GUI Text and Raw Image Components to HUD_Instruction instance!";
-    
-	public InstructionSet currentInstructionSet;
 
-    public Instruction currentInstruction;
+    public Text Heading;
 
-    [SerializeField]
-	public IDictionary<string, InstructionSet> KnownSets = new SortedDictionary<string, InstructionSet>();
-
-	public Text InstructionTextBesideImage;
+	public Text TextBesideImage;
 	
-	public Text InstructionTextWide;
+	public Text TextWide;
 
-	public RawImage InstructionImage;
-    
+	public RawImage Image;
+
 	bool SwitchToNextInstruction = false;
     bool forceStop = false;
 
@@ -52,353 +47,403 @@ public class HUD_Instruction : Singleton<HUD_Instruction>, ISerializationCallbac
 
 	void Start () {
 
-		if (!InstructionImage || 
-			!InstructionTextBesideImage || 
-			!InstructionTextWide)
+		if (!Image || 
+            !Heading ||
+			!TextBesideImage || 
+			!TextWide)
 		{
 			throw new MissingReferenceException(referenceError);		
 		} 
 	}
-	 
 
-	public void StartDisplaying(string nameOfInstructionSet)
-	{
-		if (!KnownSets.ContainsKey(nameOfInstructionSet)) {
-			throw new ArgumentException("The requested instruction set is not available! Please load it or create it.");
-		}
-
-		currentInstructionSet = KnownSets[nameOfInstructionSet];
-
-		ActivateRendering();
-
-		StartCoroutine(InstructionRendering());
-	}
-
-	void ActivateRendering()
-	{
-		for (int i = 0; i < transform.childCount; i++)
-		{
-			transform.GetChild(i).gameObject.SetActive(true);
-		}
-	}
-
-    public void StartDisplaying()
+    public void ShowInstruction(string text)
     {
-        if (currentInstructionSet == null)
-            return;
-
-        ActivateRendering();
-        StartCoroutine(InstructionRendering());
+        TextWide.text = text;
+        TextWide.gameObject.SetActive(true);
     }
 
-    public void DisplayDirect(InstructionSet set){
-        ActivateRendering();
-
-        currentInstructionSet = set;
-        currentInstruction = set.instructions.First();
-
-        Display(currentInstruction);
-    }
-
-	public void StartDisplaying(InstructionSet set)
-	{
-		currentInstructionSet = set;
-		ActivateRendering();
-		StartCoroutine(InstructionRendering());
-	}
-
-	public void StartDisplaying(Instruction instruction)
-	{
-		currentInstructionSet = new InstructionSet();
-		currentInstructionSet.instructions.AddLast(instruction);
-
-        if (!this.isActiveAndEnabled)
-            this.gameObject.SetActive(true);
-
-		ActivateRendering();
-		StartCoroutine(InstructionRendering());
-	}
-
-    public void StopDisplaying()
+    public void ShowInstruction(string text, string heading)
     {
-        forceStop = true;
-        HideInstructionHUD();
+        Heading.text = heading;
+        Heading.gameObject.SetActive(true);
+
+        ShowInstruction(text);
     }
 
-    public void SkipCurrent()
+    public void ShowInstruction(string text, string heading, Texture image)
     {
-        SwitchToNextInstruction = true;
+        Image.texture = image;
+        Image.gameObject.SetActive(true);
+
+        ShowInstruction(text, heading);
     }
 
-	IEnumerator InstructionRendering()
-	{
-        forceStop = false;
-        SwitchToNextInstruction = false;
+    public void Clear()
+    {
+        Heading.text = String.Empty;
+        TextWide.text = String.Empty;
+        TextBesideImage.text = String.Empty;
+        Image.texture = null;
 
-		IEnumerator<Instruction> instructionEnumerator = currentInstructionSet.instructions.GetEnumerator();
+        var children = transform.AllChildren();
 
-        Debug.Log("Start Instruction rendering");
-
-		while (instructionEnumerator.MoveNext() && !forceStop)
-		{
-			var instruction = instructionEnumerator.Current;
-
-			Display(instruction);
-
-            isRendering = true;
-
-            if (instruction.DisplayTime == 0 || SwitchToNextInstruction)
-            {
-                Debug.Log("Skip Instruction");
-				yield return new WaitForEndOfFrame();
-
-                SwitchToNextInstruction = false;
-			} 
-			
-			yield return new WaitForSeconds(instruction.DisplayTime);
-		}
-
-        currentInstructionSet.instructions.Clear();
-        currentInstructionSet = null;
-        
-		HideInstructionHUD();
-
-        Debug.Log("End Instruction");
-
-		yield return null;
-	}
-	
-	void Display(Instruction instruction){
-
-        if (instruction.ImageTexture != null)
+        foreach (var item in children)
         {
-            InstructionTextBesideImage.text = instruction.Text;
-            InstructionTextWide.text = string.Empty;
-            InstructionImage.gameObject.SetActive(true);
-
-            if (instruction.ImageTexture != null)
-            {
-                InstructionImage.texture = instruction.ImageTexture;
-            }
-        }
-        else
-        {
-
-            InstructionTextBesideImage.text = string.Empty;
-            InstructionTextWide.text = instruction.Text;
-            InstructionImage.gameObject.SetActive(false);
-
-        }
-	}
-
-	void Display(GameObject aVisibleObject)
-	{
-		InstructionTextBesideImage.gameObject.SetActive(false);
-		InstructionTextWide.gameObject.SetActive(false);
-		InstructionImage.gameObject.SetActive(false);
-
-	}
-
-	void HideInstructionHUD()
-	{
-		Debug.Log("Calling HideInstructionHUD");
-
-        isRendering = false;
-
-		for (int i = 0; i < transform.childCount; i++)
-		{
-			transform.GetChild(i).gameObject.SetActive(false);    
-		}
-	}
-
-	#region TODO Fluent interface 
-	// Idea of building a Factory with fluent interface pattern
-
-	//public HUDInstruction Give(string instruction)
-	//{
-	//    if (InstructionTextBesideImage)
-	//        InstructionTextBesideImage.textFromSomewhere = instruction;
-
-	//    return this;
-	//}
-
-	//public HUDInstruction With(Texture image)
-	//{
-	//    if (InstructionImage)
-	//        InstructionImage.texture = image;
-
-	//    return this;
-	//}
-
-	//public HUDInstruction For(float presentationTime)
-	//{
-	//    this.presentationTime = presentationTime; 
-	//    return this;
-	//}
-
-	//public void Close()
-	//{
-	//    InstructionImage.texture = null;
-	//    InstructionTextBesideImage.text = string.Empty;
-	//}
-#endregion
-
-    #region Serialization
-    [SerializeField]
-    private List<InstructionSet> serializebaleInstructionList = new List<InstructionSet>();
-
-    public void OnAfterDeserialize()
-    {
-        foreach (var item in serializebaleInstructionList)
-        {
-            KnownSets.Add(item.name, item);
+            item.SetActive(false);
         }
     }
 
-    public void OnBeforeSerialize()
-    {
-        serializebaleInstructionList.Clear();
+    #region complex instruction management deprecated
 
-        var test = KnownSets.Values.ToArray();
+    //   public InstructionSet currentInstructionSet;
 
-        serializebaleInstructionList.AddRange(test); 
-    }
+    //   public Instruction currentInstruction;
+
+    //   [SerializeField]
+    //public IDictionary<string, InstructionSet> KnownSets = new SortedDictionary<string, InstructionSet>();
+
+    //public void StartDisplaying(string nameOfInstructionSet)
+    //{
+    //	if (!KnownSets.ContainsKey(nameOfInstructionSet)) {
+    //		throw new ArgumentException("The requested instruction set is not available! Please load it or create it.");
+    //	}
+
+    //	currentInstructionSet = KnownSets[nameOfInstructionSet];
+
+    //	ActivateRendering();
+
+    //	StartCoroutine(InstructionRendering());
+    //}
+
+    //void ActivateRendering()
+    //{
+    //	for (int i = 0; i < transform.childCount; i++)
+    //	{
+    //		transform.GetChild(i).gameObject.SetActive(true);
+    //	}
+    //}
+
+    //   public void StartDisplaying()
+    //   {
+    //       if (currentInstructionSet == null)
+    //           return;
+
+    //       ActivateRendering();
+    //       StartCoroutine(InstructionRendering());
+    //   }
+
+    //   public void DisplayDirect(InstructionSet set){
+    //       ActivateRendering();
+
+    //       currentInstructionSet = set;
+    //       currentInstruction = set.instructions.First();
+
+    //       Display(currentInstruction);
+    //   }
+
+    //public void StartDisplaying(InstructionSet set)
+    //{
+    //	currentInstructionSet = set;
+    //	ActivateRendering();
+    //	StartCoroutine(InstructionRendering());
+    //}
+
+    //public void StartDisplaying(Instruction instruction)
+    //{
+    //	currentInstructionSet = new InstructionSet();
+    //	currentInstructionSet.instructions.AddLast(instruction);
+
+    //       if (!this.isActiveAndEnabled)
+    //           this.gameObject.SetActive(true);
+
+    //	ActivateRendering();
+    //	StartCoroutine(InstructionRendering());
+    //}
+
+    //   public void StopDisplaying()
+    //   {
+    //       forceStop = true;
+    //       HideInstructionHUD();
+    //   }
+
+    //   public void SkipCurrent()
+    //   {
+    //       SwitchToNextInstruction = true;
+    //   }
+
+    //IEnumerator InstructionRendering()
+    //{
+    //       forceStop = false;
+    //       SwitchToNextInstruction = false;
+
+    //	IEnumerator<Instruction> instructionEnumerator = currentInstructionSet.instructions.GetEnumerator();
+
+    //       Debug.Log("Start Instruction rendering");
+
+    //	while (instructionEnumerator.MoveNext() && !forceStop)
+    //	{
+    //		var instruction = instructionEnumerator.Current;
+
+    //		Display(instruction);
+
+    //           isRendering = true;
+
+    //           if (instruction.DisplayTime == 0 || SwitchToNextInstruction)
+    //           {
+    //               Debug.Log("Skip Instruction");
+    //			yield return new WaitForEndOfFrame();
+
+    //               SwitchToNextInstruction = false;
+    //		} 
+
+    //		yield return new WaitForSeconds(instruction.DisplayTime);
+    //	}
+
+    //       currentInstructionSet.instructions.Clear();
+    //       currentInstructionSet = null;
+
+    //	HideInstructionHUD();
+
+    //       Debug.Log("End Instruction");
+
+    //	yield return null;
+    //}
+
+    //void Display(Instruction instruction){
+
+    //       if (instruction.ImageTexture != null)
+    //       {
+    //           InstructionTextBesideImage.text = instruction.Text;
+    //           InstructionTextWide.text = string.Empty;
+    //           InstructionImage.gameObject.SetActive(true);
+
+    //           if (instruction.ImageTexture != null)
+    //           {
+    //               InstructionImage.texture = instruction.ImageTexture;
+    //           }
+    //       }
+    //       else
+    //       {
+
+    //           InstructionTextBesideImage.text = string.Empty;
+    //           InstructionTextWide.text = instruction.Text;
+    //           InstructionImage.gameObject.SetActive(false);
+
+    //       }
+    //}
+
+    //void Display(GameObject aVisibleObject)
+    //{
+    //	InstructionTextBesideImage.gameObject.SetActive(false);
+    //	InstructionTextWide.gameObject.SetActive(false);
+    //	InstructionImage.gameObject.SetActive(false);
+
+    //}
+
+    //void HideInstructionHUD()
+    //{
+    //	Debug.Log("Calling HideInstructionHUD");
+
+    //       isRendering = false;
+
+    //	for (int i = 0; i < transform.childCount; i++)
+    //	{
+    //		transform.GetChild(i).gameObject.SetActive(false);    
+    //	}
+    //}
+
+    // Idea of building a Factory with fluent interface pattern
+
+    //public HUDInstruction Give(string instruction)
+    //{
+    //    if (InstructionTextBesideImage)
+    //        InstructionTextBesideImage.textFromSomewhere = instruction;
+
+    //    return this;
+    //}
+
+    //public HUDInstruction With(Texture image)
+    //{
+    //    if (InstructionImage)
+    //        InstructionImage.texture = image;
+
+    //    return this;
+    //}
+
+    //public HUDInstruction For(float presentationTime)
+    //{
+    //    this.presentationTime = presentationTime; 
+    //    return this;
+    //}
+
+    //public void Close()
+    //{
+    //    InstructionImage.texture = null;
+    //    InstructionTextBesideImage.text = string.Empty;
+    //}
+    
+    #endregion
+
+    #region Serialization (deprecated)
+
+    //[SerializeField]
+    //private List<InstructionSet> serializebaleInstructionList = new List<InstructionSet>();
+
+    //public void OnAfterDeserialize()
+    //{
+    //    foreach (var item in serializebaleInstructionList)
+    //    {
+    //        KnownSets.Add(item.name, item);
+    //    }
+    //}
+
+    //public void OnBeforeSerialize()
+    //{
+    //    serializebaleInstructionList.Clear();
+
+    //    var test = KnownSets.Values.ToArray();
+
+    //    serializebaleInstructionList.AddRange(test); 
+    //}
 
     #endregion 
 }
 
-public class InstructionFactory
-{ 
-	public static InstructionSet ReadInstructionSetFrom(string fileName){
+#region deprecated classes for instruction serialization
+//public class InstructionFactory
+//{ 
+//	public static InstructionSet ReadInstructionSetFrom(string fileName){
 
-		var lines = File.ReadAllLines(fileName, System.Text.Encoding.UTF8);
+//		var lines = File.ReadAllLines(fileName, System.Text.Encoding.UTF8);
 
-		var resultSet = ScriptableObject.CreateInstance<InstructionSet>();
+//		var resultSet = ScriptableObject.CreateInstance<InstructionSet>();
 
-		resultSet.name = Path.GetFileNameWithoutExtension(fileName);
+//		resultSet.name = Path.GetFileNameWithoutExtension(fileName);
 
-		Process(lines.ToList(), resultSet);
+//		Process(lines.ToList(), resultSet);
 
-		return resultSet;
-	}
-	 
-	public static void Process(List<string> lines, InstructionSet set)
-	{
-		if (!lines.Any())
-			return;
+//		return resultSet;
+//	}
 
-		string head = lines.First();
+//	public static void Process(List<string> lines, InstructionSet set)
+//	{
+//		if (!lines.Any())
+//			return;
 
-		if (head.ContainsTextEndingWithLineBreak())
-		{
-			set.instructions.AddLast(new Instruction());
-			set.instructions.Last.Value.Text = head; 
-		}
+//		string head = lines.First();
 
-		if (Regex.IsMatch(head, @"^t:[0-9]+$"))
-		{
-			string timeDesc = head;
-			string timeValue = timeDesc.Substring(2);
-			float time = 0f;
+//		if (head.ContainsTextEndingWithLineBreak())
+//		{
+//			set.instructions.AddLast(new Instruction());
+//			set.instructions.Last.Value.Text = head; 
+//		}
 
-			if (!float.TryParse(timeValue, out time))
-				Debug.LogError("Could not parse time value for instruction using 0!");
+//		if (Regex.IsMatch(head, @"^t:[0-9]+$"))
+//		{
+//			string timeDesc = head;
+//			string timeValue = timeDesc.Substring(2);
+//			float time = 0f;
 
-			set.instructions.Last.Value.DisplayTime = time;
+//			if (!float.TryParse(timeValue, out time))
+//				Debug.LogError("Could not parse time value for instruction using 0!");
 
-		}
+//			set.instructions.Last.Value.DisplayTime = time;
 
-		if (Regex.IsMatch(head, @"^i:[0-9]+[.]?[a-zA-Z]+$"))
-		{
-			string imageReference = lines.First();
-			string imageName = imageReference.Substring(2); 
-			 
-			var temp = set.instructions.Last.Value;
-			set.instructions.RemoveLast();
+//		}
 
-			var instructionContainingImage = new Instruction();
-			instructionContainingImage.Text = temp.Text;
-			instructionContainingImage.DisplayTime = temp.DisplayTime;
-			instructionContainingImage.ImageName = imageName;
+//		if (Regex.IsMatch(head, @"^i:[0-9]+[.]?[a-zA-Z]+$"))
+//		{
+//			string imageReference = lines.First();
+//			string imageName = imageReference.Substring(2); 
 
-			set.instructions.AddLast(instructionContainingImage);
-		}
-		
-		lines.Remove(head);
+//			var temp = set.instructions.Last.Value;
+//			set.instructions.RemoveLast();
 
-		Process(lines, set);
-	}
+//			var instructionContainingImage = new Instruction();
+//			instructionContainingImage.Text = temp.Text;
+//			instructionContainingImage.DisplayTime = temp.DisplayTime;
+//			instructionContainingImage.ImageName = imageName;
 
-	public static void SaveTo(InstructionSet instructions, string fileName)
-	{
-		throw new NotImplementedException("currently unimportant feature");
-		// TODO
-		// File.WriteAllLines(fileName, lines);
-	}
+//			set.instructions.AddLast(instructionContainingImage);
+//		}
 
-}
+//		lines.Remove(head);
 
-[Serializable]
-public class InstructionSet : ScriptableObject, ISerializationCallbackReceiver
-{
-    void OnEnable()
-    {
-        Debug.Log(string.Format( "InstructionSet {0} created", name), this);
-    }
+//		Process(lines, set);
+//	}
 
-	public LinkedList<Instruction> instructions = new LinkedList<Instruction>();
+//	public static void SaveTo(InstructionSet instructions, string fileName)
+//	{
+//		throw new NotImplementedException("currently unimportant feature");
+//		// TODO
+//		// File.WriteAllLines(fileName, lines);
+//	}
 
-    [SerializeField]
-    private List<Instruction> serializedInstructionList = new List<Instruction>();
+//}
 
-    public void OnBeforeSerialize()
-    {
-        serializedInstructionList.Clear();
-        foreach (var item in instructions)
-        {
-            serializedInstructionList.Add(item);
-        }
-    }
+//[Serializable]
+//public class InstructionSet : ScriptableObject, ISerializationCallbackReceiver
+//{
+//    void OnEnable()
+//    {
+//        Debug.Log(string.Format( "InstructionSet {0} created", name), this);
+//    }
 
-    public void OnAfterDeserialize()
-    {
-        foreach (var item in serializedInstructionList)
-        {
-            instructions.AddLast(item);
-        }
-    }
-    
-    public override string ToString()
-    {
-        return string.Format("IS: {0}", name);
-    }
-}
+//	public LinkedList<Instruction> instructions = new LinkedList<Instruction>();
 
-[Serializable]
-public class Instruction
-{ 
-	public string Text;
+//    [SerializeField]
+//    private List<Instruction> serializedInstructionList = new List<Instruction>();
 
-	public float DisplayTime;
+//    public void OnBeforeSerialize()
+//    {
+//        serializedInstructionList.Clear();
+//        foreach (var item in instructions)
+//        {
+//            serializedInstructionList.Add(item);
+//        }
+//    }
 
-    public string ImageName;
+//    public void OnAfterDeserialize()
+//    {
+//        foreach (var item in serializedInstructionList)
+//        {
+//            instructions.AddLast(item);
+//        }
+//    }
 
-    public string PathToImageAsResource;
+//    public override string ToString()
+//    {
+//        return string.Format("IS: {0}", name);
+//    }
+//}
 
-    public Texture ImageTexture;
-	public Instruction()
-	{
-        Text = String.Empty;
-		DisplayTime = 0f;
-	}
+//[Serializable]
+//public class Instruction
+//{ 
+//	public string Text;
 
-	public Instruction(string textFromSomewhere, float time)
-	{
-		this.Text = textFromSomewhere;
-		this.DisplayTime = time;
-	}
-} 
- 
+//	public float DisplayTime;
+
+//    public string ImageName;
+
+//    public string PathToImageAsResource;
+
+//    public Texture ImageTexture;
+//	public Instruction()
+//	{
+//        Text = String.Empty;
+//		DisplayTime = 0f;
+//	}
+
+//	public Instruction(string textFromSomewhere, float time)
+//	{
+//		this.Text = textFromSomewhere;
+//		this.DisplayTime = time;
+//	}
+//} 
+
+#endregion
+
 public static class StringExtensions
 {
 	public static bool ContainsTextEndingWithLineBreak(this string line)
