@@ -442,9 +442,9 @@ public class MazeCustomizer : EditorWindow
 
             PrefabUtility.DisconnectPrefabInstance(newLighthost);
 
-            newLightInstance.transform.parent = top.transform;
+            newLightInstance.transform.SetParent( top.transform, false );
             newLightInstance.transform.localPosition = new Vector3(0, -0.001f, 0);
-
+            
             ConfigureTopLightBasedOnUnitConfiguration(unit, newLightInstance);
         }
     }
@@ -514,6 +514,7 @@ public class MazeCustomizer : EditorWindow
     }
 
     #region TODO
+
     private void renderUiForMultipleMazesSelected()
     {
         EditorGUILayout.HelpBox("Editing of multiple mazes is currently not supported", MessageType.Info);
