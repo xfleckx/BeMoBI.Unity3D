@@ -467,9 +467,7 @@ public class MazeCustomizer : EditorWindow
     {
         foreach (var unit in selectedMaze.Units)
         {
-            var top = unit.gameObject.transform.FindChild("Top");
-
-            var lightning = top.FindChild("TopLighting");
+            var lightning = unit.GetComponentInChildren<TopLighting>(); 
             
             if(lightning != null)
                 DestroyImmediate(lightning.gameObject);
