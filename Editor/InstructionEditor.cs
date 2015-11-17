@@ -7,13 +7,13 @@ using UnityEngine.UI;
 [CustomEditor(typeof(HUD_Instruction))]
 public class InstructionEditor : Editor {
 
-    private bool showHUDElementReferences = false;
-    private int selectedSetIndex = 0;
+    //private bool showHUDElementReferences = false;
+    //private int selectedSetIndex = 0;
 
 
     public override void OnInspectorGUI()
     {
-        HUD_Instruction instructions = (HUD_Instruction)target;
+        //HUD_Instruction instructions = (HUD_Instruction)target;
      }
 
 }

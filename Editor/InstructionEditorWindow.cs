@@ -8,8 +8,8 @@ using System.IO;
 public class InstructionEditorWindow : EditorWindow {
 
     public HUD_Instruction HudController;
-    private string fileName = string.Empty;
-    private int setSelectionIndex = 0;
+    //private string fileName = string.Empty;
+    //private int setSelectionIndex = 0;
 
     //void OnGUI()
     //{
@@ -129,5 +129,5 @@ public class InstructionEditorWindow : EditorWindow {
     }
     
     // Top, Bottom, Left, Right
-    private readonly Vector4 instructionBoxMargin = new Vector4(0f, 5f, 2f, 0f);
+    // private readonly Vector4 instructionBoxMargin = new Vector4(0f, 5f, 2f, 0f);
 }

@@ -17,10 +17,7 @@ public class HUD_Instruction : Singleton<HUD_Instruction> {
 	public Text TextWide;
 
 	public RawImage Image;
-
-	bool SwitchToNextInstruction = false;
-    bool forceStop = false;
-
+    
     bool isRendering = false;
 
     public bool IsRendering
@@ -60,6 +57,7 @@ public class HUD_Instruction : Singleton<HUD_Instruction> {
     {
         TextWide.text = text;
         TextWide.gameObject.SetActive(true);
+        isRendering = true;
     }
 
     public void ShowInstruction(string text, string heading)
@@ -84,7 +82,7 @@ public class HUD_Instruction : Singleton<HUD_Instruction> {
         TextWide.text = String.Empty;
         TextBesideImage.text = String.Empty;
         Image.texture = null;
-
+        isRendering = false;
         var children = transform.AllChildren();
 
         foreach (var item in children)
