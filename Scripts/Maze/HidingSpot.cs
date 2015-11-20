@@ -6,7 +6,7 @@ public class HidingSpot : MonoBehaviour
 {
     public enum Direction { Vertical, Horizontal }
 
-    public float revealSpeedFactor = 0.01f;
+    public float revealSpeedFactor = 1f;
 
     public GameObject DoorA;
     public GameObject DoorB;
@@ -24,14 +24,14 @@ public class HidingSpot : MonoBehaviour
     public float REVEALING = 0; // equal to scaled to invisibility
 
     // should between 0 1;
-    private float currentState = 0.5f;
+    private float currentState = 1f;
     private float targetState = 0;
-
+    
     public void Reveal()
     {
         if (currentState == REVEALING)
             return;
-
+        
         direction = DIRECTION_REVEAL;
         targetState = REVEALING;
 
@@ -53,7 +53,7 @@ public class HidingSpot : MonoBehaviour
     {
         Debug.Log(string.Format("Source {0} - Target {1}", currentState, targetState));
 
-        var topTransform = DoorA.transform.localScale;
+        var topTransform = Vector3.one;
 
         while (TargetStateNotReached(currentState += direction * revealSpeedFactor * Time.deltaTime))
         {
