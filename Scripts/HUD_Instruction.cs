@@ -10,13 +10,17 @@ public class HUD_Instruction : Singleton<HUD_Instruction> {
 
 	private const string referenceError = "Please reference Unity GUI Text and Raw Image Components to HUD_Instruction instance!";
 
+    public GameObject panel;
+
     public Text Heading;
 
 	public Text TextBesideImage;
 	
 	public Text TextWide;
 
-	public RawImage Image;
+	public RawImage ImageLeftFromText;
+
+    public RawImage CenterImage;
     
     bool isRendering = false;
 
@@ -42,9 +46,14 @@ public class HUD_Instruction : Singleton<HUD_Instruction> {
         }
     }
 
-	void Start () {
+    public void ShowInstruction(Texture centerImagePreview)
+    {
+        CenterImage.texture  = centerImagePreview;
+    }
 
-		if (!Image || 
+    void Start () {
+
+		if (!ImageLeftFromText || 
             !Heading ||
 			!TextBesideImage || 
 			!TextWide)
@@ -55,6 +64,8 @@ public class HUD_Instruction : Singleton<HUD_Instruction> {
 
     public void ShowInstruction(string text)
     {
+        panel.SetActive(true);
+
         TextWide.text = text;
         TextWide.gameObject.SetActive(true);
         isRendering = true;
@@ -70,8 +81,8 @@ public class HUD_Instruction : Singleton<HUD_Instruction> {
 
     public void ShowInstruction(string text, string heading, Texture image)
     {
-        Image.texture = image;
-        Image.gameObject.SetActive(true);
+        ImageLeftFromText.texture = image;
+        ImageLeftFromText.gameObject.SetActive(true);
 
         ShowInstruction(text, heading);
     }
@@ -81,14 +92,21 @@ public class HUD_Instruction : Singleton<HUD_Instruction> {
         Heading.text = String.Empty;
         TextWide.text = String.Empty;
         TextBesideImage.text = String.Empty;
-        Image.texture = null;
+        ImageLeftFromText.texture = null;
+        CenterImage.texture = null;
+
         isRendering = false;
-        var children = transform.AllChildren();
+
+
+
+        var children = panel.transform.AllChildren();
 
         foreach (var item in children)
         {
             item.SetActive(false);
         }
+
+        panel.SetActive(false);
     }
 
     #region complex instruction management deprecated
