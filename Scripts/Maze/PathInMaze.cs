@@ -14,6 +14,8 @@ public class PathInMaze : MonoBehaviour, ISerializationCallbackReceiver
 
 	public Dictionary<Vector2, PathElement> PathElements;
 
+    public LinkedList<PathElement> PathAsLinkedList;
+
 	public ObjectHideOut HideOut;
 	
 	public List<GameObject> Landmarks;
@@ -32,17 +34,10 @@ public class PathInMaze : MonoBehaviour, ISerializationCallbackReceiver
 	public void OnEnable()
 	{
 		InitEmptys();
-
-		EnableHideOut();
-
-        SetLandmarks(true);
 	}
 
 	public void OnDisable()
 	{
-		DisableHideOut();
-
-        SetLandmarks(false);
 	}
 
 	void Awake()
@@ -52,6 +47,13 @@ public class PathInMaze : MonoBehaviour, ISerializationCallbackReceiver
 
 	void InitEmptys()
 	{
+        if(PathAsLinkedList == null)
+        {
+            PathAsLinkedList = new LinkedList<PathElement>();
+            Debug.Log("Creating empty Linked List");
+        }
+
+
 		if (Units == null)
 		{
 			Units = new List<MazeUnit>();
@@ -76,7 +78,8 @@ public class PathInMaze : MonoBehaviour, ISerializationCallbackReceiver
 		}
 	}
 
-	public void SetLandmarks(bool active)
+    [Obsolete("Path should not be directly associated with other components - logic should be provided by paradigma implementations")]
+    public void SetLandmarks(bool active)
 	{
 		foreach (var item in Landmarks)
 		{
@@ -84,6 +87,7 @@ public class PathInMaze : MonoBehaviour, ISerializationCallbackReceiver
 		}
 	} 
 
+    [Obsolete("Path should not be directly associated with other components - logic should be provided by paradigma implementations")]
 	public void EnableHideOut()
 	{
 		if (HideOut != null) { 
@@ -92,8 +96,9 @@ public class PathInMaze : MonoBehaviour, ISerializationCallbackReceiver
 			HideOutReplacement.gameObject.SetActive(false);
 		}
 	}
-	
-	public void DisableHideOut()
+
+    [Obsolete("Path should not be directly associated with other components - logic should be provided by paradigma implementations")]
+    public void DisableHideOut()
 	{
 		if (HideOut != null) { 
 			HideOut.enabled = false;
@@ -110,12 +115,15 @@ public class PathInMaze : MonoBehaviour, ISerializationCallbackReceiver
 	}
 
 	#region Serialization
+
 	[HideInInspector]
 	[SerializeField]
 	private List<MazeUnit> Units;
+
 	[HideInInspector]
 	[SerializeField]
 	private List<PathElement> Elements;
+
 	[HideInInspector]
 	[SerializeField]
 	private List<Vector2> GridIDs;
@@ -129,6 +137,7 @@ public class PathInMaze : MonoBehaviour, ISerializationCallbackReceiver
 		GridIDs.Clear();
 		Elements.Clear();
 		Units.Clear();
+        PathAsLinkedList.Clear();
 
 		foreach (var item in PathElements)
 		{
@@ -142,6 +151,7 @@ public class PathInMaze : MonoBehaviour, ISerializationCallbackReceiver
 	public void OnAfterDeserialize()
 	{
 		PathElements = new Dictionary<Vector2, PathElement>();
+        PathAsLinkedList = new LinkedList<PathElement>(Elements);
 
 		for (int i = 0; i < GridIDs.Count; i++)
 		{   
