@@ -388,8 +388,8 @@ public static class MazeEditorUtil
 
     internal static void CacheUnitsIn(beMobileMaze maze)
     {
-        var unitsFound = maze.gameObject.GetComponentsInChildren<MazeUnit>();
-
+        var unitsFound = maze.gameObject.GetComponentsInChildren<MazeUnit>(true);
+        
         maze.Units.Clear();
 
         maze.Units.AddRange(unitsFound);
