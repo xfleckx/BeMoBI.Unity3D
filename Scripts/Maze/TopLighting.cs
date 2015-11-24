@@ -6,19 +6,22 @@ public class TopLighting : MonoBehaviour {
 
     private Light centerLight;
     
-	// Use this for initialization
-	void Start () {
+    void Awake()
+    {
         centerLight = GetComponentInChildren<Light>();
-	}
+
+        if (centerLight == null)
+            throw new MissingComponentException("A TopLightning instance depends on a Light source attached to one of its children!");
+    }
 
     public void SwitchOn()
     {
-        this.centerLight.enabled = true;
+        centerLight.enabled = true;
     }
 
     public void SwitchOff()
     {
-        this.centerLight.enabled = false;
+        centerLight.enabled = false;
     }
 
     public void ToggleLightDirection(OpenDirections direction)
