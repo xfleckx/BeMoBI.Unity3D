@@ -97,7 +97,6 @@ public class PathInMaze : MonoBehaviour, ISerializationCallbackReceiver
 		GridIDs.Clear();
 		Elements.Clear();
 		Units.Clear();
-        PathAsLinkedList.Clear();
 
 		foreach (var item in PathElements)
 		{
