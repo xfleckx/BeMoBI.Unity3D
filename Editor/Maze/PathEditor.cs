@@ -40,8 +40,6 @@ public class PathEditor : AMazeEditor {
         if(instance.PathElements == null)
             instance.PathElements = new Dictionary<Vector2, PathElement>();
 
-        instance.EnableHideOut();
-
         instance.EditorGizmoCallbacks += RenderTileHighlighting;
         instance.EditorGizmoCallbacks += RenderEditorGizmos; 
     }
@@ -50,8 +48,6 @@ public class PathEditor : AMazeEditor {
     {
         if (instance == null)
             return;
-
-        instance.DisableHideOut();
 
         instance.EditorGizmoCallbacks -= RenderTileHighlighting;
         instance.EditorGizmoCallbacks -= RenderEditorGizmos; 
@@ -83,66 +79,13 @@ public class PathEditor : AMazeEditor {
         }
 
         EditorGUILayout.Separator();
-
-        //LandmarkScaling = EditorGUILayout.Vector3Field("Landmark Scale", LandmarkScaling);
-        //LandmarkOffset = EditorGUILayout.Vector3Field("Landmark Offset", LandmarkOffset);
         
-        //EditorGUILayout.BeginHorizontal();
-        
-        //if (GUILayout.Button("Deploy Landmarks"))
-        //{
-        //    DeployLandmarks();
-        //}
-        //if (GUILayout.Button("Set Offset"))
-        //{
-        //    instance.Landmarks.ForEach(lm => lm.transform.localPosition = lm.transform.localPosition + LandmarkOffset);
-        //}
-
-        //EditorGUILayout.EndHorizontal();
-
-        //if (GUILayout.Button("Remove Landmarks"))
-        //{
-        //    RemoveLandmarks();
-        //}
-
-        //EditorGUILayout.Separator();
-
-        //if (instance.HideOut == null && GUILayout.Button("Deploy Object HideOut"))
-        //{
-        //    DeployObjectHideOut();
-        //}
-        EditorGUILayout.LabelField("Legacy options:");
-
-        if (instance.HideOut != null && GUILayout.Button("Remove Object HideOut"))
-        {
-            RemoveObjectHideOut();
-        }
-
         EditorGUILayout.EndVertical();
 
         if (EditorModeProcessEvent != null)
             EditorModeProcessEvent(Event.current);
     }
-
-    //private void DeployLandmarks()
-    //{
-    //    var tUnits = instance.PathElements.Values.Where((pe) => pe.Type == UnitType.T);
-
-    //    foreach (var unit in tUnits)
-    //    {
-    //        DeployLandmark(unit);
-    //    }
-    //}
-
-    private void RemoveLandmarks()
-    {
-        foreach (var mark in instance.Landmarks)
-        {
-            DestroyImmediate(mark);
-        }
-        instance.Landmarks.Clear();
-    }
-
+    
     private void RenderElements()
     {
         EditorGUILayout.BeginVertical();
@@ -289,124 +232,7 @@ public class PathEditor : AMazeEditor {
 
         instance.PathElements.Add(newUnit.GridID, newElement);
     }
-
-    [Obsolete("Should be moved to a Customizer/EditorWindow")]
-    private void DeployLandmark(PathElement element)
-    {
-        var filePathToLandmarkAsset = string.Format("{0}Landmark.prefab",PathToPrefabs);
-        var landmarkAsset = AssetDatabase.LoadAssetAtPath(filePathToLandmarkAsset, typeof(GameObject));
-
-        if (landmarkAsset == null)
-        {
-            Debug.LogError(string.Format("Could not load Landmark.prefab at Path {0}", filePathToLandmarkAsset));
-            return;
-        }
-
-        var newLandmark = PrefabUtility.InstantiatePrefab(landmarkAsset) as GameObject;
-        
-        instance.Landmarks.Add(newLandmark);
-        
-        element.Landmark = newLandmark; 
-        element.Landmark.transform.parent = element.Unit.transform;
-        element.Landmark.transform.rotation = Quaternion.identity;
-
-        var newTransform = GetLandmarkTransform(element);
-
-        float xOffset = 0f;
-        float eulerAngleY = 0;
-        if (newTransform.name == "East")
-        {
-            xOffset = -0.02f;
-            eulerAngleY = 90;
-        }
-
-        if (newTransform.name == "West")
-        { 
-            xOffset = 0.02f;
-            eulerAngleY = -90;
-        }
-
-        element.Landmark.transform.eulerAngles = newTransform.eulerAngles + new Vector3(0, eulerAngleY, 0); 
-
-        element.Landmark.transform.localPosition = newTransform.localPosition + new Vector3(xOffset, 0, -0.01f);
-       
-        element.Landmark.transform.rotation = newTransform.rotation;
-
-        if (element.Turn == TurnType.LEFT)
-        {
-            element.Landmark.transform.localEulerAngles = element.Landmark.transform.localEulerAngles + new Vector3(0, 0, 180f);
-        }
-
-        element.Landmark.transform.localScale = LandmarkScaling;
-    }
-
-    private Transform GetLandmarkTransform(PathElement current)
-    {
-        var walls = new List<GameObject>();
-
-        walls.Add(current.Unit.transform.FindChild("East").gameObject);
-        walls.Add(current.Unit.transform.FindChild("West").gameObject);
-        walls.Add(current.Unit.transform.FindChild("North").gameObject);
-        walls.Add(current.Unit.transform.FindChild("South").gameObject);
-
-        var closedWall = walls.Where(w => w.activeSelf).First();
-        
-        
-        return closedWall.transform;
-    }
-
-    private Vector3 EstimateLandmarkPosition(PathElement previous, PathElement current, PathElement following)
-    {
-        throw new NotImplementedException("Implementation not finished!");
-        
-    }
-
-    [Obsolete("Not longer in use! HideOuts are not necessarily part of the maze!")]
-    private void DeployObjectHideOut()
-    {
-        var pathEnd = instance.PathElements.Last();
-
-        var obj = AssetDatabase.LoadAssetAtPath(string.Format("{0}ObjectHideOut.prefab", PathToPrefabs), typeof(GameObject));
-
-        if (obj == null)
-        {
-            Debug.LogError("ObjectHideOut.prefab not found!");
-            return;
-        }
-
-        var hideOutHost = PrefabUtility.InstantiatePrefab(obj) as GameObject;
-        var hideOut = hideOutHost.GetComponent<ObjectHideOut>();
-
-        pathEnd.Value.Unit.gameObject.SetActive(false);
-        instance.HideOut = hideOut;
-        instance.HideOutReplacement = pathEnd.Value.Unit;
-        hideOut.transform.parent = instance.transform;
-        hideOut.transform.localScale = pathEnd.Value.Unit.transform.localScale;
-        hideOut.transform.localPosition = pathEnd.Value.Unit.transform.localPosition;
-        hideOut.transform.localRotation = Quaternion.identity;
-        hideOut.WaysOpen = pathEnd.Value.Unit.WaysOpen;
-
-        hideOut.name = string.Format("H_P{0}",instance.ID);
-        maze.Units.Add(hideOut);
-    }
-
-    private void RemoveObjectHideOut()
-    {
-        if (instance.HideOut != null)
-        {
-            var pathEnd = instance.HideOutReplacement;
-            
-            maze.Units.Remove(instance.HideOut);
-
-            DestroyImmediate(instance.HideOut.gameObject);
-            
-            instance.HideOut = null;
-
-            pathEnd.gameObject.SetActive(true);
-        }
-
-
-    }
+    
 
     public static PathElement GetElementType(PathElement element)
     {

@@ -15,13 +15,7 @@ public class PathInMaze : MonoBehaviour, ISerializationCallbackReceiver
 	public Dictionary<Vector2, PathElement> PathElements;
 
     public LinkedList<PathElement> PathAsLinkedList;
-
-	public ObjectHideOut HideOut;
-	
-	public List<GameObject> Landmarks;
-
-	public MazeUnit HideOutReplacement;
-
+    
 	private bool inverse = false;
 
 	public bool Inverse
@@ -47,13 +41,6 @@ public class PathInMaze : MonoBehaviour, ISerializationCallbackReceiver
 
 	void InitEmptys()
 	{
-        if(PathAsLinkedList == null)
-        {
-            PathAsLinkedList = new LinkedList<PathElement>();
-            Debug.Log("Creating empty Linked List");
-        }
-
-
 		if (Units == null)
 		{
 			Units = new List<MazeUnit>();
@@ -71,43 +58,16 @@ public class PathInMaze : MonoBehaviour, ISerializationCallbackReceiver
 			PathElements = new Dictionary<Vector2, PathElement>();
 			Debug.Log("Creating empty Elements Dictionary in Path");
 		}
+        
+        if (PathAsLinkedList == null)
+        {
+            PathAsLinkedList = new LinkedList<PathElement>();
+            Debug.Log("Creating empty Linked List");
+        }
 
-		if (Landmarks == null) {
-			Landmarks = new List<GameObject>();
-			Debug.Log("Creating empty Landmarks set");
-		}
-	}
+    }
 
-    [Obsolete("Path should not be directly associated with other components - logic should be provided by paradigma implementations")]
-    public void SetLandmarks(bool active)
-	{
-		foreach (var item in Landmarks)
-		{
-			item.SetActive(active);
-		}
-	} 
-
-    [Obsolete("Path should not be directly associated with other components - logic should be provided by paradigma implementations")]
-	public void EnableHideOut()
-	{
-		if (HideOut != null) { 
-			HideOut.enabled = true;
-			HideOut.gameObject.SetActive(true);
-			HideOutReplacement.gameObject.SetActive(false);
-		}
-	}
-
-    [Obsolete("Path should not be directly associated with other components - logic should be provided by paradigma implementations")]
-    public void DisableHideOut()
-	{
-		if (HideOut != null) { 
-			HideOut.enabled = false;
-			HideOut.gameObject.SetActive(false);
-			HideOutReplacement.gameObject.SetActive(true);
-		}
-	}
-
-	public void InvertPath()
+    public void InvertPath()
 	{
 		IEnumerable<KeyValuePair<Vector2, PathElement>> temp = PathElements.Reverse().ToList();
 		PathElements = temp.ToDictionary((kvp) => kvp.Key, (kvp) => kvp.Value);

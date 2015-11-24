@@ -97,16 +97,7 @@ public class MazeCustomizer : EditorWindow
         EditorGUILayout.Space();
 
         EditorGUILayout.LabelField("Compatibility options - (these might be removed in later versions)");
-
-        EditorGUILayout.BeginHorizontal();
-
-        if (GUILayout.Button("Remove Hideouts"))
-        {
-            RemoveStaticHideOuts(selectedMaze);
-        }
-
-        EditorGUILayout.EndHorizontal();
-
+        
         EditorGUILayout.Separator();
 
         if (prefabOfSelectedMaze != null)
@@ -125,28 +116,7 @@ public class MazeCustomizer : EditorWindow
 
         EditorGUILayout.EndVertical();
     }
-
-    private void RemoveStaticHideOuts(beMobileMaze maze)
-    {
-        var componentsToRemove = selectedMaze.transform.GetComponentsInChildren<PathInMaze>();
-
-        componentsToRemove.ApplyToAll(
-            (p) =>
-                {
-                    if (p.HideOut != null) {
-                        maze.Units.Remove(p.HideOut);
-
-                        var temp = p.HideOut;
-                    
-                        p.HideOut = null;
-                    
-                        DestroyImmediate(temp.gameObject);
-
-                        p.HideOutReplacement.gameObject.SetActive(true);
-                    }
-                }
-            );
-    } 
+    
 
     GameObject lightPrefab;
     Material FloorMaterial;
