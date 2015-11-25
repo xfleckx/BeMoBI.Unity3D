@@ -25,11 +25,12 @@ public class FullScreenFade : MonoBehaviour
 
 	private bool isFading = false;
 	private YieldInstruction fadeInstruction = new WaitForEndOfFrame();
+    private bool stayOpaque;
 
-	/// <summary>
-	/// Initialize.
-	/// </summary>
-	void Awake()
+    /// <summary>
+    /// Initialize.
+    /// </summary>
+    void Awake()
 	{
 		if(material == null)
 			Debug.LogError("FullScreen Fading will not work until you add a material!");
@@ -69,7 +70,8 @@ public class FullScreenFade : MonoBehaviour
 			color.a = 1.0f - Mathf.Clamp01(elapsedTime / timeToFade);
 			material.color = color;
 		}
-		isFading = false;
+        stayOpaque = false;
+        isFading = false;
 	}
 
 	/// <summary>
@@ -87,13 +89,14 @@ public class FullScreenFade : MonoBehaviour
 			elapsedTime += Time.deltaTime;
 			color.a = 0.0f + Mathf.Clamp01(elapsedTime / timeToFade);
 			material.color = color;
-		}
-		isFading = false;
+        }
+        stayOpaque = true;
+        isFading = false;
 	}
     
 	void OnPostRender()
 	{
-		if (isFading)
+		if (isFading || stayOpaque)
 		{
 			material.SetPass(0);
 			GL.PushMatrix();
