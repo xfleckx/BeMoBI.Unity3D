@@ -21,7 +21,8 @@ public class FullScreenFade : MonoBehaviour
 
 	public Color colorTransparent = new Color(0.01f, 0.01f, 0.01f, 0.0f);
 
-	private Material material = null;
+	public Material material = null;
+
 	private bool isFading = false;
 	private YieldInstruction fadeInstruction = new WaitForEndOfFrame();
 
