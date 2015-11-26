@@ -11,16 +11,11 @@ public enum PathEditorMode { NONE, PATH_CREATION }
 public class PathEditor : AMazeEditor {
 
     PathInMaze instance;
-    static string PathToPrefabs = EditorEnvironmentConstants.Get_BASE_ASSET_PATH() + "/" + EditorEnvironmentConstants.PREFABS_DIR + "/";
 
     private LinkedList<MazeUnit> pathInSelection;
 
     private string pathElementPattern = "{0} {1} = {2} turn {3}";
-
-    public Vector3 LandmarkScaling = new Vector3(0.3f, 0.3f, 1);
-
-    public Vector3 LandmarkOffset = new Vector3(0f, 0f, 0f);
-
+    
     private bool PathCreationEnabled; 
     public PathEditorMode ActiveMode { get; set; }
     PathInMaze pathShouldBeRemoved;
