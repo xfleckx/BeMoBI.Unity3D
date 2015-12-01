@@ -9,7 +9,7 @@ using System.Text;
 public enum MazeEditorMode { NONE, EDITING, SELECTION }
 
 [CustomEditor(typeof(beMobileMaze))]
-public class MazeEditor : AMazeEditor
+public class MazeInspector : AMazeEditor
 {
     public const string STD_UNIT_PREFAB_NAME = "MazeUnit";
     
@@ -17,24 +17,52 @@ public class MazeEditor : AMazeEditor
     public Material WallMaterial;
     public Material TopMaterial;
      
-    private HashSet<GameObject> currentSelection;
+    public HashSet<GameObject> CurrentSelection;
 
     public float unitFloorOffset = 0f;
 
-    private string PathToMazePrefab = string.Empty;
+    public string PathToMazePrefab = string.Empty;
 
-    private bool SelectionModeEnabled = false;
+    public bool SelectionModeEnabled = false;
 
-    private bool EditingModeEnabled = false;
-    private bool modeAddEnabled = false;
-    private bool modeRemoveEnabled = false;
+    public bool EditingModeEnabled = false;
+    public bool modeAddEnabled = false;
+    public bool modeRemoveEnabled = false;
 
     private UnityEngine.Object referenceToPrefab;
 
-    private MazeEditorMode ActiveMode = MazeEditorMode.NONE;
+    public MazeEditorMode ActiveMode = MazeEditorMode.NONE;
 
     private MazeUnit lastAddedUnit;
-     
+
+    private GameObject unitPrefab; 
+
+    public string PathToUnitPrefab;
+
+    public GameObject UnitPrefab
+    {
+        get
+        {
+            return unitPrefab;
+        }
+
+        set
+        {
+            if(unitPrefab != value) { 
+                unitPrefab = value;
+                OnUnitPrefabChanged();
+            }
+        }
+    }
+
+    private void OnUnitPrefabChanged()
+    {
+        var unit = unitPrefab.GetComponent<MazeUnit>();
+        if (maze.RoomDimension != unit.Dimension)
+            maze.RoomDimension = unit.Dimension;
+
+    }
+
     public void OnEnable()
     { 
         maze = (beMobileMaze)target;
@@ -54,9 +82,15 @@ public class MazeEditor : AMazeEditor
             maze.EditorGizmoCallbacks += RenderTileHighlighting;
             maze.EditorGizmoCallbacks += RenderEditorGizmos;
         }
-    }
 
-  
+        var editorWindow = EditorWindow.GetWindow<MazeEditorWindow>();
+
+        if(editorWindow != null)
+        {
+            editorWindow.Initialize(maze, this);
+        }
+    }
+    
     public void OnDisable()
     {
         if (maze) {
@@ -85,7 +119,9 @@ public class MazeEditor : AMazeEditor
 
         EditorGUILayout.Space();
 
-        if (GUILayout.Button("Open Customizer", GUILayout.Height(40)))
+        EditorGUILayout.BeginHorizontal();
+
+        if (GUILayout.Button("Open Customizer", GUILayout.MinWidth(200), GUILayout.Height(40)))
         {
             var window = CreateInstance<MazeCustomizer>();
 
@@ -93,6 +129,17 @@ public class MazeEditor : AMazeEditor
 
             window.Show();
         }
+
+        if(GUILayout.Button("Open Editor", GUILayout.MinWidth(120), GUILayout.Height(40)))
+        {
+            var window = CreateInstance<MazeEditorWindow>();
+
+            window.Initialize(maze, this);
+
+            window.Show();
+        }
+
+        EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
 
@@ -166,7 +213,6 @@ public class MazeEditor : AMazeEditor
         }
     }
     
-
     private void UpdatePrefabOfCurrentMaze()
     {
        referenceToPrefab = PrefabUtility.ReplacePrefab(maze.gameObject, referenceToPrefab, ReplacePrefabOptions.ConnectToPrefab);
@@ -186,7 +232,7 @@ public class MazeEditor : AMazeEditor
 
     #region Editor Modes
 
-    private void EditingMode(Event _ce)
+    public void EditingMode(Event _ce)
     {
         int controlId = GUIUtility.GetControlID(FocusType.Passive);
         // Before repaint
@@ -218,41 +264,25 @@ public class MazeEditor : AMazeEditor
 
     private void Draw()
     { 
-        // Given the tile position check to see if a tile has already been created at that location
-        var unitHost = GameObject.Find(string.Format(maze.UnitNamePattern, currentTilePosition.x, currentTilePosition.y));
-
+        bool hasSuchAUnit = maze.Units.Any((u) => u.GridID.x == currentTilePosition.x && u.GridID.y == currentTilePosition.y);
         // if there is already a tile present and it is not a child of the game object we can just exit.
-        if (unitHost != null && unitHost.transform.parent != maze.transform)
+        if (hasSuchAUnit)
         {
             return;
         }
+         
+        var unitHost = PrefabUtility.InstantiatePrefab(UnitPrefab) as GameObject;
 
-        // if no game object was found create the unitHost prefab
-        if (unitHost == null)
-        {
-            string mazeUnitPrefab = EditorEnvironmentConstants.Get_BASE_ASSET_PATH() + "/" + EditorEnvironmentConstants.PREFABS_DIR + "/" + STD_UNIT_PREFAB_NAME + EditorEnvironmentConstants.PREFAB_EXTENSION;
+        PrefabUtility.DisconnectPrefabInstance(unitHost);
+         
+        var unit = MazeEditorUtil.InitializeUnit(maze, currentTilePosition, unitFloorOffset, unitHost);
 
-            var obj = AssetDatabase.LoadAssetAtPath<GameObject>(mazeUnitPrefab);
-             
-            if (obj)
-            {
-                unitHost = PrefabUtility.InstantiatePrefab(obj) as GameObject;
-                PrefabUtility.DisconnectPrefabInstance(unitHost);
-            }
-            else
-            {
-                Debug.LogError(string.Format("\"{0}\" not found!", mazeUnitPrefab));
-                return;
-            }
-        }
-
-        var unit = MazeEditorUtil.InitializeUnit(maze, currentTilePosition, unitFloorOffset,unitHost);
         maze.Grid[(int)currentTilePosition.x, (int)currentTilePosition.y] = unit;
+
         maze.Units.Add(unit);
 
     }
-
-
+    
     /// <summary>
     /// Erases a block at the pre-calculated mouse hit position
     /// </summary>
@@ -277,7 +307,7 @@ public class MazeEditor : AMazeEditor
         }
     }
 
-    private void SelectionMode(Event _ce)
+    public void SelectionMode(Event _ce)
     {
         int controlId = GUIUtility.GetControlID(FocusType.Passive);
 
@@ -287,13 +317,13 @@ public class MazeEditor : AMazeEditor
 
             if (unitHost != null)
             {
-                if(currentSelection.Contains(unitHost)){
+                if(CurrentSelection.Contains(unitHost)){
                     if (_ce.button == 1)
-                        currentSelection.Remove(unitHost);
+                        CurrentSelection.Remove(unitHost);
                 }
                 else { 
                     if(_ce.button == 0)
-                        currentSelection.Add(unitHost);
+                        CurrentSelection.Add(unitHost);
                 }
             } 
 
@@ -303,15 +333,15 @@ public class MazeEditor : AMazeEditor
         
     }
 
-    private void TryConnectingCurrentSelection()
+    public void TryConnectingCurrentSelection()
     {
-        if (currentSelection == null)
+        if (CurrentSelection == null)
             return;
 
-        if (!currentSelection.Any())
+        if (!CurrentSelection.Any())
             return;
 
-        var iterator = currentSelection.GetEnumerator();
+        var iterator = CurrentSelection.GetEnumerator();
 
         MazeUnit last = null;
 
@@ -356,25 +386,26 @@ public class MazeEditor : AMazeEditor
             last = current;
         }
     }
-    private void TryDisconnectingCurrentSelection()
+
+    public void TryDisconnectingCurrentSelection()
     {
-        if (currentSelection == null)
+        if (CurrentSelection == null)
             return;
 
-        if (!currentSelection.Any())
+        if (!CurrentSelection.Any())
             return;
 
 
-        if (currentSelection.Count == 1)
+        if (CurrentSelection.Count == 1)
         {
-            var unit = currentSelection.First().GetComponent<MazeUnit>();
+            var unit = CurrentSelection.First().GetComponent<MazeUnit>();
             unit.Close(OpenDirections.North);
             unit.Close(OpenDirections.South);
             unit.Close(OpenDirections.West);
             unit.Close(OpenDirections.East);
         }
 
-        var iterator = currentSelection.GetEnumerator();
+        var iterator = CurrentSelection.GetEnumerator();
 
         MazeUnit last = null;
 
@@ -429,8 +460,8 @@ public class MazeEditor : AMazeEditor
 
         Gizmos.color = Color.blue;
 
-        if (currentSelection != null) { 
-            foreach (var item in currentSelection)
+        if (CurrentSelection != null) { 
+            foreach (var item in CurrentSelection)
             {
                 var pos = item.transform.localPosition + new Vector3(0, maze.RoomDimension.y / 2, 0);
                 Gizmos.DrawCube(pos, new Vector3(maze.RoomDimension.x, maze.RoomDimension.y, maze.RoomDimension.z));    
@@ -499,7 +530,7 @@ public class MazeEditor : AMazeEditor
     {
         if (EditorApplication.isPlaying)
             return;
-
+        
 
         Handles.BeginGUI();
 
@@ -513,75 +544,75 @@ public class MazeEditor : AMazeEditor
         
         #region Editing Mode UI
 
-        if (MazeDoesNotContainPaths())
-        { 
-            EditingModeEnabled = GUILayout.Toggle(EditingModeEnabled, "Editing Mode");
+        //if (MazeDoesNotContainPaths())
+        //{ 
+        //    EditingModeEnabled = GUILayout.Toggle(EditingModeEnabled, "Editing Mode");
 
-            if (EditingModeEnabled)
-            {
-                if (ActiveMode != MazeEditorMode.EDITING) {
-                    DisableModesExcept(MazeEditorMode.EDITING);
-                    EditorModeProcessEvent = null;
-                    EditorModeProcessEvent += EditingMode;
-                    ActiveMode = MazeEditorMode.EDITING;
-                }
-                GUILayout.BeginHorizontal();
-                GUILayout.Space(15f);
-                GUILayout.BeginVertical();
-                modeAddEnabled = GUILayout.Toggle(!modeRemoveEnabled, "Adding Cells");
-                modeRemoveEnabled = GUILayout.Toggle(!modeAddEnabled, "Erasing Cells");
-                GUILayout.EndVertical();
-                GUILayout.EndHorizontal();
-            }
-            else
-            {
-                modeRemoveEnabled = false;
-                modeAddEnabled = false;
-                EditorModeProcessEvent -= EditingMode;
-            }
-        }
-        else
-        {
-            GUILayout.Label("Editing disabled, \n Maze contains paths!");
-        }
+        //    if (EditingModeEnabled)
+        //    {
+        //        if (ActiveMode != MazeEditorMode.EDITING) {
+        //            DisableModesExcept(MazeEditorMode.EDITING);
+        //            EditorModeProcessEvent = null;
+        //            EditorModeProcessEvent += EditingMode;
+        //            ActiveMode = MazeEditorMode.EDITING;
+        //        }
+        //        GUILayout.BeginHorizontal();
+        //        GUILayout.Space(15f);
+        //        GUILayout.BeginVertical();
+        //        modeAddEnabled = GUILayout.Toggle(!modeRemoveEnabled, "Adding Cells");
+        //        modeRemoveEnabled = GUILayout.Toggle(!modeAddEnabled, "Erasing Cells");
+        //        GUILayout.EndVertical();
+        //        GUILayout.EndHorizontal();
+        //    }
+        //    else
+        //    {
+        //        modeRemoveEnabled = false;
+        //        modeAddEnabled = false;
+        //        EditorModeProcessEvent -= EditingMode;
+        //    }
+        //}
+        //else
+        //{
+        //    GUILayout.Label("Editing disabled, \n Maze contains paths!");
+        //}
         #endregion
 
-        GUILayout.Space(10f);
+        //GUILayout.Space(10f);
 
-        SelectionModeEnabled = GUILayout.Toggle(SelectionModeEnabled, "Selection Mode");
+        //SelectionModeEnabled = GUILayout.Toggle(SelectionModeEnabled, "Selection Mode");
 
         #region Selection Mode UI
 
-        if (SelectionModeEnabled) {
+        //if (SelectionModeEnabled) {
 
-            if (ActiveMode != MazeEditorMode.SELECTION) {
-                DisableModesExcept(MazeEditorMode.SELECTION);
-                
-                currentSelection = new HashSet<GameObject>();
+        //    if (ActiveMode != MazeEditorMode.SELECTION) {
+        //        DisableModesExcept(MazeEditorMode.SELECTION);
+
+        //        CurrentSelection = new HashSet<GameObject>();
             
-                EditorModeProcessEvent = null;
-                EditorModeProcessEvent += SelectionMode;
+        //        EditorModeProcessEvent = null;
+        //        EditorModeProcessEvent += SelectionMode;
 
-                ActiveMode = MazeEditorMode.SELECTION;
-            }
+        //        ActiveMode = MazeEditorMode.SELECTION;
+        //    }
 
-            if (GUILayout.Button("Connect", GUILayout.Width(100f)))
-            {
-                TryConnectingCurrentSelection();
-            }
+        //    if (GUILayout.Button("Connect", GUILayout.Width(100f)))
+        //    {
+        //        TryConnectingCurrentSelection();
+        //    }
 
-            if (GUILayout.Button("Disconnect", GUILayout.Width(100f)))
-            {
-                TryDisconnectingCurrentSelection();
-            }
-        }
-        else
-        {
-            EditorModeProcessEvent -= SelectionMode; 
+        //    if (GUILayout.Button("Disconnect", GUILayout.Width(100f)))
+        //    {
+        //        TryDisconnectingCurrentSelection();
+        //    }
+        //}
+        //else
+        //{
+        //    EditorModeProcessEvent -= SelectionMode; 
             
-            if(currentSelection != null)
-                currentSelection.Clear();
-        }
+        //    if(CurrentSelection != null)
+        //        CurrentSelection.Clear();
+        //}
         #endregion
 
         GUILayout.Space(10f);
@@ -596,7 +627,7 @@ public class MazeEditor : AMazeEditor
         Handles.EndGUI();
     }
 
-    private bool MazeDoesNotContainPaths()
+    public bool MazeDoesNotContainPaths()
     {
         var controller = maze.GetComponent<PathController>();
         
@@ -639,7 +670,7 @@ public class MazeEditor : AMazeEditor
         GUILayout.Label(gridCode.ToString());
     }
 
-    private void DisableModesExcept(MazeEditorMode mode)
+    public void DisableModesExcept(MazeEditorMode mode)
     {
         switch (mode)
         {
@@ -676,7 +707,7 @@ public class MazeEditor : AMazeEditor
 public abstract class AMazeEditor : Editor {
 
     protected beMobileMaze maze;
-    protected Action<Event> EditorModeProcessEvent;
+    public Action<Event> EditorModeProcessEvent;
 
     protected Vector3 MarkerPosition;
     protected Color MarkerColor = Color.blue;
@@ -707,16 +738,16 @@ public abstract class AMazeEditor : Editor {
         Gizmos.matrix = maze.transform.localToWorldMatrix;
 
         Gizmos.color = MarkerColor;
-        
+
         var pos = MarkerPosition + new Vector3(0, maze.RoomDimension.y / 2, 0);
-        
+
         Gizmos.DrawWireCube(pos, new Vector3(maze.RoomDimension.x, maze.RoomDimension.y, maze.RoomDimension.z) * 1.1f);
 
         var temp = Handles.matrix;
-        
+
         Handles.matrix = Gizmos.matrix;
 
-        Handles.Label(pos, string.Format("{0}.{1}", (int) MarkerPosition.x, (int) MarkerPosition.z), sceneViewUIStyle );
+        Handles.Label(pos, string.Format("{0}.{1}", (int)MarkerPosition.x, (int)MarkerPosition.z), sceneViewUIStyle);
 
         Handles.matrix = temp;
 
