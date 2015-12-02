@@ -21,6 +21,8 @@ public class PathEditor : AMazeEditor {
     PathInMaze pathShouldBeRemoved;
 
     private bool showElements;
+    private bool TilePositionIsValid = false;
+    private Vector3 hoveringDistance;
 
     public void OnEnable()
     {
@@ -34,6 +36,9 @@ public class PathEditor : AMazeEditor {
 
         if(instance.PathElements == null)
             instance.PathElements = new Dictionary<Vector2, PathElement>();
+
+        if (instance.PathAsLinkedList == null)
+            instance.PathAsLinkedList = new LinkedList<PathElement>();
 
         instance.EditorGizmoCallbacks += RenderTileHighlighting;
         instance.EditorGizmoCallbacks += RenderEditorGizmos; 
@@ -106,11 +111,84 @@ public class PathEditor : AMazeEditor {
 
     protected new void RenderTileHighlighting()
     {
+        TilePositionIsValid = CheckIfTileIsValidPathElement(currentTilePosition);
         var temp = Gizmos.matrix;
+
         Gizmos.matrix = maze.transform.localToWorldMatrix;
-        Gizmos.color = Color.blue;
+
+        if (!TilePositionIsValid)
+        {
+            Gizmos.color = Color.red;
+
+        }
+        else
+        {
+            // todo tilePosition from Unit
+            if (instance.PathAsLinkedList.Last != null && instance.PathAsLinkedList.Last.Previous != null)
+            {
+                //RenderTurningDegree(instance.PathAsLinkedList.Last.Value.Unit.GridID, currentTilePosition);
+                RenderTurningDegree(
+                    instance.PathAsLinkedList.Last.Previous.Value.Unit.transform.position,
+                    instance.PathAsLinkedList.Last.Value.Unit.transform.position,
+                    MarkerPosition);
+            }
+        }
+        
         Gizmos.DrawWireCube(MarkerPosition + new Vector3(0, maze.RoomDimension.y / 2, 0), new Vector3(maze.RoomDimension.x, maze.RoomDimension.y, maze.RoomDimension.z) * 1.1f);
+
         Gizmos.matrix = temp;
+        
+        Gizmos.color = Color.blue;
+    }
+
+    private void RenderTurningDegree(Vector3 lastUnitPosition, Vector3 currentUnitPosition, Vector3 nextUnitPosition)
+    {
+        var turningAngle = lastUnitPosition.SignedAngle(nextUnitPosition, Vector3.up); 
+        var arcPosition = currentUnitPosition + hoveringDistance;
+
+        Handles.color = Color.cyan;
+
+        Handles.DrawSolidArc(arcPosition, Vector3.up, Vector3.forward, turningAngle, 0.3f);
+        Handles.Label(arcPosition, turningAngle.ToString());
+
+    }
+    
+    private void RenderTurningDegree(Vector2 lastTile, Vector2 currentTile)
+    {
+        var last = new Vector3(lastTile.x, 0, lastTile.y);
+        var current = new Vector3(currentTile.x, 0, currentTile.y);
+
+        var turningAngle =  last.SignedAngle(current, Vector3.forward);
+
+        var arcPosition = last + hoveringDistance;
+        Handles.color = Color.cyan;
+
+        Handles.DrawSolidArc(MarkerPosition, Vector3.up, arcPosition, turningAngle, 1f);
+        Handles.Label(arcPosition, turningAngle.ToString());
+
+    }
+
+    private bool CheckIfTileIsValidPathElement(Vector2 tilePosition)
+    {
+        if (!maze.Units.Any((u) => u.GridID.Equals(tilePosition)))
+            return false;
+
+        if (instance.PathAsLinkedList.Count == 0)
+            return true;
+
+        var gridIdOfLastElement = instance.PathAsLinkedList.Last.Value.Unit.GridID;
+
+        if (tilePosition == gridIdOfLastElement)
+            return false;
+
+        var deltaBetweenLastAndCurrent = tilePosition - gridIdOfLastElement;
+        var absDelta = deltaBetweenLastAndCurrent.SqrMagnitude();
+
+        if (absDelta > 1)
+            return false;
+
+        return true;
+
     }
 
     public override void RenderSceneViewUI()
@@ -169,7 +247,7 @@ public class PathEditor : AMazeEditor {
                 return;
             }
 
-            if (_ce.button == 0)
+            if (_ce.button == 0 && TilePositionIsValid)
             {
                 Add(unit);
 
@@ -189,33 +267,19 @@ public class PathEditor : AMazeEditor {
 
     private void Add(MazeUnit newUnit)
     {
-        /**
-         * 
-         * BUG Dictionary sorts the keys! So the Path will be messed up!
-         * */
-          
-        if (instance.PathElements.ContainsKey(newUnit.GridID))
-            return;
-
         var newElement = new PathElement(newUnit);
         
         newElement = GetElementType(newElement);
+         
+        var nr_el = instance.PathAsLinkedList.Count; // count all elements in the path to get the second last for turning calculation
 
-        //if (newElement.Type == UnitType.L || newElement.Type == UnitType.T || newElement.Type == UnitType.X) {
-        //    var previousElement = instance.PathElements.Values.Last();
-        //    newElement = GetTurnType(newElement, previousElement);
-
-        //    DeployLandmark(previousElement);
-        //}
-
-        //if (newElement.Type == UnitType.L || newElement.Type == UnitType.T || newElement.Type == UnitType.X) { 
-        var nr_el = instance.PathElements.Values.Count; // count all elements in the path to get the second last for turning calculation
         if (nr_el >= 1)
         {
-            var previousElement = instance.PathElements.Values.ElementAt(nr_el - 1);
+            var previousElement = instance.PathAsLinkedList.Last.Value;
+
             if (nr_el >= 2)
             {
-                var secpreviousElement = instance.PathElements.Values.ElementAt(nr_el - 2);
+                var secpreviousElement = instance.PathAsLinkedList.Last.Previous.Value;
                 newElement = GetTurnType(newElement, previousElement, secpreviousElement);
             }
             else
@@ -223,12 +287,10 @@ public class PathEditor : AMazeEditor {
                 newElement.Turn = TurnType.STRAIGHT;
             } 
         }
-        //}
 
-        instance.PathElements.Add(newUnit.GridID, newElement);
+        instance.PathAsLinkedList.AddLast(newElement);
     }
     
-
     public static PathElement GetElementType(PathElement element)
     {
         var u = element.Unit;
@@ -309,50 +371,28 @@ public class PathEditor : AMazeEditor {
     {
         instance.PathElements.Remove(unit.GridID);
     }
-
-    public LinkedList<MazeUnit> CreatePathFromGridIDs(LinkedList<Vector2> gridIDs)
-    {
-        var enumerator = gridIDs.GetEnumerator();
-        var units = new LinkedList<MazeUnit>();
-
-        while (enumerator.MoveNext())
-        {
-            var gridField = enumerator.Current;
-
-            var correspondingUnitHost = maze.transform.FindChild(string.Format("Unit_{0}_{1}", gridField.x, gridField.y));
-
-            if (correspondingUnitHost == null)
-                throw new MissingComponentException("It seems, that the path doesn't match the maze! Requested Unit is missing!");
-
-            var unit = correspondingUnitHost.GetComponent<MazeUnit>();
-
-            if (unit == null)
-                throw new MissingComponentException("Expected Component on Maze Unit is missing!");
-
-            units.AddLast(unit);
-        }
-
-        return units;
-
-    }
-
+    
     #endregion  
 
     protected override void RenderEditorGizmos()
     {
+        var temp_handles_color = Handles.color;
+
         if (!instance.enabled)
             return;
 
-        if (instance.PathElements.Count > 0)
+        if (instance.PathAsLinkedList.Count > 0)
         {
-            var hoveringDistance = new Vector3(0f, maze.RoomDimension.y, 0f);
+            hoveringDistance = new Vector3(0f, maze.RoomDimension.y, 0f);
 
-            var start = instance.PathElements.First().Value.Unit.transform;
+            var start = instance.PathAsLinkedList.First.Value.Unit.transform;
+
             Handles.color = Color.blue;
+
             Handles.CubeCap(this.GetInstanceID(), start.position + hoveringDistance, start.rotation, 0.3f);
 
 
-            var iterator = instance.PathElements.Values.GetEnumerator();
+            var iterator = instance.PathAsLinkedList.GetEnumerator();
             MazeUnit last = null;
 
             while (iterator.MoveNext())
@@ -373,7 +413,7 @@ public class PathEditor : AMazeEditor {
                 last = iterator.Current.Unit;
             }
             
-            var lastElement = instance.PathElements.Last().Value.Unit;
+            var lastElement = instance.PathAsLinkedList.Last.Value.Unit;
             var endTransform = lastElement.transform;
 
             var coneRotation =  start.rotation;
@@ -401,6 +441,7 @@ public class PathEditor : AMazeEditor {
             }    
            
             Handles.ConeCap(this.GetInstanceID(), endTransform.position + hoveringDistance, coneRotation, 0.3f);
+            Handles.color = temp_handles_color;
         }
     } 
 }
