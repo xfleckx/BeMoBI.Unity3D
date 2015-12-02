@@ -21,7 +21,6 @@ public class MazeEditorWindow : EditorWindow
         this.maze = maze;
 
         this.inspector = inspector;
-        
     }
 
 

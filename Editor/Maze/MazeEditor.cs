@@ -82,13 +82,7 @@ public class MazeInspector : AMazeEditor
             maze.EditorGizmoCallbacks += RenderTileHighlighting;
             maze.EditorGizmoCallbacks += RenderEditorGizmos;
         }
-
-        var editorWindow = EditorWindow.GetWindow<MazeEditorWindow>();
-
-        if(editorWindow != null)
-        {
-            editorWindow.Initialize(maze, this);
-        }
+         
     }
     
     public void OnDisable()
@@ -132,7 +126,7 @@ public class MazeInspector : AMazeEditor
 
         if(GUILayout.Button("Open Editor", GUILayout.MinWidth(120), GUILayout.Height(40)))
         {
-            var window = CreateInstance<MazeEditorWindow>();
+            var window = EditorWindow.GetWindow<MazeEditorWindow>();
 
             window.Initialize(maze, this);
 
