@@ -33,10 +33,7 @@ public class PathEditor : AMazeEditor {
         if (instance != null){
             maze = instance.GetComponent<beMobileMaze>(); 
         }
-
-        if(instance.PathElements == null)
-            instance.PathElements = new Dictionary<Vector2, PathElement>();
-
+        
         if (instance.PathAsLinkedList == null)
             instance.PathAsLinkedList = new LinkedList<PathElement>();
 
@@ -96,13 +93,16 @@ public class PathEditor : AMazeEditor {
             EditorApplication.delayCall += AssetDatabase.SaveAssets;
         }
 
-        foreach (var e in instance.PathElements)
+        foreach (var e in instance.PathAsLinkedList.ToList())
         {
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField(
-                string.Format(pathElementPattern, e.Key.x, e.Key.y, Enum.GetName(typeof(UnitType), e.Value.Type), Enum.GetName(typeof(TurnType), e.Value.Turn)), GUILayout.Width(150f));
+                string.Format(pathElementPattern, e.Unit.GridID.x, e.Unit.GridID.y, 
+                Enum.GetName(typeof(UnitType), e.Type), 
+                Enum.GetName(typeof(TurnType), e.Turn)), 
+                GUILayout.Width(150f));
             
-            EditorGUILayout.ObjectField(e.Value.Unit, typeof(MazeUnit), false);
+            EditorGUILayout.ObjectField(e.Unit, typeof(MazeUnit), false);
             EditorGUILayout.EndHorizontal();
         }
 
@@ -126,7 +126,6 @@ public class PathEditor : AMazeEditor {
             // todo tilePosition from Unit
             if (instance.PathAsLinkedList.Last != null && instance.PathAsLinkedList.Last.Previous != null)
             {
-                //RenderTurningDegree(instance.PathAsLinkedList.Last.Value.Unit.GridID, currentTilePosition);
                 RenderTurningDegree(
                     instance.PathAsLinkedList.Last.Previous.Value.Unit.transform.position,
                     instance.PathAsLinkedList.Last.Value.Unit.transform.position,
@@ -143,7 +142,10 @@ public class PathEditor : AMazeEditor {
 
     private void RenderTurningDegree(Vector3 lastUnitPosition, Vector3 currentUnitPosition, Vector3 nextUnitPosition)
     {
-        var turningAngle = lastUnitPosition.SignedAngle(nextUnitPosition, Vector3.up); 
+        var a = lastUnitPosition - currentUnitPosition;
+        var b = currentUnitPosition - nextUnitPosition;
+
+        var turningAngle = a.SignedAngle(b, Vector3.up); 
         var arcPosition = currentUnitPosition + hoveringDistance;
 
         Handles.color = Color.cyan;
@@ -153,21 +155,6 @@ public class PathEditor : AMazeEditor {
 
     }
     
-    private void RenderTurningDegree(Vector2 lastTile, Vector2 currentTile)
-    {
-        var last = new Vector3(lastTile.x, 0, lastTile.y);
-        var current = new Vector3(currentTile.x, 0, currentTile.y);
-
-        var turningAngle =  last.SignedAngle(current, Vector3.forward);
-
-        var arcPosition = last + hoveringDistance;
-        Handles.color = Color.cyan;
-
-        Handles.DrawSolidArc(MarkerPosition, Vector3.up, arcPosition, turningAngle, 1f);
-        Handles.Label(arcPosition, turningAngle.ToString());
-
-    }
-
     private bool CheckIfTileIsValidPathElement(Vector2 tilePosition)
     {
         if (!maze.Units.Any((u) => u.GridID.Equals(tilePosition)))
@@ -176,19 +163,28 @@ public class PathEditor : AMazeEditor {
         if (instance.PathAsLinkedList.Count == 0)
             return true;
 
-        var gridIdOfLastElement = instance.PathAsLinkedList.Last.Value.Unit.GridID;
+        var lastElement = instance.PathAsLinkedList.Last;
+
+        var gridIdOfLastElement = lastElement.Value.Unit.GridID;
 
         if (tilePosition == gridIdOfLastElement)
             return false;
+
+        if (lastElement.Previous != null) { 
+
+            var gridIdOfPreviousElement = lastElement.Previous.Value.Unit.GridID;
+
+            if (gridIdOfPreviousElement == tilePosition)
+                return false;
+        }
 
         var deltaBetweenLastAndCurrent = tilePosition - gridIdOfLastElement;
         var absDelta = deltaBetweenLastAndCurrent.SqrMagnitude();
 
         if (absDelta > 1)
             return false;
-
+        
         return true;
-
     }
 
     public override void RenderSceneViewUI()
@@ -225,6 +221,7 @@ public class PathEditor : AMazeEditor {
         EditorGUILayout.EndVertical();
 
         #endregion
+
         Handles.EndGUI();
     }
      
@@ -253,9 +250,13 @@ public class PathEditor : AMazeEditor {
 
                 EditorUtility.SetDirty(instance);
             }
-            if (_ce.button == 1 && instance.PathElements.Any())
+
+            if (_ce.button == 1)
             {
-                Remove(unit);
+                if(instance.PathAsLinkedList.Any() &&
+                    instance.PathAsLinkedList.Last.Value.Unit.Equals(unit)) { 
+                    Remove(unit);
+                }
 
                 EditorUtility.SetDirty(instance);
             } 
@@ -369,7 +370,9 @@ public class PathEditor : AMazeEditor {
 
     private void Remove(MazeUnit unit)
     {
-        instance.PathElements.Remove(unit.GridID);
+        var elementToRemove = instance.PathAsLinkedList.First(e => e.Unit.Equals(unit));
+
+        instance.PathAsLinkedList.Remove(elementToRemove);
     }
     
     #endregion  

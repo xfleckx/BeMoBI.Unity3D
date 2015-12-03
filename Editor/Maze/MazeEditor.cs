@@ -631,7 +631,7 @@ public class MazeInspector : AMazeEditor
         if (!controller.Paths.Any() || controller.Paths.Any((p) =>  p == null))
             controller.ForcePathLookup();
 
-        var hasPaths = controller.Paths.Any(p => p.PathElements.Any());
+        var hasPaths = controller.Paths.Any(p => p.PathAsLinkedList.Any());
 
         return !hasPaths;
     }
