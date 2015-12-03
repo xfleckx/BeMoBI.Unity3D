@@ -910,7 +910,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &138794
 GameObject:
   m_ObjectHideFlags: 1
@@ -2054,7 +2054,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &179486
 GameObject:
   m_ObjectHideFlags: 1
@@ -10734,9 +10734,34 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Available: 1
   ID: 0
-  Units: []
-  Elements: []
-  GridIDs: []
+  Elements:
+  - Unit: {fileID: 11409466}
+    Type: 0
+    Turn: 0
+  - Unit: {fileID: 11450414}
+    Type: 0
+    Turn: 0
+  - Unit: {fileID: 11417638}
+    Type: 1
+    Turn: 1
+  - Unit: {fileID: 11418728}
+    Type: 0
+    Turn: 0
+  - Unit: {fileID: 11401710}
+    Type: 2
+    Turn: 2
+  - Unit: {fileID: 11414352}
+    Type: 0
+    Turn: 0
+  - Unit: {fileID: 11446220}
+    Type: 2
+    Turn: 1
+  - Unit: {fileID: 11440590}
+    Type: 0
+    Turn: 0
+  - Unit: {fileID: 11420818}
+    Type: 0
+    Turn: 0
 --- !u!114 &11461278
 MonoBehaviour:
   m_ObjectHideFlags: 1

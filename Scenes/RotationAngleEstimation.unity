@@ -494,14 +494,6 @@ Prefab:
       propertyPath: m_Name
       value: BeMoBIMaze
       objectReference: {fileID: 0}
-    - target: {fileID: 179348, guid: b8551437e6e2e924baa6e7d0679ff567, type: 2}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 137546, guid: b8551437e6e2e924baa6e7d0679ff567, type: 2}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: b8551437e6e2e924baa6e7d0679ff567, type: 2}
   m_IsPrefabParent: 0
