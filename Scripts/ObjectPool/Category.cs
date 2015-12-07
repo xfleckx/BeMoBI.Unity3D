@@ -4,13 +4,27 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 
-public class Category : MonoBehaviour {
-     
+public class Category : MonoBehaviour, IProvideSampling<GameObject> {
+    
     public List<GameObject> AssociatedObjects = new List<GameObject>();
 
     public bool HasObjects { get { return AssociatedObjects.Count > 0; } }
 
-    private Stack<GameObject> tempSampling;
+    private bool autoResetSequence = true;
+    public bool AutoResetSequence
+    {
+        get
+        {
+            return autoResetSequence;
+        }
+
+        set
+        {
+            autoResetSequence = value;
+        }
+    }
+
+    private Stack<GameObject> tempSamplingSet;
 
     public GameObject Sample()
     {
@@ -28,12 +42,20 @@ public class Category : MonoBehaviour {
     /// <returns>An Object from this category</returns>
     public GameObject SampleWithoutReplacement()
     {
-        if (tempSampling == null || tempSampling.Count == 0) { 
-            var shuffled = AssociatedObjects.OrderBy(a => Guid.NewGuid()).ToList();
-            tempSampling = new Stack<GameObject>(shuffled);
+        if (tempSamplingSet == null || (tempSamplingSet.Count == 0 && autoResetSequence))
+        { 
+            var shuffled = AssociatedObjects.OrderBy(obj => Guid.NewGuid()).ToList();
+            tempSamplingSet = new Stack<GameObject>(shuffled);
+        }
+        else
+        {
+            throw new InvalidOperationException(
+                "Warning! You try to use a sampling sequence without reseting it. \n" +
+                "Set AutoResetSequence to \"true\" or call ResetSamplingSequence manually.");
         }
 
-        return tempSampling.Pop();
+
+        return tempSamplingSet.Pop();
     }
 
     /// <summary>
@@ -41,8 +63,8 @@ public class Category : MonoBehaviour {
     /// </summary>
     public void ResetSamplingSequence()
     {
-        tempSampling.Clear();
-        tempSampling = null;
+        tempSamplingSet.Clear();
+        tempSamplingSet = null;
     }
 
     public GameObject GetObjectBy(string requestedName)
