@@ -42,13 +42,23 @@ public class Category : MonoBehaviour, IProvideSampling<GameObject> {
     /// <returns>An Object from this category</returns>
     public GameObject SampleWithoutReplacement()
     {
-        if (tempSamplingSet == null || (tempSamplingSet.Count == 0 && autoResetSequence))
-        { 
+
+        if (tempSamplingSet == null)
+        {
             var shuffled = AssociatedObjects.OrderBy(obj => Guid.NewGuid()).ToList();
             tempSamplingSet = new Stack<GameObject>(shuffled);
         }
-        else
+
+        if (tempSamplingSet.Count == 0 && autoResetSequence)
         {
+
+            var shuffled = AssociatedObjects.OrderBy(obj => Guid.NewGuid()).ToList();
+            tempSamplingSet = new Stack<GameObject>(shuffled);
+
+        }
+        else if (tempSamplingSet.Count == 0 && !autoResetSequence)
+        {
+
             throw new InvalidOperationException(
                 "Warning! You try to use a sampling sequence without reseting it. \n" +
                 "Set AutoResetSequence to \"true\" or call ResetSamplingSequence manually.");
