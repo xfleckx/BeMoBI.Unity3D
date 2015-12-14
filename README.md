@@ -1,8 +1,8 @@
 
-The beMobil Framework for Unity3D provides a toolkit for developing experimental setups in virtual environments with focus on navigation and orientation tasks.
+The Daidalos Framework for Unity3D provides a toolkit for developing experimental setups in virtual environments with focus on navigation and orientation tasks.
 
-# BeMoBi.Unity3D
-A framework for scientific experiments in virtual environments focusing navigation and orientation tasks.
+# Daidalos
+A framework for scientific experiments in virtual environments focusing navigation and orientation tasks based on Mazes.
 
 ## Features 
 
