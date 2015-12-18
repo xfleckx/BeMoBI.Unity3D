@@ -2,6 +2,7 @@
 using UnityEditor;
 using System;
 using System.Collections.Generic;
+using Assets.BeMoBI.Unity3D.Editor.Maze;
 
 public class MazeEditorWindow : EditorWindow
 {
@@ -9,6 +10,8 @@ public class MazeEditorWindow : EditorWindow
     private beMobileMaze maze;
     
     private MazeInspector inspector;
+
+    private MazeBaker mazeBaker;
 
     private int MazeWidth;
 
@@ -19,6 +22,8 @@ public class MazeEditorWindow : EditorWindow
         titleContent = new GUIContent("Maze Editor");
 
         this.maze = maze;
+
+        this.mazeBaker = new MazeBaker();
 
         this.inspector = inspector;
     }
@@ -138,6 +143,18 @@ public class MazeEditorWindow : EditorWindow
                 inspector.CurrentSelection.Clear();
         }
         #endregion
+
+
+        GUILayout.Space(10f);
+
+        EditorGUILayout.LabelField("(4) Bake the Bake to a single Mesh!", EditorStyles.boldLabel);
+
+
+        if (GUILayout.Button("Bake"))
+        {
+            mazeBaker.Bake(maze);
+        }
+
     }
 
     void OnDestroy()
