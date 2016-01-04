@@ -10,7 +10,7 @@ public class EditorEnvironmentConstants : ScriptableObject
     {
         CreateWhenNotExist(Get_BASE_ASSET_PATH());
         CreateWhenNotExist(Get_PREFAB_DIR_PATH());
-        CreateWhenNotExist(Get_ASSET_MODEL_DIR_PATH());
+        CreateWhenNotExist(Get_PROJECT_PREFAB_DIR_PATH());
         CreateWhenNotExist(Get_PROJECT_MODEL_DIR_PATH());
     }
 
@@ -36,7 +36,7 @@ public class EditorEnvironmentConstants : ScriptableObject
         folderName = path.Substring(lastSeperator + 1, path.Length - lastSeperator - 1);
     }
 
-    public const string ASSET_PACKAGE_NAME = "BeMoBI.Unity3D";
+    public const string ASSET_PACKAGE_NAME = "Daidalos";
 
     public const string ASSET_DIR = "Assets";
 
@@ -67,5 +67,5 @@ public class EditorEnvironmentConstants : ScriptableObject
     {
         return ASSET_DIR + Path.AltDirectorySeparatorChar + PREFABS_DIR;
     }
-
+    
 }
