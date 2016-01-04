@@ -5,7 +5,7 @@ using System.Text;
 
 using UnityEngine;
 
-namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
+namespace Assets.Daedalus.Unity3D.Editor.Maze.UnitCreation
 {
     public static class MeshUtilities
     {

@@ -12,6 +12,8 @@ public class EditorEnvironmentConstants : ScriptableObject
         CreateWhenNotExist(Get_PREFAB_DIR_PATH());
         CreateWhenNotExist(Get_PROJECT_PREFAB_DIR_PATH());
         CreateWhenNotExist(Get_PROJECT_MODEL_DIR_PATH());
+        CreateWhenNotExist(Get_PACKAGE_MODEL_SUBFOLDER());
+        CreateWhenNotExist(Get_PACKAGE_PREFAB_SUBFOLDER());
     }
 
     public static void CreateWhenNotExist(string expectedPathRelativeToAssetDirectory){
@@ -36,7 +38,9 @@ public class EditorEnvironmentConstants : ScriptableObject
         folderName = path.Substring(lastSeperator + 1, path.Length - lastSeperator - 1);
     }
 
-    public const string ASSET_PACKAGE_NAME = "Daidalos";
+    public const string ASSET_PACKAGE_NAME = "Daedalus";
+
+    public const string ASSET_CREATION_PREFIX = "CreatedBy_";
 
     public const string ASSET_DIR = "Assets";
 
@@ -67,5 +71,15 @@ public class EditorEnvironmentConstants : ScriptableObject
     {
         return ASSET_DIR + Path.AltDirectorySeparatorChar + PREFABS_DIR;
     }
-    
+
+    public static string Get_PACKAGE_MODEL_SUBFOLDER()
+    {
+        return Get_PROJECT_MODEL_DIR_PATH() + Path.AltDirectorySeparatorChar + ASSET_CREATION_PREFIX + ASSET_PACKAGE_NAME;
+    }
+
+    public static string Get_PACKAGE_PREFAB_SUBFOLDER()
+    {
+        return Get_PROJECT_PREFAB_DIR_PATH() + Path.AltDirectorySeparatorChar + ASSET_CREATION_PREFIX + ASSET_PACKAGE_NAME;
+    }
+
 }

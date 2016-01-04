@@ -6,7 +6,7 @@ using System.Text;
 using UnityEditor;
 using UnityEngine;
 
-namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
+namespace Assets.Daedalus.Unity3D.Editor.Maze.UnitCreation
 {
     public abstract class CreatorState<T> : ScriptableObject, ICreatorState where T : MonoBehaviour
     {
@@ -16,7 +16,7 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
 
         public virtual string AssetModelsPath { 
             get { 
-                return EditorEnvironmentConstants.Get_PROJECT_MODEL_DIR_PATH() + Path.AltDirectorySeparatorChar + AssetSubPath;
+                return EditorEnvironmentConstants.Get_PACKAGE_MODEL_SUBFOLDER() + Path.AltDirectorySeparatorChar + AssetSubPath;
             } 
         }
 
@@ -24,7 +24,7 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation
         {
             get
             {
-                return EditorEnvironmentConstants.Get_PROJECT_PREFAB_DIR_PATH() + Path.AltDirectorySeparatorChar + AssetSubPath;
+                return EditorEnvironmentConstants.Get_PACKAGE_PREFAB_SUBFOLDER() + Path.AltDirectorySeparatorChar + AssetSubPath;
             }
         }
 

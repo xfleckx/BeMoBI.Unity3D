@@ -5,7 +5,7 @@ using System;
 
 public class ObjectPoolTools : EditorWindow
 { 
-    [MenuItem("BeMoBI/Object Pool/Open Pool Editor")]
+    [MenuItem("Daedalus/Object Pool/Open Pool Editor")]
     public static void OpenPoolEditor()
     {
         var w = EditorWindow.CreateInstance<ObjectPoolTools>();

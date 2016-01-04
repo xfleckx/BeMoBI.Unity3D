@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 using System.IO;
-using Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation;
+using Assets.Daedalus.Unity3D.Editor.Maze.UnitCreation;
 
 public class UnitCreator : EditorWindow
 { 

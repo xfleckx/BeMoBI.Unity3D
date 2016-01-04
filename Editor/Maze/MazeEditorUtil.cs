@@ -6,7 +6,7 @@ using System.Text;
 using UnityEditor;
 using UnityEngine;
 
-using Assets.BeMoBI.Unity3D.Editor.Maze.UnitCreation;
+using Assets.Daedalus.Unity3D.Editor.Maze.UnitCreation;
 
 public static class MazeEditorUtil
 {

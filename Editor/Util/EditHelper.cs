@@ -5,7 +5,7 @@ using System.Text;
 using UnityEditor;
 using UnityEngine;
 
-namespace Assets.BeMoBI.Unity3D.Editor.Util
+namespace Assets.Daedalus.Unity3D.Editor.Util
 {
     class EditHelper
     {
