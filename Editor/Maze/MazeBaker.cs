@@ -16,9 +16,7 @@ namespace Assets.SNEED.Unity3D.Editor.Maze
             var meshFilter = maze.gameObject.AddComponent<MeshFilter>();
 
             Debug.Assert(maze.GetComponent<MeshRenderer>() == null, "Component has already a MeshRenderer");
-
-            var meshRenderer = maze.gameObject.AddComponent<MeshRenderer>();
-
+            
             meshFilter.mesh = new Mesh();
             meshFilter.sharedMesh.name = maze.name;
 
