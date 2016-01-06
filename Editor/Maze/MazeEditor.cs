@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Text;
+using Assets.SNEED.Unity3D.Editor.Maze;
 
 public enum MazeEditorMode { NONE, EDITING, SELECTION }
 
@@ -13,89 +14,37 @@ public class MazeInspector : AMazeEditor
 {
     public const string STD_UNIT_PREFAB_NAME = "MazeUnit";
     
-    public Material FloorMaterial;
-    public Material WallMaterial;
-    public Material TopMaterial;
-     
-    public HashSet<GameObject> CurrentSelection;
-
-    public float unitFloorOffset = 0f;
-
-    public string PathToMazePrefab = string.Empty;
-
-    public bool SelectionModeEnabled = false;
-
-    public bool EditingModeEnabled = false;
-    public bool modeAddEnabled = false;
-    public bool modeRemoveEnabled = false;
-
-    private UnityEngine.Object referenceToPrefab;
-
-    public MazeEditorMode ActiveMode = MazeEditorMode.NONE;
-
     private MazeUnit lastAddedUnit;
-
-    private GameObject unitPrefab; 
-
-    public string PathToUnitPrefab;
-
-    public GameObject UnitPrefab
-    {
-        get
-        {
-            return unitPrefab;
-        }
-
-        set
-        {
-            if(unitPrefab != value) { 
-                unitPrefab = value;
-                OnUnitPrefabChanged();
-            }
-        }
-    }
-
-    private void OnUnitPrefabChanged()
-    {
-        var unit = unitPrefab.GetComponent<MazeUnit>();
-        if (maze.RoomDimension != unit.Dimension)
-            maze.RoomDimension = unit.Dimension;
-
-    }
-
+    
     public void OnEnable()
-    { 
-        maze = (beMobileMaze)target;
+    {
+        editorState = EditorState.Instance;
 
-        if(maze.Grid == null)
+        var currentTarget = target as beMobileMaze;
+        
+        editorState.Initialize(currentTarget);
+
+        if (editorState.SelectedMaze.Grid == null)
         {
-            MazeEditorUtil.RebuildGrid(maze);
+            MazeEditorUtil.RebuildGrid(editorState.SelectedMaze);
         }
 
-        referenceToPrefab = PrefabUtility.GetPrefabParent(maze.gameObject);
+        editorState.referenceToPrefab = PrefabUtility.GetPrefabParent(editorState.SelectedMaze.gameObject);
 
-        if (referenceToPrefab != null) { 
-            PathToMazePrefab = AssetDatabase.GetAssetPath(referenceToPrefab);
+        if (editorState.referenceToPrefab != null) {
+            editorState.PathToMazePrefab = AssetDatabase.GetAssetPath(editorState.referenceToPrefab);
         }
 
-        if (maze) {
-            maze.EditorGizmoCallbacks += RenderTileHighlighting;
-            maze.EditorGizmoCallbacks += RenderEditorGizmos;
+        if (editorState.SelectedMaze) {
+            editorState.SelectedMaze.EditorGizmoCallbacks += RenderTileHighlighting;
+            editorState.SelectedMaze.EditorGizmoCallbacks += RenderEditorGizmos;
         }
          
-    }
-    
-    public void OnDisable()
-    {
-        if (maze) {
-            maze.EditorGizmoCallbacks -= RenderTileHighlighting;
-            maze.EditorGizmoCallbacks -= RenderEditorGizmos;
-        }
     }
 
     public override void OnInspectorGUI()
     {
-        if (maze == null) {
+        if (editorState.SelectedMaze == null) {
             renderEmptyMazeGUI();
         }
         
@@ -103,13 +52,13 @@ public class MazeInspector : AMazeEditor
 
         GUILayout.Label("Properties", EditorStyles.boldLabel);
         
-        EditorGUILayout.LabelField("Length of Maze (m)", maze.MazeLengthInMeter.ToString());
+        EditorGUILayout.LabelField("Length of Maze (m)", editorState.SelectedMaze.MazeLengthInMeter.ToString());
  
-        EditorGUILayout.LabelField("Width of Maze (m)", maze.MazeWidthInMeter.ToString());
+        EditorGUILayout.LabelField("Width of Maze (m)", editorState.SelectedMaze.MazeWidthInMeter.ToString());
 
-        EditorGUILayout.LabelField("Units:", maze.Units.Count.ToString());
+        EditorGUILayout.LabelField("Units:", editorState.SelectedMaze.Units.Count.ToString());
 
-        EditorGUILayout.LabelField("Room size (m):", maze.RoomDimension.ToString());
+        EditorGUILayout.LabelField("Room size (m):", editorState.SelectedMaze.RoomDimension.ToString());
 
         EditorGUILayout.Space();
 
@@ -119,7 +68,7 @@ public class MazeInspector : AMazeEditor
         {
             var window = CreateInstance<MazeCustomizer>();
 
-            window.Initialize(maze);
+            window.Initialize(editorState.SelectedMaze);
 
             window.Show();
         }
@@ -127,8 +76,8 @@ public class MazeInspector : AMazeEditor
         if(GUILayout.Button("Open Editor", GUILayout.MinWidth(120), GUILayout.Height(40)))
         {
             var window = EditorWindow.GetWindow<MazeEditorWindow>();
-
-            window.Initialize(maze, this);
+            
+            window.Initialize(editorState);
 
             window.Show();
         }
@@ -139,7 +88,7 @@ public class MazeInspector : AMazeEditor
 
         if (GUILayout.Button("Close Maze Roof"))
         {
-            foreach (var unit in maze.Units)
+            foreach (var unit in editorState.SelectedMaze.Units)
             {
                 var topTransform = unit.transform.FindChild("Top");
                 if (topTransform != null)
@@ -149,7 +98,7 @@ public class MazeInspector : AMazeEditor
 
         if (GUILayout.Button("Open Maze Roof"))
         {
-            foreach (var unit in maze.Units)
+            foreach (var unit in editorState.SelectedMaze.Units)
             {
                 var topTransform = unit.transform.FindChild("Top");
                 if (topTransform != null)
@@ -161,37 +110,22 @@ public class MazeInspector : AMazeEditor
 
         if (GUILayout.Button("Search for Units")) 
         {
-            MazeEditorUtil.CacheUnitsIn(maze);
+            MazeEditorUtil.CacheUnitsIn(editorState.SelectedMaze);
         }
 
         if (GUILayout.Button("Configure Grid"))
         {
-            MazeEditorUtil.RebuildGrid(maze);
+            MazeEditorUtil.RebuildGrid(editorState.SelectedMaze);
         }
 
-        if (referenceToPrefab && GUILayout.Button("Update Prefab"))
+        if (editorState.referenceToPrefab && GUILayout.Button("Update Prefab"))
         {
             UpdatePrefabOfCurrentMaze();
         }
 
         if (GUILayout.Button("Repair Unit List"))
         {
-            var unitsExceptMissingReference = maze.Units.Where(u => u != null);
-            
-            maze.Units.Clear();
-            
-            foreach (var item in unitsExceptMissingReference)
-            {
-                maze.Units.Add(item);
-            }
-            
-            for (int i = 0; i < maze.transform.childCount; i++)
-            {
-                var existing = maze.transform.GetChild(i).GetComponent<MazeUnit>();
-
-                if (existing != null && !maze.Units.Contains(existing))
-                    maze.Units.Add(existing);
-            }
+            MazeEditorUtil.LookUpAllUnits(editorState.SelectedMaze);
 
         }
 
@@ -199,249 +133,33 @@ public class MazeInspector : AMazeEditor
 
     }
 
-    private void ApplyToAllMazeUnits(Action<MazeUnit> action)
+    public void OnDisable()
     {
-        foreach (var item in maze.Units)
-        {
-            action(item);
+        if (editorState.SelectedMaze) {
+            editorState.SelectedMaze.EditorGizmoCallbacks -= RenderTileHighlighting;
+            editorState.SelectedMaze.EditorGizmoCallbacks -= RenderEditorGizmos;
         }
     }
     
+    
     private void UpdatePrefabOfCurrentMaze()
     {
-       referenceToPrefab = PrefabUtility.ReplacePrefab(maze.gameObject, referenceToPrefab, ReplacePrefabOptions.ConnectToPrefab);
+       editorState.referenceToPrefab = PrefabUtility.ReplacePrefab(editorState.SelectedMaze.gameObject, editorState.referenceToPrefab, ReplacePrefabOptions.ConnectToPrefab);
 
-       EditorUtility.SetDirty(referenceToPrefab);
+       EditorUtility.SetDirty(editorState.referenceToPrefab);
        EditorApplication.delayCall += AssetDatabase.SaveAssets;
     }
 
     private void SavePrefabAndCreateCompanionFolder()
     {
-        PathToMazePrefab = EditorUtility.SaveFilePanelInProject("Save maze", "maze.prefab", "prefab", "Save maze as Prefab");
-        Debug.Log("Saved to " + PathToMazePrefab);
-        referenceToPrefab = PrefabUtility.CreatePrefab(PathToMazePrefab, maze.gameObject, ReplacePrefabOptions.ConnectToPrefab);
+        editorState.PathToMazePrefab = EditorUtility.SaveFilePanelInProject("Save maze", "maze.prefab", "prefab", "Save maze as Prefab");
+        Debug.Log("Saved to " + editorState.PathToMazePrefab);
+        editorState.referenceToPrefab = PrefabUtility.CreatePrefab(editorState.PathToMazePrefab, editorState.SelectedMaze.gameObject, ReplacePrefabOptions.ConnectToPrefab);
         
-        Debug.Log("Create companion folder " + PathToMazePrefab);
+        Debug.Log("Create companion folder " + editorState.PathToMazePrefab);
     }
 
-    #region Editor Modes
-
-    public void EditingMode(Event _ce)
-    {
-        int controlId = GUIUtility.GetControlID(FocusType.Passive);
-        // Before repaint
-        if (_ce.type == EventType.Layout || _ce.type == EventType.layout)
-        {
-
-        }
-
-
-        if (_ce.type == EventType.Repaint || _ce.type == EventType.repaint)
-        {
-        }
-
-
-
-        if (_ce.type == EventType.MouseDown || _ce.type == EventType.MouseDrag)
-        {
-            if (EditingModeEnabled)
-            {
-                if (modeAddEnabled)
-                    Draw();
-                else if (modeRemoveEnabled)
-                    Erase();
-            }
-            GUIUtility.hotControl = controlId;
-            _ce.Use();
-        }
-    }
-
-    private void Draw()
-    { 
-        bool hasSuchAUnit = maze.Units.Any((u) => u.GridID.x == currentTilePosition.x && u.GridID.y == currentTilePosition.y);
-        // if there is already a tile present and it is not a child of the game object we can just exit.
-        if (hasSuchAUnit)
-        {
-            return;
-        }
-         
-        var unitHost = PrefabUtility.InstantiatePrefab(UnitPrefab) as GameObject;
-
-        PrefabUtility.DisconnectPrefabInstance(unitHost);
-         
-        var unit = MazeEditorUtil.InitializeUnit(maze, currentTilePosition, unitFloorOffset, unitHost);
-
-        maze.Grid[(int)currentTilePosition.x, (int)currentTilePosition.y] = unit;
-
-        maze.Units.Add(unit);
-
-    }
-    
-    /// <summary>
-    /// Erases a block at the pre-calculated mouse hit position
-    /// </summary>
-    private void Erase()
-    {
-        var unitHost = GameObject.Find(string.Format(maze.UnitNamePattern, currentTilePosition.x, currentTilePosition.y));
-
-        if (!unitHost)
-        {
-            Debug.Log("Nothing to erase!");
-            return;
-        }
-
-        var unit = unitHost.GetComponent<MazeUnit>();
-
-        // if a game object was found with the same assetName and it is a child we just destroy it immediately
-        if (unit != null && unit.transform.parent == maze.transform)
-        {
-            maze.Units.Remove(unit);
-            maze.Grid[(int)currentTilePosition.x, (int)currentTilePosition.y] = null;
-            DestroyImmediate(unit.gameObject);
-        }
-    }
-
-    public void SelectionMode(Event _ce)
-    {
-        int controlId = GUIUtility.GetControlID(FocusType.Passive);
-
-        if (_ce.type == EventType.MouseDown || _ce.type == EventType.MouseDrag) {
-
-            var unitHost = GameObject.Find(string.Format(maze.UnitNamePattern, currentTilePosition.x, currentTilePosition.y));
-
-            if (unitHost != null)
-            {
-                if(CurrentSelection.Contains(unitHost)){
-                    if (_ce.button == 1)
-                        CurrentSelection.Remove(unitHost);
-                }
-                else { 
-                    if(_ce.button == 0)
-                        CurrentSelection.Add(unitHost);
-                }
-            } 
-
-            GUIUtility.hotControl = controlId;
-            _ce.Use();
-        }
-        
-    }
-
-    public void TryConnectingCurrentSelection()
-    {
-        if (CurrentSelection == null)
-            return;
-
-        if (!CurrentSelection.Any())
-            return;
-
-        var iterator = CurrentSelection.GetEnumerator();
-
-        MazeUnit last = null;
-
-        while (iterator.MoveNext())
-        {
-            var current = iterator.Current.GetComponent<MazeUnit>();
-
-            if (!last)
-            {
-                last = current;
-                continue;
-            }
-            Debug.Log(current.GridID.ToString());
-            // check if current and last are really neighbors:
-            if (Math.Abs(current.GridID.x - last.GridID.x) + Math.Abs(current.GridID.y - last.GridID.y) == 1)
-            {
-                // check which direction we go, possibilities:
-                if (current.GridID.x - last.GridID.x == 1) // going east
-                {
-                    last.Open(OpenDirections.East);
-                    current.Open(OpenDirections.West);
-                }
-                else if (current.GridID.x - last.GridID.x == -1) // going west
-                {
-                    last.Open(OpenDirections.West);
-                    current.Open(OpenDirections.East);
-                }
-
-                if (current.GridID.y - last.GridID.y == 1) // going north
-                {
-                    last.Open(OpenDirections.North);
-                    current.Open(OpenDirections.South);
-                }
-                else if (current.GridID.y - last.GridID.y == -1) // going south
-                {
-                    last.Open(OpenDirections.South);
-                    current.Open(OpenDirections.North);
-                }
-            }
-
-
-            last = current;
-        }
-    }
-
-    public void TryDisconnectingCurrentSelection()
-    {
-        if (CurrentSelection == null)
-            return;
-
-        if (!CurrentSelection.Any())
-            return;
-
-
-        if (CurrentSelection.Count == 1)
-        {
-            var unit = CurrentSelection.First().GetComponent<MazeUnit>();
-            unit.Close(OpenDirections.North);
-            unit.Close(OpenDirections.South);
-            unit.Close(OpenDirections.West);
-            unit.Close(OpenDirections.East);
-        }
-
-        var iterator = CurrentSelection.GetEnumerator();
-
-        MazeUnit last = null;
-
-        while (iterator.MoveNext())
-        {
-            var current = iterator.Current.GetComponent<MazeUnit>();
-
-            if (!last)
-            {
-                last = current;
-                continue;
-            }
-
-            if (current.GridID.x - 1 == last.GridID.x)
-            {
-                last.Close(OpenDirections.East);
-                current.Close(OpenDirections.West);
-            }
-            else if (current.GridID.x + 1 == last.GridID.x)
-            {
-                last.Close(OpenDirections.West);
-                current.Close(OpenDirections.East);
-            }
-
-            if (current.GridID.y - 1 == last.GridID.y)
-            {
-                last.Close(OpenDirections.North);
-                current.Close(OpenDirections.South);
-            }
-            else if (current.GridID.y + 1 == last.GridID.y)
-            {
-                last.Close(OpenDirections.South);
-                current.Close(OpenDirections.North);
-            }
-
-            last = current;
-        }
-    }
-
-    #endregion
-
-    protected override void RenderEditorGizmos()
+    private void RenderEditorGizmos(beMobileMaze maze)
     {
         var tempMatrix = Gizmos.matrix;
 
@@ -450,12 +168,12 @@ public class MazeInspector : AMazeEditor
         var temp = Handles.matrix;
         Handles.matrix = Gizmos.matrix;
 
-        drawFloorGrid();
+        drawFloorGrid(editorState.SelectedMaze);
 
         Gizmos.color = Color.blue;
 
-        if (CurrentSelection != null) { 
-            foreach (var item in CurrentSelection)
+        if (editorState.CurrentSelection != null) { 
+            foreach (var item in editorState.CurrentSelection)
             {
                 var pos = item.transform.localPosition + new Vector3(0, maze.RoomDimension.y / 2, 0);
                 Gizmos.DrawCube(pos, new Vector3(maze.RoomDimension.x, maze.RoomDimension.y, maze.RoomDimension.z));    
@@ -466,7 +184,7 @@ public class MazeInspector : AMazeEditor
         Gizmos.matrix = tempMatrix;
     }
 
-    private void drawFloorGrid()
+    private void drawFloorGrid(beMobileMaze maze)
     {
         // store map width, height and position
         var mapWidth = maze.MazeWidthInMeter;
@@ -513,7 +231,7 @@ public class MazeInspector : AMazeEditor
             Gizmos.DrawLine(lineStart, lineEnde);
         }
 
-        var zeroField = new Vector3(position.x + (maze.RoomDimension.x / 2), unitFloorOffset, position.x + (maze.RoomDimension.x / 2));
+        var zeroField = new Vector3(position.x + (maze.RoomDimension.x / 2), editorState.unitFloorOffset, position.x + (maze.RoomDimension.x / 2));
 
         Gizmos.color = new Color(Color.green.r, Color.green.g, Color.green.b, 0.1f);
 
@@ -531,8 +249,8 @@ public class MazeInspector : AMazeEditor
         GUILayout.BeginVertical(GUILayout.Width(200f));
 
         GUILayout.Label("Position in local Space of the maze");
-        GUILayout.Label(string.Format("{0} {1} {2}", this.mouseHitPos.x, this.mouseHitPos.y, this.mouseHitPos.z));
-        GUILayout.Label(string.Format("Marker: {0} {1} {2}", MarkerPosition.x, MarkerPosition.y, MarkerPosition.z));
+        GUILayout.Label(string.Format("{0} {1} {2}", this.editorState.mouseHitPos.x, this.editorState.mouseHitPos.y, this.editorState.mouseHitPos.z));
+        GUILayout.Label(string.Format("Marker: {0} {1} {2}", editorState.MarkerPosition.x, editorState.MarkerPosition.y, editorState.MarkerPosition.z));
 
         GUILayout.Space(10f);
         
@@ -614,29 +332,14 @@ public class MazeInspector : AMazeEditor
         GUILayout.Label("Grid:");
         GUILayout.Space(3f);
 
-        RenderMazeGrid();
+        RenderMazeGrid(editorState.SelectedMaze);
 
         GUILayout.EndVertical();
         
         Handles.EndGUI();
     }
-
-    public bool MazeDoesNotContainPaths()
-    {
-        var controller = maze.GetComponent<PathController>();
-        
-        if (controller == null)
-            return false;
-
-        if (!controller.Paths.Any() || controller.Paths.Any((p) =>  p == null))
-            controller.ForcePathLookup();
-
-        var hasPaths = controller.Paths.Any(p => p.PathAsLinkedList.Any());
-
-        return !hasPaths;
-    }
-
-    void RenderMazeGrid() {
+    
+    void RenderMazeGrid(beMobileMaze maze) {
 
         if (maze.Grid == null)
             return;
@@ -663,26 +366,7 @@ public class MazeInspector : AMazeEditor
 
         GUILayout.Label(gridCode.ToString());
     }
-
-    public void DisableModesExcept(MazeEditorMode mode)
-    {
-        switch (mode)
-        {
-            case MazeEditorMode.NONE:        
-                EditingModeEnabled = false;
-                SelectionModeEnabled = false;
-                break;
-            case MazeEditorMode.EDITING:
-                SelectionModeEnabled = false;
-                break;
-            case MazeEditorMode.SELECTION:
-                EditingModeEnabled = false;
-                break;
-            default:
-                break;
-        }
-    }
-
+    
     private void renderEmptyMazeGUI()
     {
         GUILayout.BeginVertical();
@@ -699,41 +383,54 @@ public class MazeInspector : AMazeEditor
 
 
 public abstract class AMazeEditor : Editor {
-
-    protected beMobileMaze maze;
-    public Action<Event> EditorModeProcessEvent;
-
-    protected Vector3 MarkerPosition;
-    protected Color MarkerColor = Color.blue;
-    protected Vector3 draggingStart;
-    protected Vector2 currentTilePosition;
-    protected Vector3 mouseHitPos;
-
+    
+    protected EditorState editorState;
+    
     protected GUIStyle sceneViewUIStyle;
+    
+    public void OnSceneGUI()
+    {
+        SetupGUIStyle();
+        
+        TileHighlightingOnMouseCursor();
+
+        RenderSceneViewUI();
+
+        if (editorState.EditorModeProcessEvent != null)
+            editorState.EditorModeProcessEvent(Event.current);
+    }
 
     protected void TileHighlightingOnMouseCursor()
     {
         // if UpdateHitPosition return true we should update the scene views so that the marker will update in real time
-        if (this.UpdateHitPosition())
+        if (this.UpdateHitPosition(editorState.SelectedMaze.transform))
         {
             this.RecalculateMarkerPosition();
 
-            currentTilePosition = this.GetTilePositionFromMouseLocation();
+            editorState.currentTilePosition = this.GetTilePositionFromMouseLocation(editorState.SelectedMaze, editorState.mouseHitPos);
 
             SceneView.currentDrawingSceneView.Repaint();
         }
 
     }
 
-    protected void RenderTileHighlighting()
+    public abstract void RenderSceneViewUI();
+
+    protected virtual void SetupGUIStyle()
+    {
+        sceneViewUIStyle = new GUIStyle();
+        sceneViewUIStyle.normal.textColor = Color.blue;
+    }
+    
+    protected void RenderTileHighlighting(beMobileMaze maze)
     {
         var tempMatrix = Gizmos.matrix;
 
         Gizmos.matrix = maze.transform.localToWorldMatrix;
 
-        Gizmos.color = MarkerColor;
+        Gizmos.color = editorState.MarkerColor;
 
-        var pos = MarkerPosition + new Vector3(0, maze.RoomDimension.y / 2, 0);
+        var pos = editorState.MarkerPosition + new Vector3(0, maze.RoomDimension.y / 2, 0);
 
         Gizmos.DrawWireCube(pos, new Vector3(maze.RoomDimension.x, maze.RoomDimension.y, maze.RoomDimension.z) * 1.1f);
 
@@ -741,34 +438,12 @@ public abstract class AMazeEditor : Editor {
 
         Handles.matrix = Gizmos.matrix;
 
-        Handles.Label(pos, string.Format("{0}.{1}", (int)MarkerPosition.x, (int)MarkerPosition.z), sceneViewUIStyle);
+        Handles.Label(pos, string.Format("{0}.{1}", (int)editorState.MarkerPosition.x, (int)editorState.MarkerPosition.z), sceneViewUIStyle);
 
         Handles.matrix = temp;
 
         Gizmos.matrix = tempMatrix;
     }
-
-    public abstract void RenderSceneViewUI();
-
-    public void OnSceneGUI()
-    {
-        SetupGUIStyle();
-
-        TileHighlightingOnMouseCursor();
-
-        RenderSceneViewUI();
-
-        if (EditorModeProcessEvent != null)
-            EditorModeProcessEvent(Event.current);
-    }
-
-    protected virtual void SetupGUIStyle()
-    {
-        sceneViewUIStyle = new GUIStyle();
-        sceneViewUIStyle.normal.textColor = Color.blue;
-    }
-
-    protected abstract void RenderEditorGizmos();
 
     #region General calculations based on tile editor
 
@@ -776,10 +451,10 @@ public abstract class AMazeEditor : Editor {
     /// Calculates the location in tile coordinates (Column/Row) of the mouse position
     /// </summary>
     /// <returns>Returns a <see cref="Vector2"/> type representing the Column and Row where the mouse of positioned over.</returns>
-    protected Vector2 GetTilePositionFromMouseLocation()
+    protected Vector2 GetTilePositionFromMouseLocation(beMobileMaze maze, Vector3 mouseHit)
     {
         // calculate column and row location from mouse hit location
-        var pos = new Vector3(this.mouseHitPos.x / maze.RoomDimension.x, this.mouseHitPos.y / maze.transform.position.y, this.mouseHitPos.z / maze.RoomDimension.z);
+        var pos = new Vector3(mouseHit.x / maze.RoomDimension.x, mouseHit.y / maze.transform.position.y, mouseHit.z / maze.RoomDimension.z);
 
         // round the numbers to the nearest whole number using 5 decimal place precision
         pos = new Vector3((int)Math.Round(pos.x, 5, MidpointRounding.ToEven), (int)Math.Round(pos.y, 5, MidpointRounding.ToEven), (int)Math.Round(pos.z, 5, MidpointRounding.ToEven));
@@ -816,20 +491,20 @@ public abstract class AMazeEditor : Editor {
     protected void RecalculateMarkerPosition()
     {
         // store the tile position in world space
-        var pos = new Vector3(currentTilePosition.x * maze.RoomDimension.x, 0, currentTilePosition.y * maze.RoomDimension.z);
+        var pos = new Vector3(editorState.currentTilePosition.x * editorState.SelectedMaze.RoomDimension.x, 0, editorState.currentTilePosition.y * editorState.SelectedMaze.RoomDimension.z);
 
         // set the TileMap.MarkerPosition value
-        MarkerPosition = new Vector3(pos.x + (maze.RoomDimension.x / 2), pos.y, pos.z + (maze.RoomDimension.z / 2));
+        editorState.MarkerPosition = new Vector3(pos.x + (editorState.SelectedMaze.RoomDimension.x / 2), pos.y, pos.z + (editorState.SelectedMaze.RoomDimension.z / 2));
     }
 
     /// <summary>
     /// Calculates the position of the mouse over the tile maze in local space coordinates.
     /// </summary>
     /// <returns>Returns true if the mouse is over the tile maze.</returns>
-    protected bool UpdateHitPosition()
+    protected bool UpdateHitPosition(Transform targetLocalSpace)
     {
         // build a plane object that 
-        var p = new Plane(maze.transform.TransformDirection(maze.transform.up), maze.transform.position);
+        var p = new Plane(targetLocalSpace.TransformDirection(targetLocalSpace.up), targetLocalSpace.position);
 
         // build a ray type from the current mouse position
         var ray = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
@@ -848,13 +523,13 @@ public abstract class AMazeEditor : Editor {
         }
 
         // convert the hit location from world space to local space
-        var value = maze.transform.InverseTransformPoint(hit);
+        var value = targetLocalSpace.InverseTransformPoint(hit);
 
         // if the value is different then the current mouse hit location set the 
         // new mouse hit location and return true indicating a successful hit test
-        if (value != this.mouseHitPos)
+        if (value != this.editorState.mouseHitPos)
         {
-            this.mouseHitPos = value;
+            this.editorState.mouseHitPos = value;
             return true;
         }
 

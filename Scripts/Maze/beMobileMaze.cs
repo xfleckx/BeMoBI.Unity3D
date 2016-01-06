@@ -39,14 +39,14 @@ public class beMobileMaze : MonoBehaviour
 	}
 
 #if UNITY_EDITOR
-	public Action EditorGizmoCallbacks;
+	public Action<beMobileMaze> EditorGizmoCallbacks;
 #endif
 
 	public void OnDrawGizmos()
 	{ 
 #if UNITY_EDITOR
 		if (EditorGizmoCallbacks != null)
-			EditorGizmoCallbacks();
+			EditorGizmoCallbacks(this);
 #endif
 	}
      

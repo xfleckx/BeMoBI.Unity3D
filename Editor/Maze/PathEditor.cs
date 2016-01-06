@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using Assets.SNEED.Unity3D.Editor.Maze;
+
 public enum PathEditorMode { NONE, PATH_CREATION }
 
 [CustomEditor(typeof(PathInMaze))]
@@ -28,36 +30,34 @@ public class PathEditor : AMazeEditor {
     {
         instance = target as PathInMaze;
 
-        if (instance == null)
+        editorState = EditorState.Instance;
+
+        if (editorState.SelectedMaze == null)
             return;
-        if (instance != null){
-            maze = instance.GetComponent<beMobileMaze>(); 
-        }
+        
         
         if (instance.PathAsLinkedList == null)
             instance.PathAsLinkedList = new LinkedList<PathElement>();
 
         instance.EditorGizmoCallbacks += RenderTileHighlighting;
-        instance.EditorGizmoCallbacks += RenderEditorGizmos; 
+        instance.EditorGizmoCallbacks += RenderEditorGizmos;
     }
 
     public void OnDisable()
     {
         if (instance == null)
             return;
-
-        instance.EditorGizmoCallbacks -= RenderTileHighlighting;
-        instance.EditorGizmoCallbacks -= RenderEditorGizmos; 
+        
     }
 
     public override void OnInspectorGUI()
     {
         instance = target as PathInMaze;
 
-        if (instance != null) {  
-            maze = instance.GetComponent<beMobileMaze>();
+        if (instance != null) {
+            editorState.SelectedMaze = instance.GetComponent<beMobileMaze>();
         }
-        if(maze == null) throw new MissingComponentException(string.Format("The Path Controller should be attached to a {0} instance", typeof(beMobileMaze).Name));
+        if(editorState.SelectedMaze == null) throw new MissingComponentException(string.Format("The Path Controller should be attached to a {0} instance", typeof(beMobileMaze).Name));
 
         base.OnInspectorGUI();
 
@@ -79,8 +79,8 @@ public class PathEditor : AMazeEditor {
         
         EditorGUILayout.EndVertical();
 
-        if (EditorModeProcessEvent != null)
-            EditorModeProcessEvent(Event.current);
+        if (editorState.EditorModeProcessEvent != null)
+            editorState.EditorModeProcessEvent(Event.current);
     }
     
     private void RenderElements()
@@ -109,12 +109,15 @@ public class PathEditor : AMazeEditor {
         EditorGUILayout.EndVertical();
     }
 
-    protected new void RenderTileHighlighting()
+    protected void RenderTileHighlighting()
     {
-        TilePositionIsValid = CheckIfTileIsValidPathElement(currentTilePosition);
+        TilePositionIsValid = CheckIfTileIsValidPathElement(editorState.currentTilePosition);
+
+        var maze = editorState.SelectedMaze;
+
         var temp = Gizmos.matrix;
 
-        Gizmos.matrix = maze.transform.localToWorldMatrix;
+        Gizmos.matrix = editorState.SelectedMaze.transform.localToWorldMatrix;
 
         if (!TilePositionIsValid)
         {
@@ -129,11 +132,11 @@ public class PathEditor : AMazeEditor {
                 RenderTurningDegree(
                     instance.PathAsLinkedList.Last.Previous.Value.Unit.transform.position,
                     instance.PathAsLinkedList.Last.Value.Unit.transform.position,
-                    MarkerPosition);
+                    editorState.MarkerPosition);
             }
         }
         
-        Gizmos.DrawWireCube(MarkerPosition + new Vector3(0, maze.RoomDimension.y / 2, 0), new Vector3(maze.RoomDimension.x, maze.RoomDimension.y, maze.RoomDimension.z) * 1.1f);
+        Gizmos.DrawWireCube(editorState.MarkerPosition + new Vector3(0, maze.RoomDimension.y / 2, 0), new Vector3(maze.RoomDimension.x, maze.RoomDimension.y, maze.RoomDimension.z) * 1.1f);
 
         Gizmos.matrix = temp;
         
@@ -157,7 +160,7 @@ public class PathEditor : AMazeEditor {
     
     private bool CheckIfTileIsValidPathElement(Vector2 tilePosition)
     {
-        if (!maze.Units.Any((u) => u.GridID.Equals(tilePosition)))
+        if (!editorState.SelectedMaze.Units.Any((u) => u.GridID.Equals(tilePosition)))
             return false;
 
         if (instance.PathAsLinkedList.Count == 0)
@@ -201,7 +204,7 @@ public class PathEditor : AMazeEditor {
             { 
                 pathInSelection = new LinkedList<MazeUnit>();
 
-                EditorModeProcessEvent += PathCreationMode;
+                editorState.EditorModeProcessEvent += PathCreationMode;
                 ActiveMode = PathEditorMode.PATH_CREATION;
             }
 
@@ -210,7 +213,7 @@ public class PathEditor : AMazeEditor {
         }
         else
         {
-            EditorModeProcessEvent -= PathCreationMode;
+            editorState.EditorModeProcessEvent -= PathCreationMode;
 
             if (pathInSelection != null)
                 pathInSelection.Clear();
@@ -232,7 +235,7 @@ public class PathEditor : AMazeEditor {
 
         if (_ce.type == EventType.MouseDown || _ce.type == EventType.MouseDrag)
         {
-            var unit = maze.Grid[Mathf.FloorToInt(currentTilePosition.x), Mathf.FloorToInt(currentTilePosition.y)];
+            var unit = editorState.SelectedMaze.Grid[Mathf.FloorToInt(editorState.currentTilePosition.x), Mathf.FloorToInt(editorState.currentTilePosition.y)];
 
             if (unit == null)
             {
@@ -377,8 +380,10 @@ public class PathEditor : AMazeEditor {
     
     #endregion  
 
-    protected override void RenderEditorGizmos()
+    protected void RenderEditorGizmos()
     {
+        var maze = editorState.SelectedMaze;
+
         var temp_handles_color = Handles.color;
 
         if (!instance.enabled)

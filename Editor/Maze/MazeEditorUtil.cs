@@ -10,6 +10,30 @@ using Assets.SNEED.Unity3D.Editor.Maze.UnitCreation;
 
 public static class MazeEditorUtil
 {
+
+    public static void ApplyToAllMazeUnits(this beMobileMaze maze, Action<MazeUnit> action)
+    {
+        foreach (var item in maze.Units)
+        {
+            action(item);
+        }
+    }
+
+    public static bool DoesNotContainPaths(this beMobileMaze maze)
+    {
+        var controller = maze.GetComponent<PathController>();
+
+        if (controller == null)
+            return false;
+
+        if (!controller.Paths.Any() || controller.Paths.Any((p) => p == null))
+            controller.ForcePathLookup();
+
+        var hasPaths = controller.Paths.Any(p => p.PathAsLinkedList.Any());
+
+        return !hasPaths;
+    }
+
     public static void RebuildGrid(beMobileMaze maze)
     {
         CacheUnitsIn(maze);
@@ -129,6 +153,26 @@ public static class MazeEditorUtil
     public static MazeUnit[,] ReconfigureGrid(beMobileMaze maze, float columns, float rows)
     {
         return ReconfigureGrid(maze, Mathf.FloorToInt(columns), Mathf.FloorToInt(rows));
+    }
+
+    public static void LookUpAllUnits(beMobileMaze maze)
+    {
+        var unitsExceptMissingReference = maze.Units.Where(u => u != null);
+
+        maze.Units.Clear();
+
+        foreach (var item in unitsExceptMissingReference)
+        {
+            maze.Units.Add(item);
+        }
+
+        for (int i = 0; i < maze.transform.childCount; i++)
+        {
+            var existing = maze.transform.GetChild(i).GetComponent<MazeUnit>();
+
+            if (existing != null && !maze.Units.Contains(existing))
+                maze.Units.Add(existing);
+        }
     }
 
     public static void ImmediateDestroyObjects(this IEnumerable<GameObject> set)

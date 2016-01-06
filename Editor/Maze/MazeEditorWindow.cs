@@ -6,32 +6,24 @@ using Assets.SNEED.Unity3D.Editor.Maze;
 
 public class MazeEditorWindow : EditorWindow
 {
-    [SerializeField]
-    private beMobileMaze maze;
-    
-    private MazeInspector inspector;
+    private EditorState state;
 
     private MazeBaker mazeBaker;
 
-    private int MazeWidth;
 
-    private int MazeLength;
-
-    public void Initialize(beMobileMaze maze, MazeInspector inspector)
+    public void Initialize(EditorState editorState)
     {
         titleContent = new GUIContent("Maze Editor");
-
-        this.maze = maze;
-
+        
         this.mazeBaker = new MazeBaker();
-
-        this.inspector = inspector;
+        
+        this.state = editorState;
     }
 
 
     void OnGUI()
     {
-        if(inspector == null || maze == null)
+        if(state.SelectedMaze == null)
         {
             EditorGUILayout.HelpBox("No maze Selected", MessageType.Error);
             return;
@@ -41,25 +33,27 @@ public class MazeEditorWindow : EditorWindow
 
         EditorGUILayout.LabelField("(1) Add a unit prefab!", EditorStyles.boldLabel);
 
-        inspector.UnitPrefab = EditorGUILayout.ObjectField("Unit Prefab:", inspector.UnitPrefab, typeof(GameObject), false) as GameObject;
+        state.UnitPrefab = EditorGUILayout.ObjectField("Unit Prefab:", state.UnitPrefab, typeof(GameObject), false) as GameObject;
 
-        if (inspector.UnitPrefab != null)
+        if (state.UnitPrefab != null)
         {
-           EditorGUILayout.LabelField(AssetDatabase.GetAssetPath(inspector.UnitPrefab));
+           EditorGUILayout.LabelField(AssetDatabase.GetAssetPath(state.UnitPrefab));
         } 
         
+
+
         EditorGUILayout.LabelField("(2) Define Maze Dimensions!", EditorStyles.boldLabel);
 
-        MazeWidth = EditorGUILayout.IntField("Widht", MazeWidth);
+        state.MazeWidth = EditorGUILayout.FloatField("Widht", state.MazeWidth);
 
-        MazeLength = EditorGUILayout.IntField("Length", MazeLength);
+        state.MazeLength = EditorGUILayout.FloatField("Length", state.MazeLength);
 
         if(GUILayout.Button("Set Dimensions"))
         {
-            maze.MazeWidthInMeter = MazeWidth;
-            maze.MazeLengthInMeter = MazeLength;
+            state.SelectedMaze.MazeWidthInMeter = state.MazeWidth;
+            state.SelectedMaze.MazeLengthInMeter = state.MazeLength;
 
-            MazeEditorUtil.RebuildGrid(maze);
+            MazeEditorUtil.RebuildGrid(state.SelectedMaze);
         }
 
         EditorGUILayout.EndVertical();
@@ -68,32 +62,32 @@ public class MazeEditorWindow : EditorWindow
 
         #region Editing Mode UI
 
-        if (maze != null && inspector.UnitPrefab != null && inspector.MazeDoesNotContainPaths())
+        if (state.SelectedMaze != null && state.UnitPrefab != null && state.SelectedMaze.DoesNotContainPaths())
         {
-            inspector.EditingModeEnabled = GUILayout.Toggle(inspector.EditingModeEnabled, "Editing Mode");
+            state.EditingModeEnabled = GUILayout.Toggle(state.EditingModeEnabled, "Editing Mode");
 
-            if (inspector.EditingModeEnabled)
+            if (state.EditingModeEnabled)
             {
-                if (inspector.ActiveMode != MazeEditorMode.EDITING)
+                if (state.ActiveMode != MazeEditorMode.EDITING)
                 {
-                    inspector.DisableModesExcept(MazeEditorMode.EDITING);
-                    inspector.EditorModeProcessEvent = null;
-                    inspector.EditorModeProcessEvent += inspector.EditingMode;
-                    inspector.ActiveMode = MazeEditorMode.EDITING;
+                    state.DisableModesExcept(MazeEditorMode.EDITING);
+                    state.EditorModeProcessEvent = null;
+                    state.EditorModeProcessEvent += state.EditingMode;
+                    state.ActiveMode = MazeEditorMode.EDITING;
                 }
                 GUILayout.BeginHorizontal();
                 GUILayout.Space(15f);
                 GUILayout.BeginVertical();
-                inspector.modeAddEnabled = GUILayout.Toggle(!inspector.modeRemoveEnabled, "Adding Cells");
-                inspector.modeRemoveEnabled = GUILayout.Toggle(!inspector.modeAddEnabled, "Erasing Cells");
+                state.modeAddEnabled = GUILayout.Toggle(!state.modeRemoveEnabled, "Adding Cells");
+                state.modeRemoveEnabled = GUILayout.Toggle(!state.modeAddEnabled, "Erasing Cells");
                 GUILayout.EndVertical();
                 GUILayout.EndHorizontal();
             }
             else
             {
-                inspector.modeRemoveEnabled = false;
-                inspector.modeAddEnabled = false;
-                inspector.EditorModeProcessEvent -= inspector.EditingMode;
+                state.modeRemoveEnabled = false;
+                state.modeAddEnabled = false;
+                state.EditorModeProcessEvent -= state.EditingMode;
             }
         }
         else
@@ -106,41 +100,41 @@ public class MazeEditorWindow : EditorWindow
 
         EditorGUILayout.LabelField("(4) Use selection to connect units!", EditorStyles.boldLabel);
 
-        inspector.SelectionModeEnabled = GUILayout.Toggle(inspector.SelectionModeEnabled, "Selection Mode");
+        state.SelectionModeEnabled = GUILayout.Toggle(state.SelectionModeEnabled, "Selection Mode");
 
         #region Selection Mode UI
 
-        if (inspector.SelectionModeEnabled)
+        if (state.SelectionModeEnabled)
         {
 
-            if (inspector.ActiveMode != MazeEditorMode.SELECTION)
+            if (state.ActiveMode != MazeEditorMode.SELECTION)
             {
-                inspector.DisableModesExcept(MazeEditorMode.SELECTION);
+                state.DisableModesExcept(MazeEditorMode.SELECTION);
 
-                inspector.CurrentSelection = new HashSet<GameObject>();
+                state.CurrentSelection = new HashSet<GameObject>();
 
-                inspector.EditorModeProcessEvent = null;
-                inspector.EditorModeProcessEvent += inspector.SelectionMode;
+                state.EditorModeProcessEvent = null;
+                state.EditorModeProcessEvent += state.SelectionMode;
 
-                inspector.ActiveMode = MazeEditorMode.SELECTION;
+                state.ActiveMode = MazeEditorMode.SELECTION;
             }
 
             if (GUILayout.Button("Connect", GUILayout.Width(100f)))
             {
-                inspector.TryConnectingCurrentSelection();
+                state.TryConnectingCurrentSelection();
             }
 
             if (GUILayout.Button("Disconnect", GUILayout.Width(100f)))
             {
-                inspector.TryDisconnectingCurrentSelection();
+                state.TryDisconnectingCurrentSelection();
             }
         }
         else
         {
-            inspector.EditorModeProcessEvent -= inspector.SelectionMode;
+            state.EditorModeProcessEvent -= state.SelectionMode;
 
-            if (inspector.CurrentSelection != null)
-                inspector.CurrentSelection.Clear();
+            if (state.CurrentSelection != null)
+                state.CurrentSelection.Clear();
         }
         #endregion
 
@@ -152,12 +146,9 @@ public class MazeEditorWindow : EditorWindow
 
         if (GUILayout.Button("Bake"))
         {
-            mazeBaker.Bake(maze);
+            mazeBaker.Bake(state.SelectedMaze);
         }
 
     }
 
-    void OnDestroy()
-    {
-    }
 }
