@@ -78,10 +78,6 @@ namespace Assets.SNEED.Unity3D.Editor.Maze
 
         }
 
-        public Material FloorMaterial;
-        public Material WallMaterial;
-        public Material TopMaterial;
-
         public void Initialize(beMobileMaze currentMaze)
         {
             SelectedMaze = currentMaze;

@@ -122,13 +122,7 @@ public class MazeCustomizer : EditorWindow
     Material FloorMaterial;
     Material WallMaterial;
     Material TopMaterial;
-    private void ApplyToAllMazeUnits(beMobileMaze maze, Action<MazeUnit> action)
-    {
-        foreach (var item in maze.Units)
-        {
-            action(item);
-        }
-    }
+
     private void renderUiForUnitSetCustomization()
     {
         EditorGUILayout.Space();
@@ -143,7 +137,7 @@ public class MazeCustomizer : EditorWindow
         WallMaterial = EditorGUILayout.ObjectField("Wall: ", WallMaterial, typeof(Material), false) as Material;
         if (WallMaterial != null && GUILayout.Button("Apply"))
         {
-            ApplyToAllMazeUnits(selectedMaze, (u) =>
+            selectedMaze.ApplyToAllMazeUnits( (u) =>
             {
 
                 int c = u.transform.childCount;
@@ -169,7 +163,7 @@ public class MazeCustomizer : EditorWindow
         FloorMaterial = EditorGUILayout.ObjectField("Floor: ", FloorMaterial, typeof(Material), false) as Material;
         if (FloorMaterial != null && GUILayout.Button("Apply"))
         {
-            ApplyToAllMazeUnits(selectedMaze, (u) =>
+            selectedMaze.ApplyToAllMazeUnits( (u) =>
             {
                 int c = u.transform.childCount;
                 for (int i = 0; i < c; i++)
@@ -190,7 +184,7 @@ public class MazeCustomizer : EditorWindow
         TopMaterial = EditorGUILayout.ObjectField("Top: ", TopMaterial, typeof(Material), false) as Material;
         if (TopMaterial && GUILayout.Button("Apply"))
         {
-            ApplyToAllMazeUnits(selectedMaze, (u) =>
+            selectedMaze.ApplyToAllMazeUnits( (u) =>
             {
                 int c = u.transform.childCount;
                 for (int i = 0; i < c; i++)
