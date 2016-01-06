@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
-using Assets.Daedalus.Unity3D.Editor.Maze.UnitCreation;
+using Assets.SNEED.Unity3D.Editor.Maze.UnitCreation;
 using UnityEditor;
 using System.Collections.Generic;
 using System.IO; 

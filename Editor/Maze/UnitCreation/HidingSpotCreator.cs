@@ -1,4 +1,4 @@
-﻿using Assets.Daedalus.Unity3D.Editor.Maze.UnitCreation;
+﻿using Assets.SNEED.Unity3D.Editor.Maze.UnitCreation;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,7 +7,7 @@ using System.Text;
 using UnityEditor;
 using UnityEngine;
 
-namespace Assets.Daedalus.Unity3D.Editor.Maze.UnitCreation
+namespace Assets.SNEED.Unity3D.Editor.Maze.UnitCreation
 {
     public class HidingSpotCreator : CreatorState<HidingSpot>
     {

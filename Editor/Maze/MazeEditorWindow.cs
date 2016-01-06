@@ -2,7 +2,7 @@
 using UnityEditor;
 using System;
 using System.Collections.Generic;
-using Assets.Daedalus.Unity3D.Editor.Maze;
+using Assets.SNEED.Unity3D.Editor.Maze;
 
 public class MazeEditorWindow : EditorWindow
 {

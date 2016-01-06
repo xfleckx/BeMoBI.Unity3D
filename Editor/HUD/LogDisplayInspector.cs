@@ -5,7 +5,7 @@ using System.Text;
 using UnityEditor;
 using UnityEngine;
 
-namespace Assets.Daedalus.Unity3D.Editor.HUD
+namespace Assets.SNEED.Unity3D.Editor.HUD
 {
     [CustomEditor(typeof(LOGDisplay))]
     public class LogDisplayInspector : UnityEditor.Editor
