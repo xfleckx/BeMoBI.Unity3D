@@ -38,7 +38,7 @@ public class EditorEnvironmentConstants : ScriptableObject
         folderName = path.Substring(lastSeperator + 1, path.Length - lastSeperator - 1);
     }
 
-    public const string ASSET_PACKAGE_NAME = "Daedalus";
+    public const string ASSET_PACKAGE_NAME = "SNEED";
 
     public const string ASSET_CREATION_PREFIX = "CreatedBy_";
 

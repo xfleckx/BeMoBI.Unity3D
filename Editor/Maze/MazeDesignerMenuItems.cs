@@ -3,7 +3,7 @@ using UnityEditor;
 
 public class MazeDesignerMenuItems : ScriptableObject
 {
-    [MenuItem("Daedalus/Maze/Add new Maze as Prefab")]
+    [MenuItem("SNEED/Maze/Add new Maze as Prefab")]
     static void CreateNewMazeAsPrefab()
     {
         var filePath = EditorUtility.SaveFilePanelInProject("Save the prefab", "Maze", "prefab","Message");

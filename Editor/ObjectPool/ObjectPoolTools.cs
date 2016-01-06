@@ -5,7 +5,7 @@ using System;
 
 public class ObjectPoolTools : EditorWindow
 { 
-    [MenuItem("Daedalus/Object Pool/Open Pool Editor")]
+    [MenuItem("SNEED/Object Pool/Open Pool Editor")]
     public static void OpenPoolEditor()
     {
         var w = EditorWindow.CreateInstance<ObjectPoolTools>();

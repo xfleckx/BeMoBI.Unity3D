@@ -8,7 +8,7 @@ using Assets.Daedalus.Unity3D.Editor.Maze.UnitCreation;
 
 public class UnitCreator : EditorWindow
 { 
-    [MenuItem("BeMoBI/Maze/Unit Creator")]
+    [MenuItem("SNEED/Maze/Unit Creator")]
     static void OpenUnitCreator()
     {
         var window = EditorWindow.GetWindow<UnitCreator>();

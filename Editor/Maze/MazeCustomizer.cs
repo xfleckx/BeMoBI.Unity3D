@@ -5,7 +5,7 @@ using System.Linq;
 
 public class MazeCustomizer : EditorWindow
 {
-    [MenuItem("Daedalus/Maze/Customizer")]
+    [MenuItem("SNEED/Maze/Customizer")]
     static void Init()
     {
         var window = EditorWindow.GetWindow<MazeCustomizer>();
