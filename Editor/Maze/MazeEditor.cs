@@ -6,6 +6,7 @@ using System.Linq;
 using System.IO;
 using System.Text;
 using Assets.SNEED.Unity3D.Editor.Maze;
+using Assets.BeMoBI.Unity3D.Editor.Maze;
 
 public enum MazeEditorMode { NONE, EDITING, SELECTION }
 
@@ -34,6 +35,8 @@ public class MazeInspector : AMazeEditor
         if (editorState.referenceToPrefab != null) {
             editorState.PathToMazePrefab = AssetDatabase.GetAssetPath(editorState.referenceToPrefab);
         }
+
+        SetupGUIStyle();
 
         if (editorState.SelectedMaze) {
             editorState.SelectedMaze.EditorGizmoCallbacks += RenderTileHighlighting;
@@ -168,11 +171,12 @@ public class MazeInspector : AMazeEditor
         var temp = Handles.matrix;
         Handles.matrix = Gizmos.matrix;
 
-        drawFloorGrid(editorState.SelectedMaze);
+        if(editorState.EditorWindowVisible || !maze.Units.Any())
+            EditorVisualUtils.DrawFloorGrid(editorState.SelectedMaze);
 
         Gizmos.color = Color.blue;
 
-        if (editorState.CurrentSelection != null) { 
+        if (editorState.EditorWindowVisible && editorState.CurrentSelection != null) { 
             foreach (var item in editorState.CurrentSelection)
             {
                 var pos = item.transform.localPosition + new Vector3(0, maze.RoomDimension.y / 2, 0);
@@ -182,60 +186,6 @@ public class MazeInspector : AMazeEditor
 
         Handles.matrix = temp;
         Gizmos.matrix = tempMatrix;
-    }
-
-    private void drawFloorGrid(beMobileMaze maze)
-    {
-        // store map width, height and position
-        var mapWidth = maze.MazeWidthInMeter;
-        var mapHeight = maze.MazeLengthInMeter;
-
-        //var position = maze.transform.position;
-        var position = new Vector3(0, 0, 0);
-
-        // draw layer border
-        Gizmos.color = Color.white;
-        Gizmos.DrawLine(position, position + new Vector3(mapWidth, 0, 0));
-        Gizmos.DrawLine(position, position + new Vector3(0, 0, mapHeight));
-        Gizmos.DrawLine(position + new Vector3(mapWidth, 0, 0), position + new Vector3(mapWidth, 0, mapHeight));
-        Gizmos.DrawLine(position + new Vector3(0, 0, mapHeight), position + new Vector3(mapWidth, 0, mapHeight));
-        
-        Vector3 lineStart;
-        Vector3 lineEnde;
-        // draw tile cells
-        Gizmos.color = Color.green;
-
-        for (float i = 1; i <= maze.Columns; i++)
-        {
-            float xOffset = i * maze.RoomDimension.x;
-
-            lineStart = position + new Vector3(xOffset, 0, 0);
-            lineEnde = position + new Vector3(xOffset, 0, mapHeight);
-
-            var labelPos = position + new Vector3(xOffset, 0, 0);
-            Handles.Label(labelPos, i.ToString());
-
-            Gizmos.DrawLine(lineStart, lineEnde);
-        }
-
-        for (float i = 1; i <= maze.Rows; i++)
-        {
-            float yoffset = i * maze.RoomDimension.z;
-
-            lineStart = position + new Vector3(0, 0, yoffset);
-            lineEnde = position + new Vector3(mapWidth, 0, yoffset);
-            
-            var labelPos = position + new Vector3(0, 0, yoffset);
-            Handles.Label(labelPos, i.ToString());
-
-            Gizmos.DrawLine(lineStart, lineEnde);
-        }
-
-        var zeroField = new Vector3(position.x + (maze.RoomDimension.x / 2), editorState.unitFloorOffset, position.x + (maze.RoomDimension.x / 2));
-
-        Gizmos.color = new Color(Color.green.r, Color.green.g, Color.green.b, 0.1f);
-
-        Gizmos.DrawCube(zeroField, new Vector3(maze.RoomDimension.x - 0.1f, 0, maze.RoomDimension.z - 0.1f));
     }
 
     public override void RenderSceneViewUI()
@@ -390,13 +340,14 @@ public abstract class AMazeEditor : Editor {
     
     public void OnSceneGUI()
     {
-        SetupGUIStyle();
+        if (!editorState.EditorWindowVisible)
+            return;
         
         TileHighlightingOnMouseCursor();
 
         RenderSceneViewUI();
 
-        if (editorState.EditorModeProcessEvent != null)
+        if (editorState.EditorWindowVisible && editorState.EditorModeProcessEvent != null)
             editorState.EditorModeProcessEvent(Event.current);
     }
 
@@ -421,9 +372,12 @@ public abstract class AMazeEditor : Editor {
         sceneViewUIStyle = new GUIStyle();
         sceneViewUIStyle.normal.textColor = Color.blue;
     }
-    
+
     protected void RenderTileHighlighting(beMobileMaze maze)
     {
+        if (!editorState.EditorWindowVisible)
+            return;
+
         var tempMatrix = Gizmos.matrix;
 
         Gizmos.matrix = maze.transform.localToWorldMatrix;

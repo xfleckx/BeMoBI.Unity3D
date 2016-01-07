@@ -14,16 +14,18 @@ public class MazeEditorWindow : EditorWindow
     public void Initialize(EditorState editorState)
     {
         titleContent = new GUIContent("Maze Editor");
-        
+
         this.mazeBaker = new MazeBaker();
-        
+
         this.state = editorState;
+
+        editorState.EditorWindowVisible = true;
     }
 
 
     void OnGUI()
     {
-        if(state.SelectedMaze == null)
+        if (state.SelectedMaze == null)
         {
             EditorGUILayout.HelpBox("No maze Selected", MessageType.Error);
             return;
@@ -37,9 +39,13 @@ public class MazeEditorWindow : EditorWindow
 
         if (state.UnitPrefab != null)
         {
-           EditorGUILayout.LabelField(AssetDatabase.GetAssetPath(state.UnitPrefab));
-        } 
-        
+            EditorGUILayout.LabelField(AssetDatabase.GetAssetPath(state.UnitPrefab));
+        }
+        else
+        {
+            EditorGUILayout.HelpBox("First add an Unit prefab!", MessageType.Info);
+        }
+
 
 
         EditorGUILayout.LabelField("(2) Define Maze Dimensions!", EditorStyles.boldLabel);
@@ -48,7 +54,7 @@ public class MazeEditorWindow : EditorWindow
 
         state.MazeLength = EditorGUILayout.FloatField("Length", state.MazeLength);
 
-        if(GUILayout.Button("Set Dimensions"))
+        if (GUILayout.Button("Set Dimensions"))
         {
             state.SelectedMaze.MazeWidthInMeter = state.MazeWidth;
             state.SelectedMaze.MazeLengthInMeter = state.MazeLength;
@@ -57,7 +63,7 @@ public class MazeEditorWindow : EditorWindow
         }
 
         EditorGUILayout.EndVertical();
-        
+
         EditorGUILayout.LabelField("(3) Add units to the maze!", EditorStyles.boldLabel);
 
         #region Editing Mode UI
@@ -151,4 +157,9 @@ public class MazeEditorWindow : EditorWindow
 
     }
 
+
+    void OnDestroy()
+    {
+        state.EditorWindowVisible = false;
+    }
 }

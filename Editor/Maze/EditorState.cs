@@ -24,6 +24,8 @@ namespace Assets.SNEED.Unity3D.Editor.Maze
             }
         }
 
+        public bool EditorWindowVisible = false;
+
         public beMobileMaze SelectedMaze;
 
         public float MazeWidth;
