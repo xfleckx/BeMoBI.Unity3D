@@ -97,25 +97,6 @@ namespace Assets.SNEED.Unity3D.Editor.Maze
         public Vector2 currentTilePosition;
         public Vector3 mouseHitPos;
 
-        #region Unity callbacks
-
-        void OnEnable()
-        {
-            Debug.Log("Editor state enabled");
-        }
-
-        void OnDisable()
-        {
-            Debug.Log("Editor state disabled");
-        }
-
-        void OnDestroy()
-        {
-            Debug.Log("Editor state destroyed");
-        }
-
-        #endregion 
-
         public void DisableModesExcept(MazeEditorMode mode)
         {
             switch (mode)
