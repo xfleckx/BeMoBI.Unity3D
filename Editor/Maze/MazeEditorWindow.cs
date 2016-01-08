@@ -22,9 +22,17 @@ public class MazeEditorWindow : EditorWindow
         editorState.EditorWindowVisible = true;
     }
 
+    void OnEnable()
+    {
+        if (state == null) // the case that the Unity Editor remember the window
+        {
+            this.Close();
+        }
+    } 
 
     void OnGUI()
     {
+
         if (state.SelectedMaze == null)
         {
             EditorGUILayout.HelpBox("No maze Selected", MessageType.Error);
@@ -160,6 +168,7 @@ public class MazeEditorWindow : EditorWindow
 
     void OnDestroy()
     {
-        state.EditorWindowVisible = false;
+        if(state != null)
+            state.EditorWindowVisible = false;
     }
 }
