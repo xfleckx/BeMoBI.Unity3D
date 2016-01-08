@@ -12,7 +12,7 @@ public class FullScreenFade : MonoBehaviour
 	/// <summary>
 	/// Seconds between fading states
 	/// </summary>
-	public float timeToFade = 2.0f;
+	private float timeToFade = 2.0f;
 
 	/// <summary>
 	/// The initial screen color.
@@ -39,18 +39,22 @@ public class FullScreenFade : MonoBehaviour
 	/// <summary>
 	/// Starts the fade in
 	/// </summary>
-	public void StartFadeIn()
+	public void StartFadeIn(float durationInSeconds = 2f)
 	{
-		if(material != null)
+        timeToFade = durationInSeconds;
+        
+        if (material != null)
 			StartCoroutine(FadeIn());
 	}
 
     /// <summary>
     /// Starts the fade in
     /// </summary>
-    public void StartFadeOut(){
+    public void StartFadeOut(float durationInSeconds = 2f)
+    {
+        timeToFade = durationInSeconds;
 
- 		if(material != null)
+        if (material != null)
  			StartCoroutine(FadeOut());
  	}
 
@@ -70,6 +74,9 @@ public class FullScreenFade : MonoBehaviour
 			color.a = 1.0f - Mathf.Clamp01(elapsedTime / timeToFade);
 			material.color = color;
 		}
+
+        material.color = colorTransparent;
+
         stayOpaque = false;
         isFading = false;
 	}
@@ -90,6 +97,9 @@ public class FullScreenFade : MonoBehaviour
 			color.a = 0.0f + Mathf.Clamp01(elapsedTime / timeToFade);
 			material.color = color;
         }
+
+        material.color = colorOpaque;
+
         stayOpaque = true;
         isFading = false;
 	}
