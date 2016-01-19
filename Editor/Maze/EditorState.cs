@@ -38,7 +38,7 @@ namespace Assets.SNEED.Unity3D.Editor.Maze
 
         public bool SelectionModeEnabled = false;
 
-        public HashSet<GameObject> CurrentSelection;
+        public List<GameObject> CurrentSelection;
 
         public bool EditingModeEnabled = false;
         public bool modeAddEnabled = false;

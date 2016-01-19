@@ -49,7 +49,14 @@ public class beMobileMaze : MonoBehaviour
 			EditorGizmoCallbacks(this);
 #endif
 	}
-     
+
+#if UNITY_EDITOR
+    public void ClearCallbacks()
+    {
+        EditorGizmoCallbacks = null;
+    }
+#endif
+
     void Reset()
     {
         Debug.Log("Reset on Maze"); 

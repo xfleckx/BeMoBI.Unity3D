@@ -139,8 +139,7 @@ public class MazeInspector : AMazeEditor
     public void OnDisable()
     {
         if (editorState.SelectedMaze) {
-            editorState.SelectedMaze.EditorGizmoCallbacks -= RenderTileHighlighting;
-            editorState.SelectedMaze.EditorGizmoCallbacks -= RenderEditorGizmos;
+            editorState.SelectedMaze.ClearCallbacks();
         }
     }
     
@@ -193,7 +192,6 @@ public class MazeInspector : AMazeEditor
         if (EditorApplication.isPlaying)
             return;
         
-
         Handles.BeginGUI();
 
         GUILayout.BeginVertical(GUILayout.Width(200f));

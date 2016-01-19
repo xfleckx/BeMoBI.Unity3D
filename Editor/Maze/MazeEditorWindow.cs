@@ -9,8 +9,7 @@ public class MazeEditorWindow : EditorWindow
     private EditorState state;
 
     private MazeBaker mazeBaker;
-
-
+    
     public void Initialize(EditorState editorState)
     {
         titleContent = new GUIContent("Maze Editor");
@@ -22,16 +21,13 @@ public class MazeEditorWindow : EditorWindow
         editorState.EditorWindowVisible = true;
     }
 
-    void OnEnable()
+    void OnGUI()
     {
         if (state == null) // the case that the Unity Editor remember the window
         {
             this.Close();
+            return;
         }
-    } 
-
-    void OnGUI()
-    {
 
         if (state.SelectedMaze == null)
         {
@@ -53,8 +49,7 @@ public class MazeEditorWindow : EditorWindow
         {
             EditorGUILayout.HelpBox("First add an Unit prefab!", MessageType.Info);
         }
-
-
+        
 
         EditorGUILayout.LabelField("(2) Define Maze Dimensions!", EditorStyles.boldLabel);
 
@@ -76,37 +71,17 @@ public class MazeEditorWindow : EditorWindow
 
         #region Editing Mode UI
 
-        if (state.SelectedMaze != null && state.UnitPrefab != null && state.SelectedMaze.DoesNotContainPaths())
+        if (state.UnitPrefab == null)
         {
-            state.EditingModeEnabled = GUILayout.Toggle(state.EditingModeEnabled, "Editing Mode");
-
-            if (state.EditingModeEnabled)
-            {
-                if (state.ActiveMode != MazeEditorMode.EDITING)
-                {
-                    state.DisableModesExcept(MazeEditorMode.EDITING);
-                    state.EditorModeProcessEvent = null;
-                    state.EditorModeProcessEvent += state.EditingMode;
-                    state.ActiveMode = MazeEditorMode.EDITING;
-                }
-                GUILayout.BeginHorizontal();
-                GUILayout.Space(15f);
-                GUILayout.BeginVertical();
-                state.modeAddEnabled = GUILayout.Toggle(!state.modeRemoveEnabled, "Adding Cells");
-                state.modeRemoveEnabled = GUILayout.Toggle(!state.modeAddEnabled, "Erasing Cells");
-                GUILayout.EndVertical();
-                GUILayout.EndHorizontal();
-            }
-            else
-            {
-                state.modeRemoveEnabled = false;
-                state.modeAddEnabled = false;
-                state.EditorModeProcessEvent -= state.EditingMode;
-            }
+            EditorGUILayout.HelpBox("You have to add a Unit prefab!", MessageType.Warning);
+        }
+        else if (!state.SelectedMaze.DoesNotContainPaths())
+        {
+            EditorGUILayout.HelpBox("Editing disabled, \n Maze contains paths!", MessageType.Warning);
         }
         else
         {
-            GUILayout.Label("Editing disabled, \n Maze contains paths!");
+            RenderEditorModeOptions();
         }
         #endregion
 
@@ -125,7 +100,7 @@ public class MazeEditorWindow : EditorWindow
             {
                 state.DisableModesExcept(MazeEditorMode.SELECTION);
 
-                state.CurrentSelection = new HashSet<GameObject>();
+                state.CurrentSelection = new List<GameObject>();
 
                 state.EditorModeProcessEvent = null;
                 state.EditorModeProcessEvent += state.SelectionMode;
@@ -165,6 +140,34 @@ public class MazeEditorWindow : EditorWindow
 
     }
 
+    private void RenderEditorModeOptions()
+    {
+        state.EditingModeEnabled = GUILayout.Toggle(state.EditingModeEnabled, "Editing Mode");
+
+        if (state.EditingModeEnabled)
+        {
+            if (state.ActiveMode != MazeEditorMode.EDITING)
+            {
+                state.DisableModesExcept(MazeEditorMode.EDITING);
+                state.EditorModeProcessEvent = null;
+                state.EditorModeProcessEvent += state.EditingMode;
+                state.ActiveMode = MazeEditorMode.EDITING;
+            }
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(15f);
+            GUILayout.BeginVertical();
+            state.modeAddEnabled = GUILayout.Toggle(!state.modeRemoveEnabled, "Adding Cells");
+            state.modeRemoveEnabled = GUILayout.Toggle(!state.modeAddEnabled, "Erasing Cells");
+            GUILayout.EndVertical();
+            GUILayout.EndHorizontal();
+        }
+        else
+        {
+            state.modeRemoveEnabled = false;
+            state.modeAddEnabled = false;
+            state.EditorModeProcessEvent -= state.EditingMode;
+        }
+    }
 
     void OnDestroy()
     {
