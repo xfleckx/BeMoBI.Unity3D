@@ -111,6 +111,9 @@ public class PathEditor : AMazeEditor {
 
     protected void RenderTileHighlighting()
     {
+        if (editorState.SelectedMaze == null || !editorState.EditorWindowVisible)
+            return;
+
         TilePositionIsValid = CheckIfTileIsValidPathElement(editorState.currentTilePosition);
 
         var maze = editorState.SelectedMaze;
