@@ -230,8 +230,61 @@ public class ObjectPoolTools : EditorWindow
             EditorGUILayout.EndHorizontal();
         }
 
+        EditorGUILayout.BeginHorizontal();
+
+        specialLayer = EditorGUILayout.IntField("Layer", specialLayer);
+
+        if(GUILayout.Button("Set Layer to all Objects"))
+        {
+            foreach (var category in currentPool.Categories)
+            {
+                foreach (var obj in category.AssociatedObjects)
+                {
+                    obj.layer = specialLayer;
+                }
+            }
+        }
+
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        
+        if (GUILayout.Button("Add Trigger collider to all objects"))
+        {
+            foreach (var category in currentPool.Categories)
+            {
+                foreach (var obj in category.AssociatedObjects)
+                {
+                    var collider = obj.AddComponent<SphereCollider>();
+                    collider.isTrigger = true;
+                }
+            }
+        }
+
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+
+        tag = EditorGUILayout.TextField("Tag", tag);
+
+        if (GUILayout.Button("Tag all Objects"))
+        {
+            foreach (var category in currentPool.Categories)
+            {
+                foreach (var obj in category.AssociatedObjects)
+                {
+                    obj.tag = tag;
+                }
+            }
+        }
+
+        EditorGUILayout.EndHorizontal();
+
         EditorGUILayout.EndVertical();
     }
+
+    private int specialLayer = 0;
+    private string tag = string.Empty;
 
     private bool useTargetTransform = false;
 
@@ -271,6 +324,19 @@ public class ObjectPoolTools : EditorWindow
             prefabInstance.SetActive(false);
             selectedCategory.AssociatedObjects.Add(prefabInstance);
         }
+
+
+        tag = EditorGUILayout.TextField("Tag", tag);
+
+        if (GUILayout.Button("Tag Objects"))
+        {
+            foreach (var obj in selectedCategory.AssociatedObjects)
+            {
+                obj.tag = tag;
+            }
+                 
+        }
+        
     }
 
     private void CheckCategoryListConsistency(ObjectPool targetPool)
