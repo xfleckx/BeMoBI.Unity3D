@@ -59,7 +59,8 @@ public class OrientationObserver : MonoBehaviour, IEventSystemHandler {
 
 		if (AngleBetween <= FocusRange && !EventInvoked)
 		{
-			m_OnTargetOrientation.Invoke();
+            if(m_OnTargetOrientation.GetPersistentEventCount() > 0)
+			    m_OnTargetOrientation.Invoke();
 		}
 		else
 		{
