@@ -201,6 +201,22 @@ public class MazeCustomizer : EditorWindow
         }
         EditorGUILayout.EndHorizontal();
 
+        EditorGUILayout.BeginHorizontal();
+
+        if(GUILayout.Button("Disable Floor"))
+        {
+            selectedMaze.ApplyToAllMazeUnits((u) =>
+            {
+               var floor = u.transform.AllChildren().Where(c => c.name.Equals("Floor"));
+                foreach (var item in floor)
+                {
+                    item.SetActive(false);
+                }
+            });
+        }
+
+        EditorGUILayout.EndHorizontal();
+
         #endregion
 
         EditorGUILayout.LabelField("Lighting", EditorStyles.boldLabel);
