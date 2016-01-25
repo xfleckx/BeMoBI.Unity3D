@@ -9,20 +9,43 @@ namespace Assets.SNEED.Unity3D.Editor.Maze
 {
     public class MazeBaker
     {
-        internal void Bake(beMobileMaze maze)
-        {
-            Debug.Assert(maze.GetComponent<MeshFilter>() == null, "Component has already a MeshFilter");
-             
-            var meshFilter = maze.gameObject.AddComponent<MeshFilter>();
+        public bool replaceOriginalMaze = false;
 
-            Debug.Assert(maze.GetComponent<MeshRenderer>() == null, "Component has already a MeshRenderer");
+        public bool ignoreFloor = false;
+
+        private const bool MERGE_SUBMESHES = true;
+        private const bool USE_MATRICES = true;
+
+        public beMobileMaze Bake(beMobileMaze originalMaze)
+        {
+            beMobileMaze mazeToUse = null;
+
+            if (!replaceOriginalMaze)
+            {
+                mazeToUse = GameObject.Instantiate(originalMaze);
+                originalMaze.gameObject.SetActive(false);
+            }
+
+            Debug.Assert(mazeToUse.GetComponent<MeshFilter>() == null, "Component has already a MeshFilter");
+             
+            var meshFilter = mazeToUse.gameObject.AddComponent<MeshFilter>();
+
+            Debug.Assert(mazeToUse.GetComponent<MeshRenderer>() == null, "Component has already a MeshRenderer");
             
             meshFilter.mesh = new Mesh();
-            meshFilter.sharedMesh.name = maze.name;
+            meshFilter.sharedMesh.name = mazeToUse.name;
+
+            var meshRenderer = mazeToUse.gameObject.AddComponent<MeshRenderer>();
+
+            var plane = GameObject.CreatePrimitive(PrimitiveType.Plane);
+
+            meshRenderer.material = plane.GetComponent<MeshRenderer>().sharedMaterial;
+
+            GameObject.DestroyImmediate(plane);
 
             var combineInstances = new List<CombineInstance>();
 
-            foreach (var unit in maze.Units)
+            foreach (var unit in mazeToUse.Units)
             {
                 var allMeshFilter = unit.GetComponentsInChildren<MeshFilter>();
                 
@@ -32,7 +55,7 @@ namespace Assets.SNEED.Unity3D.Editor.Maze
                       mf.name.Equals("East") ||
                        mf.name.Equals("South") ||
                         mf.name.Equals("Top") ||
-                         mf.name.Equals("Floor")
+                         (mf.name.Equals("Floor") && !ignoreFloor)
                     );
                 
                 foreach (var filter in selectedMeshFilter)
@@ -64,7 +87,11 @@ namespace Assets.SNEED.Unity3D.Editor.Maze
 
             }
 
-            meshFilter.sharedMesh.CombineMeshes(combineInstances.ToArray(), true, true);
+            meshFilter.sharedMesh.CombineMeshes(combineInstances.ToArray(), MERGE_SUBMESHES, USE_MATRICES);
+
+            AssetDatabase.CreateAsset(meshFilter.sharedMesh, EditorEnvironmentConstants.Get_PACKAGE_MODEL_SUBFOLDER() + "/" + mazeToUse.name + "_combinedMesh.asset");
+
+            return mazeToUse;
         }
     }
 }

@@ -25,7 +25,7 @@ namespace Assets.SNEED.Unity3D.Editor.Maze
         }
 
         public bool EditorWindowVisible = false;
-
+        
         public beMobileMaze SelectedMaze;
 
         public float MazeWidth;
@@ -40,11 +40,19 @@ namespace Assets.SNEED.Unity3D.Editor.Maze
 
         public List<GameObject> CurrentSelection;
 
+        internal void CheckPrefabConnections()
+        {
+            prefabOfSelectedMaze = PrefabUtility.GetPrefabObject(SelectedMaze);
+        }
+
         public bool EditingModeEnabled = false;
         public bool modeAddEnabled = false;
         public bool modeRemoveEnabled = false;
 
         public UnityEngine.Object referenceToPrefab;
+        public UnityEngine.Object prefabOfSelectedMaze;
+
+        public beMobileMaze finalizedMaze;
 
         public MazeEditorMode ActiveMode = MazeEditorMode.NONE;
 
@@ -89,6 +97,8 @@ namespace Assets.SNEED.Unity3D.Editor.Maze
             MazeLength = SelectedMaze.MazeLengthInMeter;
 
             MazeEditorUtil.RebuildGrid(SelectedMaze);
+            
+            prefabOfSelectedMaze = PrefabUtility.GetPrefabParent(currentMaze);
         }
         
         public Vector3 MarkerPosition;

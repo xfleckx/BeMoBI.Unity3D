@@ -3,6 +3,7 @@ using UnityEditor;
 using System;
 using System.Collections.Generic;
 using Assets.SNEED.Unity3D.Editor.Maze;
+using System.IO;
 
 public class MazeEditorWindow : EditorWindow
 {
@@ -20,6 +21,7 @@ public class MazeEditorWindow : EditorWindow
 
         editorState.EditorWindowVisible = true;
     }
+     
 
     void OnGUI()
     {
@@ -34,6 +36,13 @@ public class MazeEditorWindow : EditorWindow
             EditorGUILayout.HelpBox("No maze Selected", MessageType.Error);
             return;
         }
+
+
+        if (mazeBaker == null)
+            mazeBaker = new MazeBaker();
+
+        if (state.prefabOfSelectedMaze == null)
+            state.CheckPrefabConnections();
 
         EditorGUILayout.BeginVertical();
 
@@ -128,14 +137,66 @@ public class MazeEditorWindow : EditorWindow
         #endregion
 
 
+        GUILayout.Space(5f);
+
+        if(state.prefabOfSelectedMaze != null && GUILayout.Button("Save prefab"))
+        {
+            PrefabUtility.ReplacePrefab(state.SelectedMaze.gameObject, state.prefabOfSelectedMaze, ReplacePrefabOptions.ConnectToPrefab);
+
+            EditorUtility.SetDirty(state.prefabOfSelectedMaze);
+        }
+
+        if (GUILayout.Button("Save as new prefab"))
+        {
+            var filePath = EditorUtility.SaveFilePanel("Save as prefab", Application.dataPath, "prefabName", "prefab");
+
+            if (filePath != null)
+            {
+                if (File.Exists(filePath))
+                {
+                    var relativeFileName = filePath.Replace(Application.dataPath, "Assets");
+
+                    state.referenceToPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(relativeFileName);
+
+                    state.prefabOfSelectedMaze = PrefabUtility.ReplacePrefab(state.SelectedMaze.gameObject, state.prefabOfSelectedMaze);
+                }
+                else
+                {
+                    var relativeFileName = filePath.Replace(Application.dataPath, "Assets");
+
+                    state.prefabOfSelectedMaze = PrefabUtility.CreatePrefab(relativeFileName, state.SelectedMaze.gameObject);
+                }
+                
+                EditorUtility.SetDirty(state.prefabOfSelectedMaze);
+            }
+
+        }
+
         GUILayout.Space(10f);
 
         EditorGUILayout.LabelField("(4) Bake the Bake to a single Mesh!", EditorStyles.boldLabel);
 
+        mazeBaker.replaceOriginalMaze = EditorGUILayout.Toggle("Replace the original maze", mazeBaker.replaceOriginalMaze);
+
+        mazeBaker.ignoreFloor = EditorGUILayout.Toggle("Remove floor on baking", mazeBaker.ignoreFloor);
 
         if (GUILayout.Button("Bake"))
         {
-            mazeBaker.Bake(state.SelectedMaze);
+           state.finalizedMaze = mazeBaker.Bake(state.SelectedMaze);
+        }
+
+        if(GUILayout.Button("Safe baked maze as new prefab"))
+        {
+            var recommendedPath = EditorEnvironmentConstants.Get_PACKAGE_PREFAB_SUBFOLDER() + "/" + state.finalizedMaze.name + ".prefab";
+
+            var chooseAnotherLocation = EditorUtility.DisplayDialog("Use default location?", "Using default location for these prefabs? \n " + recommendedPath, "No let me choose one", "Yes");
+
+            if (chooseAnotherLocation)
+            {
+                EditorUtility.SaveFilePanel("Save prefab", Application.dataPath, state.finalizedMaze.name, "prefab");
+            }
+
+            PrefabUtility.CreatePrefab(recommendedPath, state.finalizedMaze.gameObject);
         }
 
     }
