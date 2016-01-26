@@ -15,6 +15,11 @@ namespace Assets.SNEED.Unity3D.Editor.Maze.UnitCreation
         private bool useCenterAsOrigin = true;
         private bool addBoxCollider = true;
         private bool createAsWholeMesh = false;
+        private bool createFromPrimitivePlanes = true;
+
+        public bool useUVTestMaterial { get; set; }
+
+        public Material uv_material { get; set; }
 
         public override string CreatorName
         {
@@ -45,6 +50,8 @@ namespace Assets.SNEED.Unity3D.Editor.Maze.UnitCreation
                 useCenterAsOrigin = EditorGUILayout.ToggleLeft("Use the Center as origin!", useCenterAsOrigin);
 
                 addBoxCollider = EditorGUILayout.ToggleLeft("Add Box Collider", addBoxCollider);
+
+                createFromPrimitivePlanes = EditorGUILayout.ToggleLeft("Create from primitives", createFromPrimitivePlanes);
 
                 createAsWholeMesh = EditorGUILayout.ToggleLeft("Create as whole Mesh", createAsWholeMesh);
 
@@ -98,13 +105,106 @@ namespace Assets.SNEED.Unity3D.Editor.Maze.UnitCreation
             else
                 material = GetPrototypeMaterial();
 
-            if (!createAsWholeMesh)
-                CreateAsSeparatedMeshes(newUnit, creationModel, material);
+            if (createFromPrimitivePlanes)
+            {
+                CreateFromQuadPrimitives(newUnit, creationModel, material);
+            }
+            else
+            {
+                if (!createAsWholeMesh)
+                    CreateAsSeparatedMeshes(newUnit, creationModel, material);
 
-            if (createAsWholeMesh)
-                CreateAsAWhole(newUnit, creationModel, material);
+                if (createAsWholeMesh)
+                    CreateAsAWhole(newUnit, creationModel, material);
+            }
             
             return mazeUnit;
+        }
+
+        private void CreateFromQuadPrimitives(GameObject newUnit, UnitMeshModificationModel creationModel, Material material)
+        {
+            foreach (var item in expectedChildComponents)
+            {
+                var wall = new GameObject(item);
+
+                wall.transform.parent = newUnit.transform;
+                
+                if (item.Equals(MazeUnit.TOP))
+                {
+                    wall.transform.localPosition = V(0, roomDimension.y, 0);
+
+                    var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+
+                    quad.transform.SetParent(wall.transform, false);
+
+                    quad.transform.localScale = new Vector3(roomDimension.x, roomDimension.z, 1);
+
+                    quad.transform.localRotation = Quaternion.Euler(-90,0,0);
+                }
+
+                if (item.Equals(MazeUnit.FLOOR))
+                {
+                    var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+
+                    quad.transform.SetParent(wall.transform, false);
+
+                    quad.transform.localScale = new Vector3(roomDimension.x, roomDimension.z, 1);
+
+                    quad.transform.localRotation = Quaternion.Euler(90, 0, 0);
+                }
+
+                if (item.Equals(MazeUnit.NORTH))
+                {
+                    wall.transform.localPosition = V(0, roomDimension.y / 2, roomDimension.z / 2);
+
+                    var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+
+                    quad.transform.SetParent(wall.transform, false);
+                    
+                    quad.transform.localScale = new Vector3(roomDimension.x, roomDimension.y, 1 );
+
+                }
+
+                if (item.Equals(MazeUnit.SOUTH))
+                { 
+                    wall.transform.localPosition = V(0, roomDimension.y / 2, -roomDimension.z / 2);
+
+                    var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+
+                    quad.transform.SetParent(wall.transform, false);
+
+                    quad.transform.localScale = new Vector3(roomDimension.x, roomDimension.y, 1);
+
+                    quad.transform.localRotation = Quaternion.Euler(0, -180, 0);
+
+                }
+
+                if (item.Equals(MazeUnit.WEST))
+                { 
+                    wall.transform.localPosition = V(-roomDimension.x / 2, roomDimension.y / 2, 0);
+
+                    var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+
+                    quad.transform.SetParent(wall.transform, false);
+                    
+                    quad.transform.localScale = new Vector3(roomDimension.x, roomDimension.y, 1);
+
+                    quad.transform.localRotation = Quaternion.Euler(0, -90, 0);
+                }
+
+                if (item.Equals(MazeUnit.EAST))
+                { 
+                    wall.transform.localPosition = V(roomDimension.x / 2, roomDimension.y / 2, 0);
+                    
+                    var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+
+                    quad.transform.SetParent(wall.transform, false);
+
+                    quad.transform.localScale = new Vector3(roomDimension.x, roomDimension.y, 1);
+                    
+                    quad.transform.localRotation = Quaternion.Euler(0, 90, 0);
+                }
+            } 
         }
 
         private Material GetUVTestMaterial()
@@ -457,9 +557,7 @@ namespace Assets.SNEED.Unity3D.Editor.Maze.UnitCreation
         }
 
         #endregion
-
-
-
+        
         #region create Mesh as a whole thing
 
         private void CreateAsAWhole(GameObject newUnit, UnitMeshModificationModel creationModel, Material material)
@@ -638,9 +736,7 @@ namespace Assets.SNEED.Unity3D.Editor.Maze.UnitCreation
         #endregion
 
 
-        public bool useUVTestMaterial { get; set; }
-
-        public Material uv_material { get; set; }
+        
     }
 
     public class UnitMeshModificationModel
