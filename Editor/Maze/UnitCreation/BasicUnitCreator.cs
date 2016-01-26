@@ -135,6 +135,10 @@ namespace Assets.SNEED.Unity3D.Editor.Maze.UnitCreation
 
                     var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
 
+                    var renderer = quad.GetComponent<MeshRenderer>();
+
+                    renderer.material = material;
+
                     quad.transform.SetParent(wall.transform, false);
 
                     quad.transform.localScale = new Vector3(roomDimension.x, roomDimension.z, 1);
@@ -145,6 +149,10 @@ namespace Assets.SNEED.Unity3D.Editor.Maze.UnitCreation
                 if (item.Equals(MazeUnit.FLOOR))
                 {
                     var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+
+                    var renderer = quad.GetComponent<MeshRenderer>();
+
+                    renderer.material = material;
 
                     quad.transform.SetParent(wall.transform, false);
 
@@ -159,6 +167,10 @@ namespace Assets.SNEED.Unity3D.Editor.Maze.UnitCreation
 
                     var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
 
+                    var renderer = quad.GetComponent<MeshRenderer>();
+
+                    renderer.material = material;
+
                     quad.transform.SetParent(wall.transform, false);
                     
                     quad.transform.localScale = new Vector3(roomDimension.x, roomDimension.y, 1 );
@@ -170,6 +182,10 @@ namespace Assets.SNEED.Unity3D.Editor.Maze.UnitCreation
                     wall.transform.localPosition = V(0, roomDimension.y / 2, -roomDimension.z / 2);
 
                     var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+
+                    var renderer = quad.GetComponent<MeshRenderer>();
+
+                    renderer.material = material;
 
                     quad.transform.SetParent(wall.transform, false);
 
@@ -185,6 +201,10 @@ namespace Assets.SNEED.Unity3D.Editor.Maze.UnitCreation
 
                     var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
 
+                    var renderer = quad.GetComponent<MeshRenderer>();
+
+                    renderer.material = material;
+
                     quad.transform.SetParent(wall.transform, false);
                     
                     quad.transform.localScale = new Vector3(roomDimension.x, roomDimension.y, 1);
@@ -198,6 +218,10 @@ namespace Assets.SNEED.Unity3D.Editor.Maze.UnitCreation
                     
                     var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
 
+                    var renderer = quad.GetComponent<MeshRenderer>();
+
+                    renderer.material = material;
+
                     quad.transform.SetParent(wall.transform, false);
 
                     quad.transform.localScale = new Vector3(roomDimension.x, roomDimension.y, 1);
@@ -210,7 +234,7 @@ namespace Assets.SNEED.Unity3D.Editor.Maze.UnitCreation
         private Material GetUVTestMaterial()
         {
            if(uv_material == null)
-                uv_material = AssetDatabase.LoadAssetAtPath("Assets/Materials/uv_test.mat", typeof(Material)) as Material;
+                uv_material = AssetDatabase.LoadAssetAtPath(EditorEnvironmentConstants.Get_BASE_ASSET_MATERIALS_PATH() + "/uv_test.mat", typeof(Material)) as Material;
 
            return uv_material;
         }
