@@ -135,6 +135,20 @@ namespace Assets.SNEED.Unity3D.Editor.Maze.UnitCreation
 
                     var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
 
+                    var meshFilter = quad.GetComponent<MeshFilter>();
+
+                    var mesh = meshFilter.sharedMesh;
+
+                    foreach (var vtx in mesh.vertices)
+                    {
+                        Debug.Log(vtx);
+                    }
+
+                    foreach (var uv in mesh.uv)
+                    {
+                        Debug.Log(uv);
+                    }
+
                     var renderer = quad.GetComponent<MeshRenderer>();
 
                     renderer.material = material;
@@ -320,18 +334,24 @@ namespace Assets.SNEED.Unity3D.Editor.Maze.UnitCreation
 
             var vertices = new List<Vector3>()
         {
-            V(m.meshOrigin.x,  0, m.meshOrigin.z), 
-            V(m.WidthEndPoint, 0, m.meshOrigin.z),
-            V(m.meshOrigin.x,  0, m.DepthEndPoint),
+            V(m.WidthEndPoint,  0, m.meshOrigin.z), 
+            V(m.meshOrigin.x, 0, m.DepthEndPoint),
+            V(m.meshOrigin.x,  0, m.meshOrigin.z),
             V(m.WidthEndPoint, 0, m.DepthEndPoint)
-        };
+        }; 
 
             mesh.SetVertices(vertices);
 
             var triangles = new List<int>()
             {
-                0,2,1, // First triangle - count the 
-                2,3,1 // Second triangle
+                // original 0 1 2 1 0 3
+
+                2, // First triangle - count the 
+                1,
+                0,
+                3, // Second triangle
+                0,
+                1 
             };
 
             mesh.SetTriangles(triangles, 0);
@@ -364,18 +384,18 @@ namespace Assets.SNEED.Unity3D.Editor.Maze.UnitCreation
 
             var vertices = new List<Vector3>()
         {
-            V(m.meshOrigin.x,         0, m.meshOrigin.z),
-            V(m.WidthEndPoint,    0, m.meshOrigin.z),
-            V(m.meshOrigin.x,         0, m.DepthEndPoint),
-            V(m.WidthEndPoint,    0, m.DepthEndPoint)
+            V(m.WidthEndPoint,  0, m.meshOrigin.z),
+            V(m.meshOrigin.x, 0, m.DepthEndPoint),
+            V(m.meshOrigin.x,  0, m.meshOrigin.z),
+            V(m.WidthEndPoint, 0, m.DepthEndPoint)
         };
 
             mesh.SetVertices(vertices);
 
             var triangles = new List<int>()
         {
-            1,2,0,
-            1,3,2
+                0,1,2, // First triangle - count the 
+                1,0,3 // Second triangle
         };
 
             mesh.SetTriangles(triangles, 0);
@@ -408,19 +428,25 @@ namespace Assets.SNEED.Unity3D.Editor.Maze.UnitCreation
 
             var vertices = new List<Vector3>()
         {
-            V(m.meshOrigin.x,         m.meshOrigin.y,           0),
-            V(m.WidthEndPoint,    m.meshOrigin.y,           0),
-            V(m.meshOrigin.x,         m.HeightEndPoint,      0),
-            V(m.WidthEndPoint,    m.HeightEndPoint,     0)
+            V(m.WidthEndPoint,     m.meshOrigin.y,           0),
+            V(m.meshOrigin.x,     m.HeightEndPoint,      0),
+            V(m.meshOrigin.x,        m.meshOrigin.y,     0),
+            V(m.WidthEndPoint,    m.HeightEndPoint,           0)
         };
+
+           
 
             mesh.SetVertices(vertices);
 
             var triangles = new List<int>()
-        {
-            0,2,1,
-            2,3,1
-        };
+            {
+                   0, // First triangle - count the 
+                   2,
+                   1,
+                   0, // Second triangle
+                   1,
+                   3
+            };
 
             mesh.SetTriangles(triangles, 0);
 
@@ -453,18 +479,18 @@ namespace Assets.SNEED.Unity3D.Editor.Maze.UnitCreation
 
             var vertices = new List<Vector3>()
         {
-            V(m.meshOrigin.x,         m.meshOrigin.y,        0),
-            V(m.WidthEndPoint,    m.meshOrigin.y,        0),
-            V(m.meshOrigin.x,         m.HeightEndPoint,  0),
-            V(m.WidthEndPoint,    m.HeightEndPoint,  0)
+            V(m.WidthEndPoint,     m.meshOrigin.y,           0),
+            V(m.WidthEndPoint,     m.HeightEndPoint,     0),
+            V(m.meshOrigin.x,    m.HeightEndPoint, 0),
+            V(m.meshOrigin.x,     m.meshOrigin.y,      0)
+            
         };
 
             mesh.SetVertices(vertices);
 
             var triangles = new List<int>()
             {
-                1,2,0,
-                1,3,2
+                0,1,2,0,2,3
             };
 
             mesh.SetTriangles(triangles, 0);
@@ -479,7 +505,15 @@ namespace Assets.SNEED.Unity3D.Editor.Maze.UnitCreation
 
             mesh.SetNormals(normals);
 
-            var uvs = MeshUtilities.GetInvertPlaneUVs();
+           // var uvs = MeshUtilities.GetInvertPlaneUVs();
+
+            var uvs = new List<Vector2>()
+            {
+                V(0, 0),
+                V(0, 1),
+                V(1, 1),
+                V(1, 0)
+            };
 
             mesh.SetUVs(0, uvs);
 
@@ -497,18 +531,17 @@ namespace Assets.SNEED.Unity3D.Editor.Maze.UnitCreation
 
             var vertices = new List<Vector3>()
         {
-            V(0,   m.meshOrigin.y,         m.meshOrigin.z),
-            V(0,   m.HeightEndPoint,   m.meshOrigin.z),
-            V(0,   m.meshOrigin.y,         m.DepthEndPoint),
-            V(0,   m.HeightEndPoint,   m.DepthEndPoint)
+            V(0,   m.meshOrigin.y,     m.meshOrigin.z),
+            V(0,   m.HeightEndPoint,   m.DepthEndPoint),
+            V(0,   m.meshOrigin.y,     m.DepthEndPoint),
+            V(0,   m.HeightEndPoint,      m.meshOrigin.z)
         };
-
             mesh.SetVertices(vertices);
 
             var triangles = new List<int>()
         {
-            1,2,0,
-            1,3,2
+            0,1,2,
+            0,3,1
         };
 
             mesh.SetTriangles(triangles, 0);
@@ -525,7 +558,13 @@ namespace Assets.SNEED.Unity3D.Editor.Maze.UnitCreation
 
             mesh.SetNormals(normals);
 
-            var uvs = MeshUtilities.GetPlaneUVs();
+            var uvs = new List<Vector2>()
+            {
+                V(0, 0),
+                V(1, 1),
+                V(1, 0),
+                V(0, 1)
+            };
 
             mesh.SetUVs(0, uvs);
 
@@ -543,18 +582,17 @@ namespace Assets.SNEED.Unity3D.Editor.Maze.UnitCreation
 
             var vertices = new List<Vector3>()
         {
-            V(0,   m.meshOrigin.y,         m.meshOrigin.z),
-            V(0,   m.HeightEndPoint,   m.meshOrigin.z),
-            V(0,   m.meshOrigin.y,         m.DepthEndPoint),
+            V(0,   m.meshOrigin.y,     m.DepthEndPoint),
+            V(0,   m.HeightEndPoint,      m.meshOrigin.z),
+            V(0,   m.meshOrigin.y,     m.meshOrigin.z),
             V(0,   m.HeightEndPoint,   m.DepthEndPoint)
         };
-
             mesh.SetVertices(vertices);
 
             var triangles = new List<int>()
         {
-            0,2,1,
-            2,3,1
+            0,1,2,
+            0,3,1
         };
 
             mesh.SetTriangles(triangles, 0);
@@ -569,7 +607,14 @@ namespace Assets.SNEED.Unity3D.Editor.Maze.UnitCreation
 
             mesh.SetNormals(normals);
 
-            var uvs = MeshUtilities.GetPlaneUVs();
+            var uvs = new List<Vector2>()
+            {
+                V(0, 0),
+                V(1, 1),
+                V(1, 0),
+                V(0, 1)
+            };
+
 
             mesh.SetUVs(0, uvs);
 

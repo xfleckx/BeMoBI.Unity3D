@@ -218,11 +218,11 @@ public class UnitCreator : EditorWindow
 
                 Handles.CubeCap(0, vertex, Quaternion.identity, 0.01f);
                 
-                var info = vertex.ToString();
-
+                var info = string.Format( "{0} {1}", i, vertex.ToString());
+                
                 Handles.Label(vertex, info);
             }
-
+            
             Handles.matrix = temp;
 
         }
