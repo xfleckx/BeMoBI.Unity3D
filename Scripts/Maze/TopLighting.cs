@@ -16,11 +16,13 @@ public class TopLighting : MonoBehaviour {
 
     public void SwitchOn()
     {
+        centerLight.gameObject.SetActive(true);
         centerLight.enabled = true;
     }
 
     public void SwitchOff()
     {
+        centerLight.gameObject.SetActive(false);
         centerLight.enabled = false;
     }
 

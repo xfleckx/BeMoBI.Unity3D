@@ -193,8 +193,15 @@ public class MazeEditorWindow : EditorWindow
 
             if (chooseAnotherLocation)
             {
-                EditorUtility.SaveFilePanel("Save prefab", Application.dataPath, state.finalizedMaze.name, "prefab");
+               recommendedPath = EditorUtility.SaveFilePanel("Save prefab", Application.dataPath, state.finalizedMaze.name, "prefab");
             }
+
+            if(recommendedPath == null)
+            {
+                Debug.Log("You have to choose a path to save the prefab!");
+                return;
+            }
+
 
             PrefabUtility.CreatePrefab(recommendedPath, state.finalizedMaze.gameObject);
         }
