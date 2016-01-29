@@ -1,7 +1,7 @@
 
-The Daidalos Framework for Unity3D provides a toolkit for developing experimental setups in virtual environments with focus on navigation and orientation tasks.
+The SNEED package for Unity3D provides a toolkit for developing experimental setups in virtual environments with focus on navigation and orientation tasks.
 
-# Daidalos
+# SNEED - Spatial Navigation Environment Editor
 A framework for scientific experiments in virtual environments focusing navigation and orientation tasks based on Mazes.
 
 ## Features 
@@ -20,4 +20,4 @@ Future:
 - Generate mazes defined by different constraints
 - create complex and heterogene mazes for more realistic spatial navigation tasks
 
-See the <https://github.com/xfleckx/BeMoBI.Unity3D/wiki> for more details!
+See the <https://github.com/xfleckx/SNEED/wiki> for more details!
