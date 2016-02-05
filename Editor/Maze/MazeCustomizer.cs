@@ -237,6 +237,11 @@ public class MazeCustomizer : EditorWindow
             RemoveLightingFromMaze();
         }
 
+        if (GUILayout.Button("Remove only the Light from Top lightning.", GUILayout.Height(20f)))
+        {
+            RemoveTheLightFromLighting();
+        }
+
         EditorGUILayout.EndHorizontal();
 
         if (lightPrefab)
@@ -251,7 +256,20 @@ public class MazeCustomizer : EditorWindow
 
         EditorGUILayout.EndVertical();
     }
-     
+
+    private void RemoveTheLightFromLighting()
+    {
+        foreach (var unit in selectedMaze.Units)
+        {
+            var lightning = unit.GetComponentInChildren<TopLighting>();
+
+            var light = lightning.GetComponentInChildren<Light>();
+
+            if (light != null)
+                DestroyImmediate(light);
+        }
+    }
+
     GameObject replacementPrefab;
 
     private beMobileMaze selectedMaze;
