@@ -27,6 +27,13 @@ public class HidingSpot : MonoBehaviour
     private float currentState = 1f;
     private float targetState = 0;
     
+    public void RevealImmediately()
+    {
+        DoorA.SetActive(false);
+        DoorB.SetActive(false);
+        Socket.SetActive(true);
+    }
+
     public void Reveal()
     {
         if (currentState == REVEALING)
@@ -51,8 +58,6 @@ public class HidingSpot : MonoBehaviour
 
     IEnumerator MoveDoorComponents()
     {
-        Debug.Log(string.Format("Source {0} - Target {1}", currentState, targetState));
-
         var topTransform = Vector3.one;
 
         while (TargetStateNotReached(currentState += direction * revealSpeedFactor * Time.deltaTime))
