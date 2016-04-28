@@ -1,8 +1,7 @@
 ﻿using UnityEngine;
-using System.Collections;
 using UnityEditor;
-using UnityEditorInternal;
 using System.Linq;
+using System;
 
 [CustomEditor(typeof(Category))]
 public class CategoryEditor : Editor {
@@ -15,6 +14,8 @@ public class CategoryEditor : Editor {
     public override void OnInspectorGUI()
     {
         instance = target as Category;
+
+        lookupNewObjectsIn(instance);
 
         EditorGUILayout.BeginVertical();
 
@@ -84,6 +85,17 @@ public class CategoryEditor : Editor {
         EditorGUILayout.EndVertical(); 
     }
 
+    private void lookupNewObjectsIn(Category instance)
+    {
+        foreach (var child in instance.transform.AllChildren())
+        {
+            if(!instance.AssociatedObjects.Contains(child))
+            {
+                instance.AssociatedObjects.Add(child);
+            }
+        }
+    }
+
     void OnDisable()
     {
         if (currentPreviewObject != null)
@@ -101,5 +113,4 @@ public class CategoryEditor : Editor {
 
         currentPreviewObject.SetActive(true);
     }
-     
 }

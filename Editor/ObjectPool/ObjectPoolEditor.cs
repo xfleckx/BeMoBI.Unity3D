@@ -3,9 +3,11 @@ using System.Collections;
 using UnityEditor;
 using UnityEditorInternal;
 using System.Collections.Generic;
+using System;
 
 [CustomEditor(typeof(ObjectPool))]
-public class ObjectPoolEditor : Editor {
+public class ObjectPoolEditor : Editor
+{
 
     ObjectPool instance;
     private ReorderableList list;
@@ -16,9 +18,10 @@ public class ObjectPoolEditor : Editor {
              serializedObject.FindProperty("Categories"),
              true, true, false, false);
 
-        list.drawHeaderCallback = (Rect rect) => {  
-                EditorGUI.LabelField(rect, "Categories");
-            };
+        list.drawHeaderCallback = (Rect rect) =>
+        {
+            EditorGUI.LabelField(rect, "Categories");
+        };
 
         list.onAddCallback = (l) =>
         {
@@ -31,8 +34,9 @@ public class ObjectPoolEditor : Editor {
             element.objectReferenceValue = newItem;
         };
 
-        list.drawElementCallback =  
-            (Rect rect, int index, bool isActive, bool isFocused) => {
+        list.drawElementCallback =
+            (Rect rect, int index, bool isActive, bool isFocused) =>
+            {
 
                 var element = list.serializedProperty.GetArrayElementAtIndex(index);
                 rect.y += 2;
@@ -42,12 +46,31 @@ public class ObjectPoolEditor : Editor {
                 EditorGUI.LabelField(
                     new Rect(rect.x, rect.y, rect.width, EditorGUIUtility.singleLineHeight),
                     displayedProp);
-        };
+            };
     }
+
+    private void lookUpCategoriesOn(ObjectPool instance)
+    {
+        var allChildren = instance.transform.AllChildren();
+
+        foreach (var child in allChildren)
+        {
+            var category = child.GetComponent<Category>();
+
+            if (!instance.Categories.Contains(category))
+            {
+                instance.Categories.Add(category);
+                EditorUtility.SetDirty(instance);
+            }
+        }
+    }
+
 
     public override void OnInspectorGUI()
     {
         instance = target as ObjectPool;
+
+        lookUpCategoriesOn(instance);
 
         EditorGUILayout.BeginVertical();
 
