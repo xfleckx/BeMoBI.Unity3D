@@ -4,6 +4,7 @@ using UnityEditor;
 using UnityEditorInternal;
 using System.Collections.Generic;
 using System;
+using System.Linq;
 
 [CustomEditor(typeof(ObjectPool))]
 public class ObjectPoolEditor : Editor
@@ -14,6 +15,18 @@ public class ObjectPoolEditor : Editor
 
     void OnEnable()
     {
+        if (instance != null && instance.Categories.Any(i => i == null))
+        {
+            var newListWithoutNullElements = new List<Category>();
+
+            foreach (var item in instance.Categories)
+            {
+                if (item != null)
+                    newListWithoutNullElements.Add(item);
+            }
+            instance.Categories = newListWithoutNullElements;
+        }
+
         list = new ReorderableList(serializedObject,
              serializedObject.FindProperty("Categories"),
              true, true, false, false);

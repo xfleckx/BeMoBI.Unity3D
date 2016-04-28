@@ -2,6 +2,7 @@
 using UnityEditor;
 using System.Linq;
 using System;
+using System.Collections.Generic;
 
 [CustomEditor(typeof(Category))]
 public class CategoryEditor : Editor {
@@ -13,7 +14,9 @@ public class CategoryEditor : Editor {
     private string requestedObjectName;
     public override void OnInspectorGUI()
     {
+
         instance = target as Category;
+        checkOnNullElements();
 
         lookupNewObjectsIn(instance);
 
@@ -83,6 +86,22 @@ public class CategoryEditor : Editor {
         }
 
         EditorGUILayout.EndVertical(); 
+    }
+
+    private void checkOnNullElements()
+    {
+
+        if (instance.AssociatedObjects.Any(i => i == null))
+        {
+            var newListWithoutNullElements = new List<GameObject>();
+
+            foreach (var item in instance.AssociatedObjects)
+            {
+                if (item != null)
+                    newListWithoutNullElements.Add(item);
+            }
+            instance. AssociatedObjects = newListWithoutNullElements;
+        }
     }
 
     private void lookupNewObjectsIn(Category instance)
