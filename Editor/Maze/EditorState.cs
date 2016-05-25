@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using UnityEditor;
 using System.Linq;
 using System;
-
-namespace Assets.SNEED.Unity3D.Editor.Maze
+ 
+namespace Assets.SNEED.Editor.Maze
 {
     public class EditorState : ScriptableObject
     {
@@ -127,7 +127,9 @@ namespace Assets.SNEED.Unity3D.Editor.Maze
         }
         
         public Action<Event> EditorModeProcessEvent;
-        
+
+        public string pathToExportModelData;
+
         #region Editor Modes
 
         public void EditingMode(Event _ce)

@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 
-namespace Assets.BeMoBI.Unity3D.Editor.Maze
+namespace Assets.SNEED.Editor.Maze
 {
+    
     public static class EditorVisualUtils
     {
         public static void DrawFloorGrid(beMobileMaze maze)
@@ -63,4 +60,5 @@ namespace Assets.BeMoBI.Unity3D.Editor.Maze
             Gizmos.DrawCube(zeroField, new Vector3(maze.RoomDimension.x - 0.1f, 0, maze.RoomDimension.z - 0.1f));
         }
     }
+    
 }
