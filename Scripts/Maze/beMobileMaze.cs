@@ -31,6 +31,12 @@ public class beMobileMaze : MonoBehaviour
     
     [SerializeField]
     public MazeUnit[,] Grid;
+    
+    public MazeUnit this[int col, int row]
+    {
+        get { return Grid[col, row]; }
+        set { Grid[col, row] = value; }
+    }
 
 	public void RecieveUnitEvent(MazeUnitEvent unitEvent)
 	{
