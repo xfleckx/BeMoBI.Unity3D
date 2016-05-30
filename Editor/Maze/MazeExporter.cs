@@ -21,13 +21,13 @@ namespace Assets.SNEED.Editor.Maze
     /// </summary>
     public class SimpleTextFileMazeExporter : IMazeExporter
     {
-        public const string FILE_EXTENSION = ".maze";
+        public const string FILE_EXTENSION = "maze";
 
         public const string FILE_NAME_PATTERN = "{0}.{1}";  
 
         public string CreateTargetFileName(beMobileMaze mazeToExport)
         {
-            return string.Format(mazeToExport.name, mazeToExport.name, FILE_EXTENSION);
+            return string.Format(FILE_NAME_PATTERN, mazeToExport.name, FILE_EXTENSION);
         }
 
 
@@ -41,6 +41,8 @@ namespace Assets.SNEED.Editor.Maze
             using(var fs = new FileStream(targetFile.FullName,FileMode.OpenOrCreate, FileAccess.ReadWrite))
             {
                 StringBuilder mazeAsTextMatrix = new StringBuilder();
+
+                mazeAsTextMatrix.Append("matlab matrix:\t");
 
                 for (int y_i = 0; y_i < maze.Rows; y_i++)
                 {
@@ -76,7 +78,7 @@ namespace Assets.SNEED.Editor.Maze
                         rowAsLine.Append(']');
                     }
 
-                    mazeAsTextMatrix.AppendLine(rowAsLine.ToString());
+                    mazeAsTextMatrix.Append(rowAsLine.ToString());
                 }
 
                 byte[] info = new UTF8Encoding(true).GetBytes(mazeAsTextMatrix.ToString());

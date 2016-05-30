@@ -11,6 +11,8 @@ namespace Assets.SNEED.Editor.Maze
     {
         private const string URL_WIKI = "https://github.com/xfleckx/SNEED/wiki/Create-a-Maze";
 
+        private const string EDPREF_LASTUSEDPATHEXPORTMAZEDATA = "lastUsedPathToExportMazeData";
+
         private EditorState state;
 
         private MazeBaker mazeBaker;
@@ -22,6 +24,8 @@ namespace Assets.SNEED.Editor.Maze
             this.mazeBaker = new MazeBaker();
 
             this.state = editorState;
+
+            this.state.pathToExportModelData = EditorPrefs.GetString(EDPREF_LASTUSEDPATHEXPORTMAZEDATA);
 
             editorState.EditorWindowVisible = true;
         }
@@ -232,7 +236,7 @@ namespace Assets.SNEED.Editor.Maze
             EditorGUILayout.LabelField("(5) Export  Maze Model", EditorStyles.boldLabel);
             
             EditorGUILayout.EndVertical();
-
+            
             state.pathToExportModelData = EditorGUILayout.TextField("Directory:", state.pathToExportModelData);
 
             EditorGUILayout.BeginHorizontal();
@@ -242,7 +246,7 @@ namespace Assets.SNEED.Editor.Maze
                 state.pathToExportModelData = EditorUtility.OpenFolderPanel("Choose directory to export a maze model", Environment.CurrentDirectory, "");
             }
 
-            if (Directory.Exists(state.pathToExportModelData) && GUILayout.Button("Export"))
+            if (Directory.Exists(state.pathToExportModelData) && state.SelectedMaze != null && GUILayout.Button("Export"))
             {
                 var exporter = new SimpleTextFileMazeExporter();
 
@@ -251,6 +255,8 @@ namespace Assets.SNEED.Editor.Maze
                 var targetFile = new FileInfo(Path.Combine(state.pathToExportModelData,targetFileName));
 
                 exporter.Export(state.SelectedMaze, targetFile);
+
+                EditorPrefs.SetString("lastUsedPathToExportMazeData", state.pathToExportModelData);
             }
 
             EditorGUILayout.EndHorizontal();
