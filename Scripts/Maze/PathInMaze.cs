@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-public enum UnitType { I, L, T, X }
+public enum UnitType { I, L, T, X, UNKNOWN }
 public enum TurnType { STRAIGHT, LEFT, RIGHT }
 
 [RequireComponent(typeof(PathController))]
