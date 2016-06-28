@@ -31,4 +31,13 @@ public static class EditorExtensions
         selectionIndex = EditorGUILayout.Popup(selectionIndex, options);
         return selectionIndex;
     } 
+
+
+    public static IEnumerable<SceneView> GetAllSceneViews()
+    {
+        foreach (var view in SceneView.sceneViews)
+        {
+            yield return view as SceneView;
+        }
+    }
 } 
