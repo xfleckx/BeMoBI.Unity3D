@@ -43,7 +43,7 @@ namespace Assets.SNEED.Editor.Maze
 
             if (currentEvent.type == EventType.ContextClick)
             {
-                Vector2 mousePos = currentEvent.mousePosition;
+                //Vector2 mousePos = currentEvent.mousePosition ; not used
                 GenericMenu menu = new GenericMenu();
                 menu.AddItem(new GUIContent("Need Help"), false, 
                     o => {
