@@ -5,7 +5,7 @@ using UnityEditor;
 using System.Linq;
 using System;
  
-namespace Assets.SNEED.Editor.Maze
+namespace Assets.SNEED.EditorExtensions.Maze
 {
     public class EditorState : ScriptableObject
     {

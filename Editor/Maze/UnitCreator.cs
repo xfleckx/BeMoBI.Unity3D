@@ -1,232 +1,231 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
-using System.Linq;
-using System;
-using System.IO;
-using Assets.SNEED.Unity3D.Editor.Maze.UnitCreation;
 
-public class UnitCreator : EditorWindow
-{ 
-    [MenuItem("SNEED/Maze/Unit Creator")]
-    static void OpenUnitCreator()
+namespace Assets.SNEED.EditorExtensions.Maze.UnitCreation
+{
+    public class UnitCreator : EditorWindow
     {
-        var window = EditorWindow.GetWindow<UnitCreator>();
-
-        window.titleContent = new GUIContent("Unit Creator");
-        
-        window.Show();
-    }
-    
-    void Initialize()
-    {
-        if(availableCreators == null)
-            availableCreators = new List<ICreatorState>();
-       
-        var baseUnitCreator = CreateAndInitialize<BasicUnitCreator, MazeUnit>();
-        
-        if (!availableCreators.Contains(baseUnitCreator))
-            availableCreators.Add(baseUnitCreator);
-
-        var hidingSpotCreator = CreateAndInitialize<HidingSpotCreator, HidingSpot>();
-        
-        if(!availableCreators.Contains(hidingSpotCreator))
-             availableCreators.Add(hidingSpotCreator); 
-
-        var topLightCreator = CreateAndInitialize<TopLightCreator, TopLighting>();
-
-        if (!availableCreators.Contains(topLightCreator))
-            availableCreators.Add(topLightCreator);
-
-        if (currentVisibleCreator == null)
-            currentVisibleCreator = baseUnitCreator;
-    }
-
-    List<ICreatorState> availableCreators;
-
-    private CS CreateAndInitialize<CS, T>() where CS : CreatorState<T> where T : MonoBehaviour
-    {
-        var t = CreateInstance<CS>();
-        t.hideFlags = HideFlags.HideAndDontSave;
-
-        t.Initialize();
-
-        return t;
-    }
-
-    private UnityEngine.Object lastSelection;
-    
-    private TopLightCreator topLightCreator; 
-
-    [SerializeField]
-    private ICreatorState currentVisibleCreator;
-
-    #region Toogle Button
-    public bool ToggleButton(bool state, string label)
-    {
-        BuildStyle();
-
-        bool out_bool = false;
-
-        if (state)
-            out_bool = GUILayout.Button(label, toggled_style);
-        else
-            out_bool = GUILayout.Button(label);
-
-        if (out_bool)
-            return !state;
-        else
-            return state;
-    }
-
-    static GUIStyle toggled_style;
-    public static GUIStyle StyleButtonToggled
-    {
-        get
+        [MenuItem("SNEED/Maze/Unit Creator")]
+        static void OpenUnitCreator()
         {
-            return toggled_style;
+            var window = EditorWindow.GetWindow<UnitCreator>();
+
+            window.titleContent = new GUIContent("Unit Creator");
+
+            window.Show();
         }
-    }
 
-    static GUIStyle labelText_style;
-  
-    private void BuildStyle()
-    {
-        if (toggled_style == null)
+        void Initialize()
         {
-            toggled_style = new GUIStyle(GUI.skin.button);
-            toggled_style.normal.background = toggled_style.onActive.background;
-            toggled_style.normal.textColor = toggled_style.onActive.textColor;
+            if (availableCreators == null)
+                availableCreators = new List<ICreatorState>();
+
+            var baseUnitCreator = CreateAndInitialize<BasicUnitCreator, MazeUnit>();
+
+            if (!availableCreators.Contains(baseUnitCreator))
+                availableCreators.Add(baseUnitCreator);
+
+            var hidingSpotCreator = CreateAndInitialize<HidingSpotCreator, HidingSpot>();
+
+            if (!availableCreators.Contains(hidingSpotCreator))
+                availableCreators.Add(hidingSpotCreator);
+
+            var topLightCreator = CreateAndInitialize<TopLightCreator, TopLighting>();
+
+            if (!availableCreators.Contains(topLightCreator))
+                availableCreators.Add(topLightCreator);
+
+            if (currentVisibleCreator == null)
+                currentVisibleCreator = baseUnitCreator;
         }
-        if (labelText_style == null)
+
+        List<ICreatorState> availableCreators;
+
+        private CS CreateAndInitialize<CS, T>() where CS : CreatorState<T> where T : MonoBehaviour
         {
-            labelText_style = new GUIStyle(EditorGUIUtility.GetBuiltinSkin(EditorSkin.Inspector).textField);
-            labelText_style.normal = EditorGUIUtility.GetBuiltinSkin(EditorSkin.Inspector).button.onNormal;
+            var t = CreateInstance<CS>();
+            t.hideFlags = HideFlags.HideAndDontSave;
+
+            t.Initialize();
+
+            return t;
         }
-    }
 
-    #endregion
-    
-    void OnGUI()
-    {
-        BuildStyle();
+        private UnityEngine.Object lastSelection;
 
-        var currentSelection = Selection.activeGameObject;
+        private TopLightCreator topLightCreator;
 
-        if (currentSelection != null && (lastSelection != null || lastSelection != currentSelection))
-            OnUpdateSelection(currentSelection);
+        [SerializeField]
+        private ICreatorState currentVisibleCreator;
 
-        EditorGUILayout.BeginHorizontal();
-
-        EditorGUILayout.BeginVertical(GUILayout.Width(40));
-
-        GUILayout.Space(4);
-
-        foreach (var item in availableCreators)
+        #region Toogle Button
+        public bool ToggleButton(bool state, string label)
         {
-            GUIStyle style;
+            BuildStyle();
 
-            if(item.Equals(currentVisibleCreator))
-                style = toggled_style;
+            bool out_bool = false;
+
+            if (state)
+                out_bool = GUILayout.Button(label, toggled_style);
             else
-                style = GUI.skin.button;
+                out_bool = GUILayout.Button(label);
 
-            if (GUILayout.Button(item.CreatorName, style))
+            if (out_bool)
+                return !state;
+            else
+                return state;
+        }
+
+        static GUIStyle toggled_style;
+        public static GUIStyle StyleButtonToggled
+        {
+            get
             {
-                currentVisibleCreator = item;
+                return toggled_style;
             }
         }
-         
-        EditorGUILayout.EndVertical();
-        
-        if(currentVisibleCreator != null)
-            currentVisibleCreator.OnGUI();
 
-        EditorGUILayout.EndHorizontal();
-    }
+        static GUIStyle labelText_style;
 
-    private void OnUpdateSelection(GameObject selection)
-    { 
-        var mazeUnit = selection.GetComponent<MazeUnit>();
-        
-        if (mazeUnit != null)
+        private void BuildStyle()
         {
-            var dimension = mazeUnit.Dimension;
+            if (toggled_style == null)
+            {
+                toggled_style = new GUIStyle(GUI.skin.button);
+                toggled_style.normal.background = toggled_style.onActive.background;
+                toggled_style.normal.textColor = toggled_style.onActive.textColor;
+            }
+            if (labelText_style == null)
+            {
+                labelText_style = new GUIStyle(EditorGUIUtility.GetBuiltinSkin(EditorSkin.Inspector).textField);
+                labelText_style.normal = EditorGUIUtility.GetBuiltinSkin(EditorSkin.Inspector).button.onNormal;
+            }
+        }
+
+        #endregion
+
+        void OnGUI()
+        {
+            BuildStyle();
+
+            var currentSelection = Selection.activeGameObject;
+
+            if (currentSelection != null && (lastSelection != null || lastSelection != currentSelection))
+                OnUpdateSelection(currentSelection);
+
+            EditorGUILayout.BeginHorizontal();
+
+            EditorGUILayout.BeginVertical(GUILayout.Width(40));
+
+            GUILayout.Space(4);
 
             foreach (var item in availableCreators)
             {
-                item.RoomDimension = dimension;
+                GUIStyle style;
+
+                if (item.Equals(currentVisibleCreator))
+                    style = toggled_style;
+                else
+                    style = GUI.skin.button;
+
+                if (GUILayout.Button(item.CreatorName, style))
+                {
+                    currentVisibleCreator = item;
+                }
             }
+
+            EditorGUILayout.EndVertical();
+
+            if (currentVisibleCreator != null)
+                currentVisibleCreator.OnGUI();
+
+            EditorGUILayout.EndHorizontal();
         }
 
-        var maze = selection.GetComponent<beMobileMaze>();
-        
-        if (maze != null)
+        private void OnUpdateSelection(GameObject selection)
         {
-            var dimension = maze.RoomDimension;
+            var mazeUnit = selection.GetComponent<MazeUnit>();
 
-            foreach (var item in availableCreators)
+            if (mazeUnit != null)
             {
-                item.RoomDimension = dimension;
+                var dimension = mazeUnit.Dimension;
+
+                foreach (var item in availableCreators)
+                {
+                    item.RoomDimension = dimension;
+                }
             }
+
+            var maze = selection.GetComponent<beMobileMaze>();
+
+            if (maze != null)
+            {
+                var dimension = maze.RoomDimension;
+
+                foreach (var item in availableCreators)
+                {
+                    item.RoomDimension = dimension;
+                }
+            }
+
+            lastSelection = selection;
         }
 
-        lastSelection = selection;
-    }
-      
-    public void OnEnable()
-    {
-        Initialize();
-
-        Selection.selectionChanged += Repaint;
-
-        if (SceneView.onSceneGUIDelegate == null)
-            SceneView.onSceneGUIDelegate += OnSceneGUI;
-    }
-
-    public void OnDisable()
-    {
-        Selection.selectionChanged -= Repaint;
-        SceneView.onSceneGUIDelegate -= OnSceneGUI;
-    }
-
-    private void OnSceneGUI(SceneView sceneView)
-    {
-        if (Selection.activeObject != null && Selection.activeObject is GameObject)
+        public void OnEnable()
         {
-            var go = Selection.activeObject as GameObject;
+            Initialize();
 
-            var expectedMeshFilter = go.GetComponent<MeshFilter>();
+            Selection.selectionChanged += Repaint;
 
-            if (expectedMeshFilter == null)
-                return;
-
-            if (expectedMeshFilter.sharedMesh == null)
-                return;
-            
-            var temp = Handles.matrix;
-
-            Handles.matrix = go.transform.localToWorldMatrix;
-
-            var vertices = expectedMeshFilter.sharedMesh.vertices;
-            var vertexCount = vertices.Length;
-
-            for (int i = 0; i < vertexCount; i++)
-            {
-                //var index = indices[i];
-                var vertex = vertices[i];
-
-                Handles.CubeCap(0, vertex, Quaternion.identity, 0.01f);
-                
-                var info = string.Format( "{0} {1}", i, vertex.ToString());
-                
-                Handles.Label(vertex, info);
-            }
-            
-            Handles.matrix = temp;
-
+            if (SceneView.onSceneGUIDelegate == null)
+                SceneView.onSceneGUIDelegate += OnSceneGUI;
         }
-    } 
+
+        public void OnDisable()
+        {
+            Selection.selectionChanged -= Repaint;
+            SceneView.onSceneGUIDelegate -= OnSceneGUI;
+        }
+
+        private void OnSceneGUI(SceneView sceneView)
+        {
+            if (Selection.activeObject != null && Selection.activeObject is GameObject)
+            {
+                var go = Selection.activeObject as GameObject;
+
+                var expectedMeshFilter = go.GetComponent<MeshFilter>();
+
+                if (expectedMeshFilter == null)
+                    return;
+
+                if (expectedMeshFilter.sharedMesh == null)
+                    return;
+
+                var temp = Handles.matrix;
+
+                Handles.matrix = go.transform.localToWorldMatrix;
+
+                var vertices = expectedMeshFilter.sharedMesh.vertices;
+                var vertexCount = vertices.Length;
+
+                for (int i = 0; i < vertexCount; i++)
+                {
+                    //var index = indices[i];
+                    var vertex = vertices[i];
+
+                    Handles.CubeCap(0, vertex, Quaternion.identity, 0.01f);
+
+                    var info = string.Format("{0} {1}", i, vertex.ToString());
+
+                    Handles.Label(vertex, info);
+                }
+
+                Handles.matrix = temp;
+
+            }
+        }
+
+    }
 
 }
-

@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace Assets.SNEED.Editor.Maze
+namespace Assets.SNEED.EditorExtensions.Maze
 {
     public interface IMazeExporter
     {

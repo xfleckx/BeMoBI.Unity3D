@@ -6,7 +6,7 @@ using System.Text;
 using UnityEditor;
 using UnityEngine;
 
-namespace Assets.SNEED.Unity3D.Editor.Maze.UnitCreation
+namespace Assets.SNEED.EditorExtensions.Maze.UnitCreation
 {
     public abstract class CreatorState<T> : ScriptableObject, ICreatorState where T : MonoBehaviour
     {

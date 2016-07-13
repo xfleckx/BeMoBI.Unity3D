@@ -5,7 +5,7 @@ using System.Text;
 using UnityEditor;
 using UnityEngine;
 
-namespace Assets.SNEED.Unity3D.Editor.Util
+namespace Assets.SNEED.EditorExtensions.Util
 {
     class EditHelper
     {

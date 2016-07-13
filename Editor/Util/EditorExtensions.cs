@@ -5,39 +5,43 @@ using System.Text;
 using UnityEditor;
 using UnityEngine;
 
-public static class EditorExtensions
+namespace Assets.SNEED.EditorExtensions.Util
 {
-
-    public static void ApplyToAll<T>(this IEnumerable<T> collection, Action<T> function)
+    public static class CodeUtils
     {
-        foreach (var item in collection)
+
+        public static void ApplyToAll<T>(this IEnumerable<T> collection, Action<T> function)
         {
-            function(item);
+            foreach (var item in collection)
+            {
+                function(item);
+            }
         }
-    }  
 
-    public static bool IsPrefab(this UnityEngine.Object o){
-        
-        var prefabType = PrefabUtility.GetPrefabType(o);
-
-        return prefabType == PrefabType.Prefab;
-    }
-
-    public static int RenderAsSelectionBox<T>(this IEnumerable<T> list, int selectionIndex)
-    {
-        int optionCount = list.Count();
-        string[] options = new string[optionCount];
-        list.Select(i => i.ToString()).ToArray().CopyTo(options, 0);
-        selectionIndex = EditorGUILayout.Popup(selectionIndex, options);
-        return selectionIndex;
-    } 
-
-
-    public static IEnumerable<SceneView> GetAllSceneViews()
-    {
-        foreach (var view in SceneView.sceneViews)
+        public static bool IsPrefab(this UnityEngine.Object o)
         {
-            yield return view as SceneView;
+
+            var prefabType = PrefabUtility.GetPrefabType(o);
+
+            return prefabType == PrefabType.Prefab;
+        }
+
+        public static int RenderAsSelectionBox<T>(this IEnumerable<T> list, int selectionIndex)
+        {
+            int optionCount = list.Count();
+            string[] options = new string[optionCount];
+            list.Select(i => i.ToString()).ToArray().CopyTo(options, 0);
+            selectionIndex = EditorGUILayout.Popup(selectionIndex, options);
+            return selectionIndex;
+        }
+
+
+        public static IEnumerable<SceneView> GetAllSceneViews()
+        {
+            foreach (var view in SceneView.sceneViews)
+            {
+                yield return view as SceneView;
+            }
         }
     }
-} 
+}

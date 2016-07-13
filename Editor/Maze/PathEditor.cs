@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 
-namespace Assets.SNEED.Editor.Maze
+namespace Assets.SNEED.EditorExtensions.Maze
 {
 
     public enum PathEditorMode { NONE, PATH_CREATION }

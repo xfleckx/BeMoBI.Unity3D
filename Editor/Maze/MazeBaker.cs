@@ -5,7 +5,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEditor;
 
-namespace Assets.SNEED.Unity3D.Editor.Maze
+namespace Assets.SNEED.Unity3D.EditorExtensions.Maze
 {
     public class MazeBaker
     {

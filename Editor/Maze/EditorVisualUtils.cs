@@ -1,9 +1,9 @@
 ﻿using UnityEditor;
 using UnityEngine;
+using Assets.SNEED.EditorExtensions.Util;
 
-namespace Assets.SNEED.Editor.Maze
+namespace Assets.SNEED.EditorExtensions.Maze
 {
-    
     public static class EditorVisualUtils
     {
         public static void DrawFloorGrid(beMobileMaze maze)

@@ -2,10 +2,10 @@
 using UnityEditor;
 using System;
 using System.Collections.Generic;
-using Assets.SNEED.Unity3D.Editor.Maze;
+using Assets.SNEED.Unity3D.EditorExtensions.Maze;
 using System.IO;
 
-namespace Assets.SNEED.Editor.Maze
+namespace Assets.SNEED.EditorExtensions.Maze
 {
     public class MazeEditorWindow : EditorWindow
     {

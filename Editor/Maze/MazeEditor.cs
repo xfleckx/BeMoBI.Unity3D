@@ -6,7 +6,7 @@ using System.Linq;
 using System.IO;
 using System.Text; 
 
-namespace Assets.SNEED.Editor.Maze
+namespace Assets.SNEED.EditorExtensions.Maze
 {
     public enum MazeEditorMode { NONE, EDITING, SELECTION }
 

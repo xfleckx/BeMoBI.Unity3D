@@ -5,7 +5,7 @@ using System.Text;
 
 using UnityEngine;
 
-namespace Assets.SNEED.Unity3D.Editor.Maze.UnitCreation
+namespace Assets.SNEED.EditorExtensions.Maze.UnitCreation
 {
     public static class MeshUtilities
     {

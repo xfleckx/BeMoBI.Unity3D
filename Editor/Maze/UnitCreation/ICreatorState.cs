@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Assets.SNEED.Unity3D.Editor.Maze.UnitCreation
+namespace Assets.SNEED.EditorExtensions.Maze.UnitCreation
 {
     interface ICreatorState
     {

@@ -3,63 +3,71 @@ using System.Collections;
 using UnityEditor;
 using System.IO;
 using System.Linq;
+using Assets.SNEED.EditorExtensions.Util;
 
-[InitializeOnLoad]
-public class ContextMenuExtensions 
+namespace Assets.SNEED.EditorExtensions
 {
-    private const string COPY_PREFAB_ASSET_HERE = "Assets/Copy Prefab";
-
-    [MenuItem(COPY_PREFAB_ASSET_HERE, isValidateFunction: true)]
-    static bool ValidateCopyHere(MenuCommand command)
+    [InitializeOnLoad]
+    public class ContextMenuExtensions
     {
-        var allPrefabs = Selection.objects.All((o) => o.IsPrefab());
+        private const string COPY_PREFAB_ASSET_HERE = "Assets/Copy Prefab";
 
-        return allPrefabs;
-    }
+        [MenuItem(COPY_PREFAB_ASSET_HERE, isValidateFunction: true)]
+        static bool ValidateCopyHere(MenuCommand command)
+        {
+            var allPrefabs = Selection.objects.All((o) => o.IsPrefab());
 
-    [MenuItem(COPY_PREFAB_ASSET_HERE, false, 1)]
-    static void CopyHere(MenuCommand command)
-    {
-        var selection = Selection.objects;
-
-        if(selection.Length > 1 && selection.All((o) => o.IsPrefab())){
-
-            Selection.objects.ApplyToAll(
-                (o) => CopyPrefab(o, false));
-
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-
-            return;
+            return allPrefabs;
         }
 
-        var originalPrefab = Selection.activeObject as GameObject;
+        [MenuItem(COPY_PREFAB_ASSET_HERE, false, 1)]
+        static void CopyHere(MenuCommand command)
+        {
+            var selection = Selection.objects;
 
-        if (originalPrefab != null)
-            CopyPrefab(originalPrefab);
-    }
+            if (selection.Length > 1 && selection.All((o) => o.IsPrefab()))
+            {
 
-    public static void CopyPrefab(UnityEngine.Object prefab, bool saveAndRefresh = true){
+                Selection.objects.ApplyToAll(
+                    (o) => CopyPrefab(o, false));
 
-        string originalFileName = AssetDatabase.GetAssetPath(prefab.GetInstanceID());
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
 
-        string folderPath = Path.GetDirectoryName(originalFileName);
+                return;
+            }
 
-        var instance = PrefabUtility.InstantiatePrefab(prefab) as GameObject;
+            var originalPrefab = Selection.activeObject as GameObject;
 
-        PrefabUtility.DisconnectPrefabInstance(instance);
+            if (originalPrefab != null)
+                CopyPrefab(originalPrefab);
+        }
 
-        var cloneName = instance.name + " (Clone)";
+        public static void CopyPrefab(UnityEngine.Object prefab, bool saveAndRefresh = true)
+        {
 
-        var prefabCloneFilePath = string.Format("{0}{1}{2}.{3}", folderPath, Path.AltDirectorySeparatorChar, cloneName, EditorEnvironmentConstants.PREFAB_EXTENSION);
+            string originalFileName = AssetDatabase.GetAssetPath(prefab.GetInstanceID());
 
-        PrefabUtility.CreatePrefab(prefabCloneFilePath, instance);
+            string folderPath = Path.GetDirectoryName(originalFileName);
 
-        Editor.DestroyImmediate(instance);
+            var instance = PrefabUtility.InstantiatePrefab(prefab) as GameObject;
 
-        if (saveAndRefresh) { 
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
+            PrefabUtility.DisconnectPrefabInstance(instance);
+
+            var cloneName = instance.name + " (Clone)";
+
+            var prefabCloneFilePath = string.Format("{0}{1}{2}.{3}", folderPath, Path.AltDirectorySeparatorChar, cloneName, EditorEnvironmentConstants.PREFAB_EXTENSION);
+
+            PrefabUtility.CreatePrefab(prefabCloneFilePath, instance);
+
+            Editor.DestroyImmediate(instance);
+
+            if (saveAndRefresh)
+            {
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+            }
         }
     }
+
 }

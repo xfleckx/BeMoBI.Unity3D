@@ -2,11 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEditor;
 using UnityEngine;
 
-using Assets.SNEED.Unity3D.Editor.Maze.UnitCreation;
+using Assets.SNEED.EditorExtensions.Maze.UnitCreation;
 
 public static class MazeEditorUtil
 {
