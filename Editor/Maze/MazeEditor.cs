@@ -263,7 +263,7 @@ namespace Assets.SNEED.EditorExtensions.Maze
     }
 
 
-    public abstract class AMazeEditor : UnityEditor.Editor
+    public abstract class AMazeEditor : Editor
     {
 
         protected EditorState editorState;
