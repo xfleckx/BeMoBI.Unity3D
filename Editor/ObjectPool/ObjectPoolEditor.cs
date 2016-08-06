@@ -53,13 +53,8 @@ namespace Assets.SNEED.EditorExtensions.ObjectsAndCategories
             list.onRemoveCallback += (l) =>
             {
                 var element = list.serializedProperty.GetArrayElementAtIndex(list.index);
-
-                var elementToRemoveFromHierachy = instance.transform.AllChildren().Where(
-                    c => {
-                        var nameOfElement = element.FindPropertyRelative("name");
-                        var nameOfElementAsString = nameOfElement.stringValue;
-                        return c.name.Equals(nameOfElementAsString);
-                        });
+                
+                DestroyImmediate(instance.transform.GetChild(list.index).gameObject);
 
                 list.serializedProperty.DeleteArrayElementAtIndex(list.index);
 
@@ -102,7 +97,7 @@ namespace Assets.SNEED.EditorExtensions.ObjectsAndCategories
                 if (!instance.Categories.Contains(category))
                 {
                     instance.Categories.Add(category);
-                    EditorUtility.SetDirty(instance);
+                    serializedObject.ApplyModifiedProperties();
                 }
             }
         }
@@ -112,17 +107,16 @@ namespace Assets.SNEED.EditorExtensions.ObjectsAndCategories
         {
             instance = target as ObjectPool;
 
-            //lookUpCategoriesOn(instance);
-            //if(Event.current.type == EventType.layout)
-                list.DoLayoutList();
+            lookUpCategoriesOn(instance);
+
+            serializedObject.Update();
+            
+            list.DoLayoutList();
 
             EditorGUILayout.BeginVertical();
 
             EditorGUILayout.Space();
-
-            serializedObject.Update();
             
-            serializedObject.ApplyModifiedProperties();
 
             EditorGUILayout.BeginHorizontal();
 
@@ -134,6 +128,9 @@ namespace Assets.SNEED.EditorExtensions.ObjectsAndCategories
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.EndVertical();
+
+
+            serializedObject.ApplyModifiedProperties();
         }
 
     }
