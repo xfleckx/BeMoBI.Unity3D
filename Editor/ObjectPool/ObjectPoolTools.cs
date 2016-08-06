@@ -2,19 +2,20 @@
 using UnityEditor;
 using System.Linq;
 using System;
+using Assets.SNEED.Scripts.ObjectsAndCategories;
 
 public class ObjectPoolTools : EditorWindow
 { 
     [MenuItem("SNEED/Object Pool/Open Pool Editor")]
     public static void OpenPoolEditor()
     {
-        var w = EditorWindow.CreateInstance<ObjectPoolTools>();
+        var w = EditorWindow.GetWindow<ObjectPoolTools>(true);
 
         w.titleContent = new GUIContent( "Object Pool Tools" );
 
         w.Initialize();
 
-        w.Show();
+        w.ShowUtility();
     }
 
     private GameObject prefabReference;
