@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using Assets.SNEED.Unity3D.EditorExtensions.Maze;
 using System.IO;
+using Assets.SNEED.EditorExtensions.Maze.UnitCreation;
 
 namespace Assets.SNEED.EditorExtensions.Maze
 {
@@ -66,22 +67,7 @@ namespace Assets.SNEED.EditorExtensions.Maze
                 state.CheckPrefabConnections();
 
             EditorGUILayout.BeginVertical();
-
-            EditorGUILayout.LabelField("(1) Add a unit prefab!", EditorStyles.boldLabel);
-
-            state.UnitPrefab = EditorGUILayout.ObjectField("Unit Prefab:", state.UnitPrefab, typeof(GameObject), false) as GameObject;
-
-            if (state.UnitPrefab != null)
-            {
-                EditorGUILayout.LabelField(AssetDatabase.GetAssetPath(state.UnitPrefab));
-            }
-            else
-            {
-                EditorGUILayout.HelpBox("First add an Unit prefab!", MessageType.Info);
-            }
-
-
-            EditorGUILayout.LabelField("(2) Define Maze Dimensions!", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("(1) Define Maze Dimensions!", EditorStyles.boldLabel);
 
             state.MazeWidth = EditorGUILayout.FloatField("Widht", state.MazeWidth);
 
@@ -94,6 +80,43 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
                 MazeEditorUtil.RebuildGrid(state.SelectedMaze);
             }
+
+            EditorGUILayout.LabelField("(2) Add a unit prefab!", EditorStyles.boldLabel);
+
+            state.UnitPrefab = EditorGUILayout.ObjectField("Unit Prefab:", state.UnitPrefab, typeof(GameObject), false) as GameObject;
+
+            if (state.UnitPrefab != null)
+            {
+                EditorGUILayout.LabelField(AssetDatabase.GetAssetPath(state.UnitPrefab));
+            }
+            else
+            {
+                var rect = EditorGUILayout.BeginHorizontal();
+
+                EditorGUILayout.HelpBox("First add an Unit prefab!", MessageType.Info);
+                
+                if (GUILayout.Button("Open Unit creator", GUILayout.Height(35)))
+                {
+                    UnitCreator.OpenUnitCreator(c => {
+                        // get the created Unit prefab automaticaly back to the Editor Window
+                        c.onUnitPrefabCreated += prefab =>
+                        {
+                            var mazeUnit = prefab.GetComponent<MazeUnit>();
+
+                            if (mazeUnit != null)
+                            {
+                                state.UnitPrefab = prefab;
+                                this.Repaint();
+                            }
+                        };
+                        
+                    });
+                }
+
+                EditorGUILayout.EndHorizontal();
+            }
+
+
 
             EditorGUILayout.EndVertical();
 

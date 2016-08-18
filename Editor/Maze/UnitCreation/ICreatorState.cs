@@ -8,6 +8,9 @@ namespace Assets.SNEED.EditorExtensions.Maze.UnitCreation
         Vector3 RoomDimension { get; set; }
         string CreatorName { get; }
         void Initialize();
+        
+        event Action<GameObject> onUnitPrefabCreated;
+
         UnityEngine.Rect OnGUI();
     }
 }

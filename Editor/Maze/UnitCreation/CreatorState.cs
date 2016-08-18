@@ -72,6 +72,8 @@ namespace Assets.SNEED.EditorExtensions.Maze.UnitCreation
             get { return prefabReference; }
             set { prefabReference = value; }
         }
+        
+        public event Action<GameObject> onUnitPrefabCreated;
 
         public abstract void Initialize();
 
@@ -97,6 +99,9 @@ namespace Assets.SNEED.EditorExtensions.Maze.UnitCreation
                     OnBeforeCreatePrefab();
 
                     prefabReference = PrefabUtility.CreatePrefab(targetFilePath, instance.gameObject);
+
+                    if (onUnitPrefabCreated != null)
+                        onUnitPrefabCreated(prefabReference);
 
                     AssetDatabase.SaveAssets();
 

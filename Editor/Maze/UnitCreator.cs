@@ -1,17 +1,26 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
+using System;
 
 namespace Assets.SNEED.EditorExtensions.Maze.UnitCreation
 {
     public class UnitCreator : EditorWindow
     {
+        public Action<GameObject> onUnitPrefabCreated;
+
         [MenuItem("SNEED/Maze/Unit Creator")]
-        static void OpenUnitCreator()
+        public static void OpenUnitCreator(Action<UnitCreator> beforeShown = null)
         {
-            var window = EditorWindow.GetWindow<UnitCreator>();
+            var window = EditorWindow.GetWindow<UnitCreator>(true);
 
             window.titleContent = new GUIContent("Unit Creator");
+
+            // save external callback temporary
+            if (beforeShown != null)
+                beforeShown(window);
+
+            window.registerExternalCallbacks();
 
             window.Show();
         }
@@ -38,6 +47,15 @@ namespace Assets.SNEED.EditorExtensions.Maze.UnitCreation
 
             if (currentVisibleCreator == null)
                 currentVisibleCreator = baseUnitCreator;
+
+        }
+
+        internal void registerExternalCallbacks()
+        {
+            foreach (var creator in availableCreators)
+            {
+                creator.onUnitPrefabCreated += onUnitPrefabCreated;
+            }
         }
 
         List<ICreatorState> availableCreators;
