@@ -23,8 +23,12 @@ public class ObjectPoolTools : EditorWindow
     private GameObject lastPreviewObject;
     private Transform targetTransform;
 
+    private GUIContent labelCategoryOptions;
+
     private void Initialize()
     {
+        labelCategoryOptions = new GUIContent("Options for Objects");
+
         CheckIfAObjectPoolOrCategoryIsSelected();
     }
 
@@ -230,6 +234,10 @@ public class ObjectPoolTools : EditorWindow
             EditorGUILayout.EndVertical();
             EditorGUILayout.EndHorizontal();
         }
+
+        EditorGUILayout.Space();
+
+        EditorGUILayout.LabelField(labelCategoryOptions, EditorStyles.boldLabel);
 
         EditorGUILayout.BeginHorizontal();
 

@@ -30,18 +30,32 @@ namespace Assets.SNEED.EditorExtensions.ObjectsAndCategories
 
             list.onAddCallback = (l) =>
             {
-                var newIndex = l.serializedProperty.arraySize++;
-                l.index = newIndex--;
-                var element = l.serializedProperty.GetArrayElementAtIndex(l.index);
 
-                var newItem = new GameObject().AddComponent<Category>();
+                var namePopUp = EditorWindow.GetWindow<CategoryNameDialog>(true);
 
-                //var namePopUp = EditorWindow.CreateInstance<ShowPopupExample>();
-                //namePopUp.position = new Rect(Screen.width / 2, Screen.height / 2, 250, 150);
-                //namePopUp.ShowPopup();
+                var mousePosition = GUIUtility.GUIToScreenPoint(Event.current.mousePosition);
 
-                newItem.transform.parent = instance.transform;
-                element.objectReferenceValue = newItem;
+                namePopUp.SetPositionUpOn(mousePosition);
+
+
+                namePopUp.OnCategoryNameChoosen += name =>
+                {
+                    var newItem = new GameObject(name, typeof(Category));
+
+                    newItem.transform.parent = instance.transform;
+
+                    var newIndex = l.serializedProperty.arraySize++;
+
+                    l.index = newIndex--;
+
+                    var element = l.serializedProperty.GetArrayElementAtIndex(l.index);
+
+                    element.objectReferenceValue = newItem;
+
+                    EditorUtility.SetDirty(target);
+                };
+
+                namePopUp.ShowPopup();
             };
 
 
@@ -53,7 +67,7 @@ namespace Assets.SNEED.EditorExtensions.ObjectsAndCategories
             list.onRemoveCallback += (l) =>
             {
                 var element = list.serializedProperty.GetArrayElementAtIndex(list.index);
-                
+
                 DestroyImmediate(instance.transform.GetChild(list.index).gameObject);
 
                 list.serializedProperty.DeleteArrayElementAtIndex(list.index);
@@ -68,8 +82,8 @@ namespace Assets.SNEED.EditorExtensions.ObjectsAndCategories
                         return;
 
                     var element = list.serializedProperty.GetArrayElementAtIndex(index);
-                    
-                    if(element.objectReferenceValue == null)
+
+                    if (element.objectReferenceValue == null)
                     {
                         list.serializedProperty.DeleteArrayElementAtIndex(index);
                         serializedObject.ApplyModifiedProperties();
@@ -84,6 +98,41 @@ namespace Assets.SNEED.EditorExtensions.ObjectsAndCategories
                         new Rect(rect.x, rect.y, rect.width, EditorGUIUtility.singleLineHeight),
                         displayedProp);
                 };
+
+            SceneView.onSceneGUIDelegate -= renderSceneViewElements;
+            SceneView.onSceneGUIDelegate += renderSceneViewElements;
+        }
+
+        private void renderSceneViewElements(SceneView sceneView)
+        {
+            if (instance == null) { 
+                SceneView.onSceneGUIDelegate -= renderSceneViewElements;
+                return;
+            }
+            Handles.BeginGUI();
+
+            var content = new GUIContent("ObjectPool");
+
+            var size = HandleUtility.GetHandleSize(instance.transform.position) * 0.3f;
+
+            Handles.Label(instance.transform.position + new Vector3(size, size), content);
+            
+            var screenPos = instance.transform.position;
+
+            var clicked = Handles.Button(screenPos, Quaternion.identity, size, size, Handles.SphereCap);
+
+            if (clicked)
+            {
+                Selection.activeObject = instance.gameObject;
+            }
+
+
+            Handles.EndGUI();
+        }
+
+        void OnDisable()
+        {
+            SceneView.onSceneGUIDelegate -= renderSceneViewElements;
         }
 
         private void lookUpCategoriesOn(ObjectPool instance)
@@ -102,7 +151,7 @@ namespace Assets.SNEED.EditorExtensions.ObjectsAndCategories
             }
         }
 
-
+        private Rect inspectorRect;
         public override void OnInspectorGUI()
         {
             instance = target as ObjectPool;
@@ -110,13 +159,12 @@ namespace Assets.SNEED.EditorExtensions.ObjectsAndCategories
             lookUpCategoriesOn(instance);
 
             serializedObject.Update();
-            
+
             list.DoLayoutList();
 
             EditorGUILayout.BeginVertical();
 
             EditorGUILayout.Space();
-            
 
             EditorGUILayout.BeginHorizontal();
 
@@ -131,24 +179,49 @@ namespace Assets.SNEED.EditorExtensions.ObjectsAndCategories
 
 
             serializedObject.ApplyModifiedProperties();
-        }
 
+        }
     }
 
-    public class ShowPopupExample : EditorWindow
+
+    public class CategoryNameDialog : EditorWindow
     {
-        static void Init()
+        public Action<string> OnCategoryNameChoosen;
+
+        private string CategoryName;
+
+        public float width = 150;
+        public float height = 100;
+
+        internal void SetPositionUpOn(Vector2 mousePosition)
         {
-            ShowPopupExample window = ScriptableObject.CreateInstance<ShowPopupExample>();
-            window.position = new Rect(Screen.width / 2, Screen.height / 2, 250, 150);
-            window.ShowPopup();
+            this.position = new Rect(mousePosition.x - width, mousePosition.y - height, width, height);
         }
 
         void OnGUI()
         {
-            EditorGUILayout.LabelField("This is an example of EditorWindow.ShowPopup", EditorStyles.wordWrappedLabel);
-            GUILayout.Space(70);
-            if (GUILayout.Button("Agree!")) this.Close();
+            this.titleContent = new GUIContent("Category Name");
+
+            EditorGUILayout.LabelField("Give a name for the new category!", EditorStyles.wordWrappedLabel);
+
+            CategoryName = EditorGUILayout.TextField(CategoryName);
+
+            EditorGUILayout.BeginVertical();
+
+            if (GUILayout.Button("Ok"))
+            {
+                if (OnCategoryNameChoosen != null)
+                    OnCategoryNameChoosen(CategoryName);
+
+                this.Close();
+            }
+
+            if (GUILayout.Button("Cancel"))
+            {
+                this.Close();
+            }
+
+            EditorGUILayout.EndVertical();
         }
     }
 }

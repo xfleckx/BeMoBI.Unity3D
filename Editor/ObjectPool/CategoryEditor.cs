@@ -99,6 +99,8 @@ namespace Assets.SNEED.EditorExtensions.ObjectsAndCategories
         {
             if (currentPreviewObject != null)
                 currentPreviewObject.SetActive(false);
+
+            instance.AssociatedObjects.ForEach(o => o.SetActive(false));
         }
 
         private void SetPreviewObject(GameObject newPreview)
@@ -194,57 +196,127 @@ namespace Assets.SNEED.EditorExtensions.ObjectsAndCategories
                 {
                     if (!_previewAll)
                     {
-                        var resultTexture = RenderObjectPreview(r, background);
+                        var resultTexture = RenderObjectPreview(r, _currentObjectToPreview, background);
 
-                        GUI.DrawTexture(r, resultTexture, ScaleMode.StretchToFill, false);
+                        RenderObjectOrError(r, _currentObjectToPreview.name, resultTexture);
                     }
                     else
                     {
-                        
+                        var previewGrid = EstimatePreviewGrid(r, instance.AssociatedObjects.Count);
+
+                        int rows = previewGrid.GetLength(0);
+                        int cols = previewGrid.GetLength(1);
+
+                        var objectIndex = 0;
+
+                        for (int i = 0; i < rows; i++)
+                        {
+                            for (int j = 0; j < cols; j++)
+                            {
+                                var currentObject = instance.AssociatedObjects[objectIndex];
+
+                                var resultTexture = RenderObjectPreview(r, currentObject, background);
+                                var currentPositionRect = previewGrid[i, j];
+                                RenderObjectOrError(currentPositionRect, currentObject.name, resultTexture);
+                                objectIndex++;
+                            }
+                        }
                     }
                 }
 
             }
         }
 
-        private Texture RenderObjectPreview(Rect r, GUIStyle background)
+        private Rect[,] EstimatePreviewGrid(Rect r, int count)
         {
-            var previewObject = GameObject.Instantiate(_currentObjectToPreview.gameObject);
+            int rows = 1;
+            int cols = 1;
+
+            int modCount = count % 4;
+
+            if (modCount == 0) { 
+                cols = count / 2;
+                rows = count / 2;
+            }
+            else
+            {
+                cols = (int)Math.Ceiling((decimal)count / 4);
+                rows = (int)Math.Ceiling((decimal)count / 4);
+            }
+                
+
+            float childRectWidth = r.width / cols;
+            float childRectHeight = r.height / rows;
+
+            var grid = new Rect[rows, cols];
+
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                {
+                    grid[i,j] = new Rect(r.x + j * childRectWidth, r.y + i * childRectHeight, childRectWidth, childRectHeight);
+                }
+            }
+
+            return grid;
+        }
+
+        private void RenderObjectOrError(Rect r, string objectName, Texture resultTexture)
+        {
+            if (resultTexture != null)
+                GUI.DrawTexture(r, resultTexture, ScaleMode.StretchToFill, false);
+            else
+            {
+                var errorMessage = string.Format("Object {0} is missing", objectName);
+                EditorGUI.HelpBox(r, errorMessage, MessageType.Error);
+            }
+        }
+
+        private Texture RenderObjectPreview(Rect r, GameObject currentObjectToPreview, GUIStyle background)
+        {
+            var previewObject = GameObject.Instantiate(currentObjectToPreview);
             previewObject.hideFlags = HideFlags.HideAndDontSave;
 
             _targetMeshFilter = previewObject.GetComponentInChildren<MeshFilter>();
             _targetMeshRenderer = previewObject.GetComponentInChildren<MeshRenderer>();
 
-            _previewRenderUtility.BeginPreview(r, background);
+            bool renderPreview = true;
 
-            var cam = _previewRenderUtility.m_Camera;
-            cam.transform.position = Vector2.zero;
-            cam.transform.rotation = Quaternion.Euler(new Vector3(-_drag.y, -_drag.x, 0));
-            cam.transform.position = cam.transform.forward * -10f;
+            if (_targetMeshFilter == null || _targetMeshRenderer == null)
+                renderPreview = false;
 
-            cam.farClipPlane = 50;
+            if(renderPreview)
+            {
+                _previewRenderUtility.BeginPreview(r, background);
 
-            //previewObject.transform.LookAt(_previewRenderUtility.m_Camera.transform);
+                var cam = _previewRenderUtility.m_Camera;
+                cam.transform.position = Vector2.zero;
+                cam.transform.rotation = Quaternion.Euler(new Vector3(-_drag.y, -_drag.x, 0));
+                cam.transform.position = cam.transform.forward * -10f;
 
-            //var lookAtCamRotation = Quaternion.Euler(0, previewObject.transform.rotation.eulerAngles.y, 0);
-            var lookAtCamRotation = previewObject.transform.rotation;
+                cam.farClipPlane = 50;
+                
+                var lookAtCamRotation = previewObject.transform.rotation;
 
-            _previewRenderUtility.DrawMesh(_targetMeshFilter.sharedMesh, Vector3.zero,
-                 // use the correction throught the Transform of the host gameobject
-                 lookAtCamRotation, _targetMeshRenderer.sharedMaterial, 0);
+                _previewRenderUtility.DrawMesh(_targetMeshFilter.sharedMesh, Vector3.zero,
+                // use the correction throught the Transform of the host gameobject
+                lookAtCamRotation, _targetMeshRenderer.sharedMaterial, 0);
 
-            var light = _previewRenderUtility.m_Light.First();
-            light.type = LightType.Directional;
-            light.transform.position = _previewRenderUtility.m_Camera.transform.position;
-            light.transform.rotation = _previewRenderUtility.m_Camera.transform.rotation;
+                var light = _previewRenderUtility.m_Light.First();
+                light.type = LightType.Directional;
+                light.transform.position = _previewRenderUtility.m_Camera.transform.position;
+                light.transform.rotation = _previewRenderUtility.m_Camera.transform.rotation;
 
-            _previewRenderUtility.m_Camera.Render();
-            
-            var result = _previewRenderUtility.EndPreview();
-            
-            DestroyImmediate(previewObject);
+                _previewRenderUtility.m_Camera.Render();
+                
+                var result = _previewRenderUtility.EndPreview();
 
-            return result;
+                DestroyImmediate(previewObject);
+
+                return result;
+            }
+
+            return null;
         }
         #endregion
     }
