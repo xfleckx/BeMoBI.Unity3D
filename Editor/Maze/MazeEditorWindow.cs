@@ -273,13 +273,18 @@ namespace Assets.SNEED.EditorExtensions.Maze
             {
                 var exporter = new SimpleTextFileMazeExporter();
 
+                exporter.UnexpectedValuesFound += message =>
+                {
+                    return EditorUtility.DisplayDialog("Problem during Export", message, "Abort...");
+                };
+
                 var targetFileName = exporter.CreateTargetFileName(state.SelectedMaze);
 
                 var targetFile = new FileInfo(Path.Combine(state.pathToExportModelData,targetFileName));
 
                 exporter.Export(state.SelectedMaze, targetFile);
 
-                EditorPrefs.SetString("lastUsedPathToExportMazeData", state.pathToExportModelData);
+                EditorPrefs.SetString(EDPREF_LASTUSEDPATHEXPORTMAZEDATA, state.pathToExportModelData);
             }
 
             EditorGUILayout.EndHorizontal();
