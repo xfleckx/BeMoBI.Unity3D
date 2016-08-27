@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Assets.SNEED.Unity3D.EditorExtensions.Maze;
 using System.IO;
 using Assets.SNEED.EditorExtensions.Maze.UnitCreation;
+using System.Linq;
 
 namespace Assets.SNEED.EditorExtensions.Maze
 {
@@ -17,6 +18,9 @@ namespace Assets.SNEED.EditorExtensions.Maze
         private EditorState state;
 
         private MazeBaker mazeBaker;
+        private bool showExperimentalFeatures = false;
+
+        private GUIContent savePrefabHeader = new GUIContent("(4) Save the Maze", "Mazes should be safed as prefabs before they get used in scenes.");
 
         public void Initialize(EditorState editorState)
         {
@@ -36,9 +40,10 @@ namespace Assets.SNEED.EditorExtensions.Maze
         {
             if (state == null) // the case that the Unity Editor remember the window
             {
-                this.Close();
-                return;
+                state = EditorState.Instance;
             }
+
+            state.EditorWindowVisible = true;
 
             Event currentEvent = Event.current;
 
@@ -73,12 +78,18 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
             state.MazeLength = EditorGUILayout.FloatField("Length", state.MazeLength);
 
-            if (GUILayout.Button("Set Dimensions"))
+            if (!state.SelectedMaze.Units.Any())
             {
-                state.SelectedMaze.MazeWidthInMeter = state.MazeWidth;
-                state.SelectedMaze.MazeLengthInMeter = state.MazeLength;
+                if (GUILayout.Button("Set Dimensions"))
+                {
+                    state.SelectedMaze.MazeWidthInMeter = state.MazeWidth;
+                    state.SelectedMaze.MazeLengthInMeter = state.MazeLength;
 
-                MazeEditorUtil.RebuildGrid(state.SelectedMaze);
+                    MazeEditorUtil.RebuildGrid(state.SelectedMaze);
+                }
+            }else
+            {
+                EditorGUILayout.HelpBox("Can't change dimensions after Units are added!", MessageType.Info);
             }
 
             EditorGUILayout.LabelField("(2) Add a unit prefab!", EditorStyles.boldLabel);
@@ -91,7 +102,7 @@ namespace Assets.SNEED.EditorExtensions.Maze
             }
             else
             {
-                var rect = EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.BeginHorizontal();
 
                 EditorGUILayout.HelpBox("First add an Unit prefab!", MessageType.Info);
                 
@@ -181,7 +192,9 @@ namespace Assets.SNEED.EditorExtensions.Maze
             #endregion
 
 
-            GUILayout.Space(5f);
+            GUILayout.Space(10f);
+
+            GUILayout.Label(savePrefabHeader, EditorStyles.boldLabel);
 
             if (state.prefabOfSelectedMaze != null && GUILayout.Button("Save prefab"))
             {
@@ -219,44 +232,50 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
             GUILayout.Space(10f);
 
-            EditorGUILayout.LabelField("(4) Bake the Bake to a single Mesh!", EditorStyles.boldLabel);
+            showExperimentalFeatures = EditorGUILayout.Foldout(showExperimentalFeatures, "Experimental Features");
 
-            mazeBaker.replaceOriginalMaze = EditorGUILayout.Toggle("Replace the original maze", mazeBaker.replaceOriginalMaze);
-
-            mazeBaker.ignoreFloor = EditorGUILayout.Toggle("Remove floor on baking", mazeBaker.ignoreFloor);
-
-            if (GUILayout.Button("Bake"))
+            if (showExperimentalFeatures)
             {
-                state.finalizedMaze = mazeBaker.Bake(state.SelectedMaze);
-            }
+                EditorGUILayout.LabelField("Bake the Bake to a single Mesh!", EditorStyles.boldLabel);
 
-            if (GUILayout.Button("Safe baked maze as new prefab"))
-            {
-                var recommendedPath = EditorEnvironmentConstants.Get_PACKAGE_PREFAB_SUBFOLDER() + "/" + state.finalizedMaze.name + ".prefab";
+                mazeBaker.replaceOriginalMaze = EditorGUILayout.Toggle("Replace the original maze", mazeBaker.replaceOriginalMaze);
 
-                var chooseAnotherLocation = EditorUtility.DisplayDialog("Use default location?", "Using default location for these prefabs? \n " + recommendedPath, "No let me choose one", "Yes");
+                mazeBaker.ignoreFloor = EditorGUILayout.Toggle("Remove floor on baking", mazeBaker.ignoreFloor);
 
-                if (chooseAnotherLocation)
+                if (GUILayout.Button("Bake"))
                 {
-                    recommendedPath = EditorUtility.SaveFilePanel("Save prefab", Application.dataPath, state.finalizedMaze.name, "prefab");
+                    state.finalizedMaze = mazeBaker.Bake(state.SelectedMaze);
                 }
 
-                if (recommendedPath == null)
+                if (state.finalizedMaze != null && GUILayout.Button("Safe baked maze as new prefab"))
                 {
-                    Debug.Log("You have to choose a path to save the prefab!");
-                    return;
+                    var recommendedPath = EditorEnvironmentConstants.Get_PACKAGE_PREFAB_SUBFOLDER() + "/" + state.finalizedMaze.name + ".prefab";
+
+                    var chooseAnotherLocation = EditorUtility.DisplayDialog("Use default location?", "Using default location for these prefabs? \n " + recommendedPath, "No let me choose one", "Yes");
+
+                    if (chooseAnotherLocation)
+                    {
+                        recommendedPath = EditorUtility.SaveFilePanel("Save prefab", Application.dataPath, state.finalizedMaze.name, "prefab");
+                    }
+
+                    if (recommendedPath == null)
+                    {
+                        Debug.Log("You have to choose a path to save the prefab!");
+                        return;
+                    }
+
+
+                    PrefabUtility.CreatePrefab(recommendedPath, state.finalizedMaze.gameObject);
                 }
-
-
-                PrefabUtility.CreatePrefab(recommendedPath, state.finalizedMaze.gameObject);
             }
+           
 
             GUILayout.Space(10f);
 
 
             EditorGUILayout.BeginVertical();
 
-            EditorGUILayout.LabelField("(5) Export  Maze Model", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("(5) Export Maze Model", EditorStyles.boldLabel);
             
             EditorGUILayout.EndVertical();
             

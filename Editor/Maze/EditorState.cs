@@ -81,6 +81,9 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
         private void OnUnitPrefabChanged()
         {
+            if (UnitPrefab == null)
+                return;
+
             var unit = unitPrefab.GetComponent<MazeUnit>();
 
             if (SelectedMaze.RoomDimension != unit.Dimension)
@@ -160,6 +163,11 @@ namespace Assets.SNEED.EditorExtensions.Maze
                 GUIUtility.hotControl = controlId;
                 _ce.Use();
             }
+        }
+
+        internal void OnInspectorGetsDisabled()
+        {
+            Debug.Log("Maze Inspector gets disabled");
         }
 
         private void Draw()
