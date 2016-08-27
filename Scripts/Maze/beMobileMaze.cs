@@ -44,25 +44,6 @@ public class beMobileMaze : MonoBehaviour
 			MazeUnitEventOccured(unitEvent);
 	}
 
-#if UNITY_EDITOR
-	public Action<beMobileMaze> EditorGizmoCallbacks;
-#endif
-
-	public void OnDrawGizmos()
-	{ 
-#if UNITY_EDITOR
-		if (EditorGizmoCallbacks != null)
-			EditorGizmoCallbacks(this);
-#endif
-	}
-
-#if UNITY_EDITOR
-    public void ClearCallbacks()
-    {
-        EditorGizmoCallbacks = null;
-    }
-#endif
-
     void Reset()
     {
         Debug.Log("Reset on Maze"); 

@@ -38,13 +38,7 @@ namespace Assets.SNEED.EditorExtensions.Maze
             }
 
             SetupGUIStyle();
-
-            if (editorState.SelectedMaze)
-            {
-                editorState.SelectedMaze.EditorGizmoCallbacks += RenderTileHighlighting;
-                editorState.SelectedMaze.EditorGizmoCallbacks += RenderEditorGizmos;
-            }
-
+            
         }
 
         public override void OnInspectorGUI()
@@ -143,7 +137,7 @@ namespace Assets.SNEED.EditorExtensions.Maze
         {
             if (editorState.SelectedMaze)
             {
-                editorState.SelectedMaze.ClearCallbacks();
+                editorState.OnInspectorGetsDisabled();
             }
         }
 
@@ -163,33 +157,6 @@ namespace Assets.SNEED.EditorExtensions.Maze
             editorState.referenceToPrefab = PrefabUtility.CreatePrefab(editorState.PathToMazePrefab, editorState.SelectedMaze.gameObject, ReplacePrefabOptions.ConnectToPrefab);
 
             Debug.Log("Create companion folder " + editorState.PathToMazePrefab);
-        }
-
-        private void RenderEditorGizmos(beMobileMaze maze)
-        {
-            var tempMatrix = Gizmos.matrix;
-
-            Gizmos.matrix = maze.transform.localToWorldMatrix;
-
-            var temp = Handles.matrix;
-            Handles.matrix = Gizmos.matrix;
-
-            if (editorState.EditorWindowVisible || !maze.Units.Any())
-                EditorVisualUtils.DrawFloorGrid(editorState.SelectedMaze);
-
-            Gizmos.color = Color.blue;
-
-            if (editorState.EditorWindowVisible && editorState.CurrentSelection != null)
-            {
-                foreach (var item in editorState.CurrentSelection)
-                {
-                    var pos = item.transform.localPosition + new Vector3(0, maze.RoomDimension.y / 2, 0);
-                    Gizmos.DrawCube(pos, new Vector3(maze.RoomDimension.x, maze.RoomDimension.y, maze.RoomDimension.z));
-                }
-            }
-
-            Handles.matrix = temp;
-            Gizmos.matrix = tempMatrix;
         }
 
         public override void RenderSceneViewUI()
@@ -265,10 +232,9 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
     public abstract class AMazeEditor : Editor
     {
-
         protected EditorState editorState;
 
-        protected GUIStyle sceneViewUIStyle;
+        public static GUIStyle sceneViewUIStyle;
 
         public void OnSceneGUI()
         {
@@ -305,7 +271,17 @@ namespace Assets.SNEED.EditorExtensions.Maze
             sceneViewUIStyle.normal.textColor = Color.blue;
         }
 
-        protected void RenderTileHighlighting(beMobileMaze maze)
+
+        [DrawGizmo(GizmoType.Active | GizmoType.InSelectionHierarchy, typeof(beMobileMaze))]
+        static void DrawGizmosFor(beMobileMaze maze, GizmoType type)
+        {
+            var editorState = EditorState.Instance;
+
+            RenderEditorGizmos(maze, editorState);
+            RenderTileHighlighting(maze, editorState, AMazeEditor.sceneViewUIStyle);
+        }
+
+        private static void RenderTileHighlighting(beMobileMaze maze, EditorState editorState, GUIStyle sceneViewUIStyle)
         {
             if (!editorState.EditorWindowVisible)
                 return;
@@ -328,6 +304,33 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
             Handles.matrix = temp;
 
+            Gizmos.matrix = tempMatrix;
+        }
+
+        private static void RenderEditorGizmos(beMobileMaze maze, EditorState editorState)
+        {
+            var tempMatrix = Gizmos.matrix;
+
+            Gizmos.matrix = maze.transform.localToWorldMatrix;
+
+            var temp = Handles.matrix;
+            Handles.matrix = Gizmos.matrix;
+
+            if (editorState.EditorWindowVisible || !maze.Units.Any())
+                EditorVisualUtils.DrawFloorGrid(editorState.SelectedMaze);
+
+            Gizmos.color = Color.blue;
+
+            if (editorState.EditorWindowVisible && editorState.CurrentSelection != null)
+            {
+                foreach (var item in editorState.CurrentSelection)
+                {
+                    var pos = item.transform.localPosition + new Vector3(0, maze.RoomDimension.y / 2, 0);
+                    Gizmos.DrawCube(pos, new Vector3(maze.RoomDimension.x, maze.RoomDimension.y, maze.RoomDimension.z));
+                }
+            }
+
+            Handles.matrix = temp;
             Gizmos.matrix = tempMatrix;
         }
 
