@@ -96,6 +96,7 @@ namespace Assets.SNEED.EditorExtensions.Maze
             }
         }
 
+
         private StringBuilder AppendMazeMatrix(beMobileMaze maze)
         {
             StringBuilder mazeAsTextMatrix = new StringBuilder();
@@ -104,17 +105,13 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
             mazeAsTextMatrix.Append(mazeID);
 
+            mazeAsTextMatrix.Append(" [ ");
             for (int y_i = 0; y_i < maze.Rows; y_i++)
             {
                 StringBuilder rowAsLine = new StringBuilder();
 
                 for (int x_i = 0; x_i < maze.Columns; x_i++)
                 {
-                    if (x_i == 0 && y_i == 0)
-                    {
-                        rowAsLine.Append('[');
-                    }
-                    
                     if (maze[x_i, y_i] == null)
                     {
                         rowAsLine.Append("0");
@@ -126,33 +123,33 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
                     if (x_i != maze.Columns - 1)
                         rowAsLine.Append(", ");
+
                 }
 
                 if (y_i != maze.Rows - 1)
                 {
-                    rowAsLine.Append(';');
+                    rowAsLine.Append("; ");
+
                 }
 
-                if (y_i == maze.Columns - 1)
-                {
-                    rowAsLine.Append(']');
-                }
 
                 mazeAsTextMatrix.Append(rowAsLine.ToString());
             }
-
+            mazeAsTextMatrix.Append(" ]");
             return mazeAsTextMatrix;
         }
 
         private StringBuilder AppendPathWithMatrix(beMobileMaze maze, PathInMaze path)
         {
             StringBuilder pathAsTextMatrix = new StringBuilder();
-            
+
             var pathID = string.Format("Path: {0} matlab path matrix:\t", path.ID);
 
             var pathElements = path.PathAsLinkedList.ToList();
 
             pathAsTextMatrix.Append(pathID);
+
+            pathAsTextMatrix.Append(" [ ");
 
             for (int y_i = 0; y_i < maze.Rows; y_i++)
             {
@@ -160,10 +157,6 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
                 for (int x_i = 0; x_i < maze.Columns; x_i++)
                 {
-                    if (x_i == 0 && y_i == 0)
-                    {
-                        rowAsLine.Append('[');
-                    }
 
                     var currentUnitIsPathElement = pathElements.Any(e => e.Unit.GridID == new UnityEngine.Vector2(x_i, y_i));
 
@@ -171,10 +164,11 @@ namespace Assets.SNEED.EditorExtensions.Maze
                     {
                         rowAsLine.Append("0");
                     }
-                    else if(currentUnitIsPathElement)
+                    else if (currentUnitIsPathElement)
                     {
                         rowAsLine.Append("2");
-                    }else
+                    }
+                    else
                     {
                         rowAsLine.Append("1");
                     }
@@ -188,13 +182,10 @@ namespace Assets.SNEED.EditorExtensions.Maze
                     rowAsLine.Append("; ");
                 }
 
-                if (y_i == maze.Columns - 1)
-                {
-                    rowAsLine.Append(']');
-                }
-
                 pathAsTextMatrix.Append(rowAsLine.ToString());
             }
+
+            pathAsTextMatrix.Append(" ] ");
 
             return pathAsTextMatrix;
         }
