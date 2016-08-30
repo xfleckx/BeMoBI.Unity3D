@@ -78,6 +78,9 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
             state.MazeLength = EditorGUILayout.FloatField("Length", state.MazeLength);
 
+            if (state.UnitDimensions == Vector3.zero)
+                state.UnitDimensions = state.SelectedMaze.RoomDimension;
+
             state.UnitDimensions = EditorGUILayout.Vector3Field("Room WxHxL (m):", state.UnitDimensions, null);
 
             if (!state.SelectedMaze.Units.Any())
