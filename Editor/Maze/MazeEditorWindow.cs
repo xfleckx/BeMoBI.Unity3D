@@ -78,12 +78,15 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
             state.MazeLength = EditorGUILayout.FloatField("Length", state.MazeLength);
 
+            state.UnitDimensions = EditorGUILayout.Vector3Field("Room WxHxL (m):", state.UnitDimensions, null);
+
             if (!state.SelectedMaze.Units.Any())
             {
                 if (GUILayout.Button("Set Dimensions"))
                 {
                     state.SelectedMaze.MazeWidthInMeter = state.MazeWidth;
                     state.SelectedMaze.MazeLengthInMeter = state.MazeLength;
+                    state.SelectedMaze.RoomDimension = state.UnitDimensions;
 
                     MazeEditorUtil.RebuildGrid(state.SelectedMaze);
                 }
@@ -108,7 +111,7 @@ namespace Assets.SNEED.EditorExtensions.Maze
                 
                 if (GUILayout.Button("Open Unit creator", GUILayout.Height(35)))
                 {
-                    UnitCreator.OpenUnitCreator(c => {
+                    UnitCreator.OpenUnitCreator(state.UnitDimensions, c => {
                         // get the created Unit prefab automaticaly back to the Editor Window
                         c.onUnitPrefabCreated += prefab =>
                         {

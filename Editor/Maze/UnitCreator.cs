@@ -10,7 +10,16 @@ namespace Assets.SNEED.EditorExtensions.Maze.UnitCreation
         public Action<GameObject> onUnitPrefabCreated;
 
         [MenuItem("SNEED/Maze/Unit Creator")]
-        public static void OpenUnitCreator(Action<UnitCreator> beforeShown = null)
+        public static void OpenUnitCreator()
+        {
+            var window = EditorWindow.GetWindow<UnitCreator>(true);
+
+            window.registerExternalCallbacks();
+
+            window.Show();
+        }
+
+        public static void OpenUnitCreator(Vector3 unitDimension, Action<UnitCreator> beforeShown = null)
         {
             var window = EditorWindow.GetWindow<UnitCreator>(true);
 
@@ -19,6 +28,8 @@ namespace Assets.SNEED.EditorExtensions.Maze.UnitCreation
             // save external callback temporary
             if (beforeShown != null)
                 beforeShown(window);
+
+            window.availableCreators.ForEach(c => c.RoomDimension = unitDimension);
 
             window.registerExternalCallbacks();
 

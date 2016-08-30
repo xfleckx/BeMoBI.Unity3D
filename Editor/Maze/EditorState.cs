@@ -79,6 +79,8 @@ namespace Assets.SNEED.EditorExtensions.Maze
             }
         }
 
+        public Vector3 UnitDimensions { get;  set; }
+
         private void OnUnitPrefabChanged()
         {
             if (UnitPrefab == null)
