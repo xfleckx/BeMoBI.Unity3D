@@ -39,7 +39,7 @@ public static class MazeEditorUtil
 
         var GridDim = CalcGridSize(maze); 
 
-        maze.Grid = FillGridWith(maze.Units, (int)GridDim.x, (int)GridDim.y);
+        maze.Grid = FillGridWith(maze.Units, Mathf.CeilToInt(GridDim.x), Mathf.CeilToInt(GridDim.y));
     }
 
 
@@ -104,10 +104,28 @@ public static class MazeEditorUtil
 
     public static Vector2 CalcGridSize(beMobileMaze maze)
     {
-        int rows = Mathf.FloorToInt(maze.MazeLengthInMeter / maze.RoomDimension.z);
-        int columns = Mathf.FloorToInt(maze.MazeWidthInMeter / maze.RoomDimension.x);
+        int columns = Mathf.CeilToInt(maze.MazeWidthInMeter / maze.RoomDimension.x) + 1;
+        int rows = Mathf.CeilToInt(maze.MazeLengthInMeter / maze.RoomDimension.z) + 1;
 
         return new Vector2(columns, rows);
+    }
+
+    internal static Vector2 Shrink(beMobileMaze selectedMaze)
+    {
+        var gridIds = selectedMaze.Units.Select(u => u.GridID);
+
+        var xMax = gridIds.Max((v) => v.x);
+
+        var yMax = gridIds.Max((v) => v.y);
+
+        var newMazeSize = new Vector2(
+            xMax * selectedMaze.RoomDimension.x, 
+            yMax * selectedMaze.RoomDimension.z);
+
+        selectedMaze.MazeLengthInMeter = newMazeSize.y;
+        selectedMaze.MazeWidthInMeter = newMazeSize.x;
+        
+        return newMazeSize;
     }
 
     /// <summary>

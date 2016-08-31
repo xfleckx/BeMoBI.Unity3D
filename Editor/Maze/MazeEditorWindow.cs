@@ -95,7 +95,17 @@ namespace Assets.SNEED.EditorExtensions.Maze
                 }
             }else
             {
+                EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.HelpBox("Can't change dimensions after Units are added!", MessageType.Info);
+
+                if(GUILayout.Button("Shrink to \n minimal Rows/Cols"))
+                {
+                  var newMazeSize =  MazeEditorUtil.Shrink(state.SelectedMaze);
+                  
+                  MazeEditorUtil.RebuildGrid(state.SelectedMaze);
+                }
+
+                EditorGUILayout.EndHorizontal();
             }
 
             EditorGUILayout.LabelField("(2) Add a unit prefab!", EditorStyles.boldLabel);
