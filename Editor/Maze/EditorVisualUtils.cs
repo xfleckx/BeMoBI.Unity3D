@@ -9,25 +9,29 @@ namespace Assets.SNEED.EditorExtensions.Maze
         public static void DrawFloorGrid(beMobileMaze maze)
         {
             // store map width, height and position
-            var mapWidth = maze.MazeWidthInMeter;
-            var mapHeight = maze.MazeLengthInMeter;
+            var mapWidth = maze.MazeWidthInMeter + maze.RoomDimension.x;
+            var mapHeight = maze.MazeLengthInMeter + maze.RoomDimension.z;
 
             //var position = maze.transform.position;
             var position = new Vector3(0, 0, 0);
 
+            var ro_x1 = new Vector3(-0.01f, 0, -0.01f);
+            var ro_x2 = new Vector3(0.01f, 0, -0.01f);
+            var ro_x3 = new Vector3(-0.01f, 0, 0.01f);
+            var ro_x4 = new Vector3(0.01f, 0, 0.01f);
             // draw layer border
-            Gizmos.color = Color.white;
-            Gizmos.DrawLine(position, position + new Vector3(mapWidth, 0, 0));
-            Gizmos.DrawLine(position, position + new Vector3(0, 0, mapHeight));
-            Gizmos.DrawLine(position + new Vector3(mapWidth, 0, 0), position + new Vector3(mapWidth, 0, mapHeight));
-            Gizmos.DrawLine(position + new Vector3(0, 0, mapHeight), position + new Vector3(mapWidth, 0, mapHeight));
+            Gizmos.color = Color.black;
+            Gizmos.DrawLine(position + ro_x1, position + new Vector3(mapWidth, 0, 0) + ro_x2);
+            Gizmos.DrawLine(position + ro_x1, position + new Vector3(0, 0, mapHeight) + ro_x3);
+            Gizmos.DrawLine(position + new Vector3(mapWidth, 0, 0) + ro_x2, position + new Vector3(mapWidth, 0, mapHeight) + ro_x4);
+            Gizmos.DrawLine(position + new Vector3(0, 0, mapHeight) + ro_x3 , position + new Vector3(mapWidth, 0, mapHeight) + ro_x4);
 
             Vector3 lineStart;
             Vector3 lineEnde;
             // draw tile cells
-            Gizmos.color = Color.green;
+            Gizmos.color = Color.white * new Color(1,1,1,0.5f);
 
-            for (float i = 1; i <= maze.Columns; i++)
+            for (float i = 0; i <= maze.Columns; i++)
             {
                 float xOffset = i * maze.RoomDimension.x;
 
@@ -40,7 +44,7 @@ namespace Assets.SNEED.EditorExtensions.Maze
                 Gizmos.DrawLine(lineStart, lineEnde);
             }
 
-            for (float i = 1; i <= maze.Rows; i++)
+            for (float i = 0; i <= maze.Rows; i++)
             {
                 float yoffset = i * maze.RoomDimension.z;
 
