@@ -179,18 +179,19 @@ namespace Assets.SNEED.EditorExtensions.Maze
             GUILayout.Label("Grid:");
             GUILayout.Space(3f);
 
-            RenderMazeGrid(editorState.SelectedMaze);
+            string gridCode = RenderMazeGrid(editorState.SelectedMaze);
+
+            GUILayout.Label(gridCode);
 
             GUILayout.EndVertical();
 
             Handles.EndGUI();
         }
 
-        void RenderMazeGrid(beMobileMaze maze)
+        string RenderMazeGrid(beMobileMaze maze)
         {
-
             if (maze.Grid == null)
-                return;
+               return "No Grid available!";
 
             StringBuilder gridCode = new StringBuilder();
             StringBuilder line = new StringBuilder();
@@ -210,9 +211,9 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
                 gridCode.AppendLine(line.ToString());
                 line.Remove(0, line.Length);
-            }
+            };
 
-            GUILayout.Label(gridCode.ToString());
+            return gridCode.ToString();
         }
 
         private void renderEmptyMazeGUI()

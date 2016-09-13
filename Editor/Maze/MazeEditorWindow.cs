@@ -103,6 +103,9 @@ namespace Assets.SNEED.EditorExtensions.Maze
                   var newMazeSize =  MazeEditorUtil.Shrink(state.SelectedMaze);
                   
                   MazeEditorUtil.RebuildGrid(state.SelectedMaze);
+
+                  state.MazeWidth = state.SelectedMaze.MazeWidthInMeter;
+                  state.MazeLength = state.SelectedMaze.MazeLengthInMeter;
                 }
 
                 EditorGUILayout.EndHorizontal();

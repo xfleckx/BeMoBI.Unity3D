@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Assets.SNEED.Mazes.Grid;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using UnityEngine;
 
 namespace Assets.SNEED.EditorExtensions.Maze
 {
@@ -16,7 +18,7 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
         
     }
-    
+
     /// <summary>
     /// This implementation of the IMazeExporter interface 
     /// produces a textfile containig a matlab compatible string which evals to a matrix
@@ -30,7 +32,7 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
         bool abortExport = false;
 
-        public event Func<String, bool> UnexpectedValuesFound; 
+        public event Func<String, bool> UnexpectedValuesFound;
 
         private void OnUnexpectedValuesFound(String message)
         {
@@ -52,10 +54,10 @@ namespace Assets.SNEED.EditorExtensions.Maze
         /// <param name="targetFile"></param>
         public void Export(beMobileMaze maze, FileInfo targetFile)
         {
-            using(var fs = new FileStream(targetFile.FullName,FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            using (var fs = new FileStream(targetFile.FullName, FileMode.OpenOrCreate, FileAccess.ReadWrite))
             {
                 var builders = new List<StringBuilder>();
-                
+
                 if (maze.Rows == 0 || maze.Columns == 0)
                 {
                     OnUnexpectedValuesFound("Maze has no Grid to use during Export process");
@@ -69,17 +71,17 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
                 var pathController = maze.GetComponent<PathController>();
 
-                if(pathController.Paths.Count == 0)
+                if (pathController.Paths.Count == 0)
                 {
                     OnUnexpectedValuesFound("No Paths found during Export process");
 
                     if (abortExport)
                         return;
                 }
-                
-                foreach(var path in pathController.Paths)
+
+                foreach (var path in pathController.Paths)
                 {
-                   builders.Add(AppendPathWithMatrix(maze, path));
+                    builders.Add(AppendPathWithMatrix(maze, path));
                 }
 
                 StringBuilder finalBuilder = new StringBuilder();
@@ -99,6 +101,8 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
         private StringBuilder AppendMazeMatrix(beMobileMaze maze)
         {
+            var traversal = new MazeGridTraversal(maze);
+
             StringBuilder mazeAsTextMatrix = new StringBuilder();
 
             var mazeID = string.Format("Maze: {0} matlab matrix:\t", maze.name);
@@ -106,35 +110,65 @@ namespace Assets.SNEED.EditorExtensions.Maze
             mazeAsTextMatrix.Append(mazeID);
 
             mazeAsTextMatrix.Append(" [ ");
-            for (int y_i = 0; y_i < maze.Rows; y_i++)
-            {
-                StringBuilder rowAsLine = new StringBuilder();
 
-                for (int x_i = 0; x_i < maze.Columns; x_i++)
-                {
-                    if (maze[x_i, y_i] == null)
-                    {
-                        rowAsLine.Append("0");
-                    }
-                    else
-                    {
-                        rowAsLine.Append("1");
-                    }
+            traversal.travers(
+                s => {
 
-                    if (x_i != maze.Columns - 1)
-                        rowAsLine.Append(", ");
+                    string content = "0";
 
-                }
+                    mazeAsTextMatrix.Append(content);
 
-                if (y_i != maze.Rows - 1)
-                {
-                    rowAsLine.Append("; ");
+                    if (s.ColumnsLeft > 0)
+                        mazeAsTextMatrix.Append(", ");
 
-                }
+                    if(s.ColumnsLeft == 0)
+                        mazeAsTextMatrix.Append("; ");
+                   },
+                (u, s) => {
+
+                    string content = "1";
+
+                    mazeAsTextMatrix.Append(content);
+
+                    if (s.ColumnsLeft > 0)
+                        mazeAsTextMatrix.Append( ", ");
+
+                    if (s.ColumnsLeft == 0)
+                        mazeAsTextMatrix.Append("; ");
+                });
+
+            #region original
+            //for (int y_i = maze.Rows - 1; y_i >= 0; y_i--)
+            //{
+            //    StringBuilder rowAsLine = new StringBuilder();
+
+            //    for (int x_i = 0; x_i < maze.Columns; x_i++)
+            //    {
+            //        if (maze[x_i, y_i] == null)
+            //        {
+            //            rowAsLine.Append("0");
+            //        }
+            //        else
+            //        {
+            //            rowAsLine.Append("1");
+            //        }
+
+            //        if (x_i < maze.Columns - 1)
+            //            rowAsLine.Append(", ");
+
+            //    }
+
+            //    if (y_i != 0)
+            //    {
+            //        rowAsLine.Append("; ");
+
+            //    }
 
 
-                mazeAsTextMatrix.Append(rowAsLine.ToString());
-            }
+            //    mazeAsTextMatrix.Append(rowAsLine.ToString());
+            //}
+            #endregion
+
             mazeAsTextMatrix.Append(" ]");
             return mazeAsTextMatrix;
         }
@@ -151,44 +185,87 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
             pathAsTextMatrix.Append(" [ ");
 
-            for (int y_i = 0; y_i < maze.Rows; y_i++)
-            {
-                StringBuilder rowAsLine = new StringBuilder();
+            var grid = new MazeGridTraversal(maze);
 
-                for (int x_i = 0; x_i < maze.Columns; x_i++)
-                {
+            grid.travers(
+                s => {
 
-                    var currentUnitIsPathElement = pathElements.Any(e => e.Unit.GridID == new UnityEngine.Vector2(x_i, y_i));
+                    string content = "0";
 
-                    if (maze[x_i, y_i] == null)
+                    pathAsTextMatrix.Append(content);
+
+                    if (s.ColumnsLeft > 0)
+                        pathAsTextMatrix.Append(", ");
+
+                    if (s.ColumnsLeft == 0)
+                        pathAsTextMatrix.Append("; ");
+
+                },
+                (u,s) => {
+                    var currentUnitIsPathElement = pathElements.Any(
+                        e => e.Unit.GridID == new Vector2(s.Column, s.Row));
+
+                    if (currentUnitIsPathElement)
                     {
-                        rowAsLine.Append("0");
-                    }
-                    else if (currentUnitIsPathElement)
-                    {
-                        rowAsLine.Append("2");
+                        pathAsTextMatrix.Append("2");
                     }
                     else
                     {
-                        rowAsLine.Append("1");
+                        pathAsTextMatrix.Append("1");
                     }
 
-                    if (x_i != maze.Columns - 1)
-                        rowAsLine.Append(", ");
-                }
 
-                if (y_i != maze.Rows - 1)
-                {
-                    rowAsLine.Append("; ");
-                }
+                    if (s.ColumnsLeft > 0)
+                        pathAsTextMatrix.Append(", ");
 
-                pathAsTextMatrix.Append(rowAsLine.ToString());
-            }
+                    if (s.ColumnsLeft == 0)
+                        pathAsTextMatrix.Append("; ");
+                }
+                );
+
+            #region
+
+            //for (int y_i = 0; y_i < maze.Rows; y_i++)
+            //{
+            //    StringBuilder rowAsLine = new StringBuilder();
+
+            //    for (int x_i = 0; x_i < maze.Columns; x_i++)
+            //    {
+
+            //        var currentUnitIsPathElement = pathElements.Any(e => e.Unit.GridID == new UnityEngine.Vector2(x_i, y_i));
+
+            //        if (maze[x_i, y_i] == null)
+            //        {
+            //            rowAsLine.Append("0");
+            //        }
+            //        else if (currentUnitIsPathElement)
+            //        {
+            //            rowAsLine.Append("2");
+            //        }
+            //        else
+            //        {
+            //            rowAsLine.Append("1");
+            //        }
+
+            //        if (x_i != maze.Columns - 1)
+            //            rowAsLine.Append(", ");
+            //    }
+
+            //    if (y_i != maze.Rows - 1)
+            //    {
+            //        rowAsLine.Append("; ");
+            //    }
+
+            //    pathAsTextMatrix.Append(rowAsLine.ToString());
+            //}
+
+            #endregion original
 
             pathAsTextMatrix.Append(" ] ");
 
             return pathAsTextMatrix;
         }
 
+        
     }
 }
