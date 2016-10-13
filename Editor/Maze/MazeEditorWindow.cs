@@ -251,6 +251,28 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
             GUILayout.Space(10f);
 
+            if(GUILayout.Button("Render Schematic Preview"))
+            {
+                var schematicPreviewWindow = GetWindow<SchematicPreviewWindow>();
+                schematicPreviewWindow.Initialize(state.SelectedMaze, state);
+                schematicPreviewWindow.Show();
+                
+
+            //    if(state.mazePreview == null) { 
+            //        state.mazePreview = new MazePreview(state.SelectedMaze);
+            //    }
+
+            //    state.mazePreview.cleanUp();
+            //    state.mazePreview.SetupRenderTexture();
+            //    state.mazePreview.ConfigureWithCurrentSceneViewCam();
+
+            //    var rect = SceneView.lastActiveSceneView.camera.pixelRect;
+
+            //    state.mazePreview.Render(rect);
+            }
+
+            GUILayout.Space(10f);
+
             showExperimentalFeatures = EditorGUILayout.Foldout(showExperimentalFeatures, "Experimental Features");
 
             if (showExperimentalFeatures)

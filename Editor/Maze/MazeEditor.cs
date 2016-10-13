@@ -141,6 +141,10 @@ namespace Assets.SNEED.EditorExtensions.Maze
             }
         }
 
+        public void Destroy()
+        {
+           editorState.mazePreview.cleanUp();
+        }
 
         private void UpdatePrefabOfCurrentMaze()
         {
@@ -180,8 +184,24 @@ namespace Assets.SNEED.EditorExtensions.Maze
             GUILayout.Space(3f);
 
             string gridCode = RenderMazeGrid(editorState.SelectedMaze);
+            //string gridCode = RenderMazeGrid(editorState.SelectedMaze);
+            // removed see schematic preview
+            //GUILayout.Box(new GUIContent("A Box"));
+            
+            //// GUILayout.Label(gridCode);
+            //if(Event.current.type == EventType.Repaint && ( editorState.mazePreview != null && editorState.mazePreview.hasPreviewRendered))
+            //{
 
             GUILayout.Label(gridCode);
+            //    var rect = SceneView.lastActiveSceneView.camera.pixelRect;
+                
+            //    var previewTargetArea = new Rect(0, rect.height - 500, 500, 500);
+            //    editorState.mazePreview.Render(previewTargetArea);
+            //    var texture = editorState.mazePreview.GetPreviewImage();
+
+            //    EditorGUI.DrawPreviewTexture(previewTargetArea, texture);
+            //    //Handles.DrawCamera(previewTargetArea, SceneView.lastActiveSceneView.camera, DrawCameraMode.Wireframe);
+            //}
 
             GUILayout.EndVertical();
 
@@ -228,6 +248,37 @@ namespace Assets.SNEED.EditorExtensions.Maze
             GUILayout.EndVertical();
         }
 
+        //#region preview
+
+        //private MazePreview preview;
+
+        //public override bool HasPreviewGUI()
+        //{
+        //    // normaly false
+        //    //var state = base.HasPreviewGUI(); 
+        //    return true;
+        //}
+
+        //public override void OnPreviewGUI(Rect r, GUIStyle background)
+        //{
+        //    if(preview != null)
+        //        preview.RenderPreviewGUI(r, Event.current, background);
+        //}
+
+        //internal void RenderDefaultPreview(Rect r, GUIStyle background)
+        //{
+        //    base.OnPreviewGUI(r, background);
+        //}
+
+        //public override void OnPreviewSettings()
+        //{
+        //    //base.OnPreviewSettings();
+
+        //    if(preview != null)
+        //        preview.RenderPreviewSettings(Event.current);
+        //}
+
+        //#endregion
     }
 
 
@@ -248,6 +299,10 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
             if (editorState.EditorWindowVisible && editorState.EditorModeProcessEvent != null)
                 editorState.EditorModeProcessEvent(Event.current);
+
+
+            if (editorState.schemaCam != null)
+                Handles.DrawCamera(new Rect(0, 0, 100, 100), editorState.schemaCam, DrawCameraMode.Wireframe);
         }
 
         protected void TileHighlightingOnMouseCursor()

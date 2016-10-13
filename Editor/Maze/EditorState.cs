@@ -24,9 +24,13 @@ namespace Assets.SNEED.EditorExtensions.Maze
             }
         }
 
+        public Camera schemaCam;
+
         public bool EditorWindowVisible = false;
         
         public beMobileMaze SelectedMaze;
+
+        public MazePreview mazePreview;
 
         public float MazeWidth;
 
@@ -134,7 +138,7 @@ namespace Assets.SNEED.EditorExtensions.Maze
         public Action<Event> EditorModeProcessEvent;
 
         public string pathToExportModelData;
-
+        public bool shouldRenderSchema = false;
         #region Editor Modes
 
         public void EditingMode(Event _ce)
