@@ -4,7 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
-using System.Text; 
+using System.Text;
+using Assets.SNEED.EditorExtensions.Maze;
 
 namespace Assets.SNEED.EditorExtensions.Maze
 {
@@ -20,7 +21,7 @@ namespace Assets.SNEED.EditorExtensions.Maze
         public void OnEnable()
         {
             editorState = EditorState.Instance;
-
+            
             var currentTarget = target as beMobileMaze;
 
             editorState.Initialize(currentTarget);
@@ -84,6 +85,18 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
             EditorGUILayout.EndHorizontal();
 
+            if (GUILayout.Button("Show Schema", GUILayout.Height(40)))
+            {
+                var sceneView = SceneView.lastActiveSceneView;
+                var maze = editorState.SelectedMaze;
+
+                sceneView.AlignViewToObject(maze.transform);
+                var posAtMazeCenter = editorState.SelectedMaze.transform.position + new Vector3(maze.MazeLengthInMeter / 2, 0, maze.MazeWidthInMeter / 2);
+                sceneView.LookAtDirect(posAtMazeCenter, Quaternion.Euler(90, 0, 0));
+                sceneView.orthographic = true;
+
+            }
+
             EditorGUILayout.BeginHorizontal();
 
             if (GUILayout.Button("Close Maze Roof"))
@@ -141,7 +154,6 @@ namespace Assets.SNEED.EditorExtensions.Maze
             }
         }
 
-
         private void UpdatePrefabOfCurrentMaze()
         {
             editorState.referenceToPrefab = PrefabUtility.ReplacePrefab(editorState.SelectedMaze.gameObject, editorState.referenceToPrefab, ReplacePrefabOptions.ConnectToPrefab);
@@ -168,16 +180,19 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
             GUILayout.BeginVertical(GUILayout.Width(200f));
 
+            GUILayout.Label(string.Format("Row   : {0}", Math.Floor(this.editorState.mouseHitPos.z)));
+            GUILayout.Label(string.Format("Column: {0}", Math.Floor(editorState.MarkerPosition.x)));
+
             GUILayout.Label("Position in local Space of the maze");
             GUILayout.Label(string.Format("{0} {1} {2}", this.editorState.mouseHitPos.x, this.editorState.mouseHitPos.y, this.editorState.mouseHitPos.z));
             GUILayout.Label(string.Format("Marker: {0} {1} {2}", editorState.MarkerPosition.x, editorState.MarkerPosition.y, editorState.MarkerPosition.z));
 
-            GUILayout.Space(10f);
+            //GUILayout.Space(10f);
 
-            GUILayout.Space(10f);
+            //GUILayout.Space(10f);
 
-            GUILayout.Label("Grid:");
-            GUILayout.Space(3f);
+            //GUILayout.Label("Grid:");
+            //GUILayout.Space(3f);
 
             string gridCode = RenderMazeGrid(editorState.SelectedMaze);
 
@@ -271,7 +286,7 @@ namespace Assets.SNEED.EditorExtensions.Maze
             sceneViewUIStyle = new GUIStyle();
             sceneViewUIStyle.normal.textColor = Color.blue;
         }
-
+         
 
         [DrawGizmo(GizmoType.Active | GizmoType.InSelectionHierarchy, typeof(beMobileMaze))]
         static void DrawGizmosFor(beMobileMaze maze, GizmoType type)
@@ -280,6 +295,7 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
             RenderEditorGizmos(maze, editorState);
             RenderTileHighlighting(maze, editorState, AMazeEditor.sceneViewUIStyle);
+            
         }
 
         private static void RenderTileHighlighting(beMobileMaze maze, EditorState editorState, GUIStyle sceneViewUIStyle)
@@ -308,8 +324,24 @@ namespace Assets.SNEED.EditorExtensions.Maze
             Gizmos.matrix = tempMatrix;
         }
 
+        private static SchematicMazeRenderer schemaRenderer;
         private static void RenderEditorGizmos(beMobileMaze maze, EditorState editorState)
         {
+            var cam = Camera.current;
+
+            if (cameraIsATopDownView(cam, maze) && cam.orthographic)
+            {
+                if(schemaRenderer == null)
+                {
+                    schemaRenderer = new SchematicMazeRenderer();    
+                }
+
+                var drawingOffset = new Vector3(0, maze.RoomDimension.y + 0.5f, 0);
+                schemaRenderer.Render(maze, drawingOffset);
+                schemaRenderer.RenderPaths(maze, drawingOffset);
+
+            }
+
             var tempMatrix = Gizmos.matrix;
 
             Gizmos.matrix = maze.transform.localToWorldMatrix;
@@ -333,6 +365,15 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
             Handles.matrix = temp;
             Gizmos.matrix = tempMatrix;
+        }
+
+        private static bool cameraIsATopDownView(Camera cam, beMobileMaze maze)
+        {
+            var currentCamForward = cam.transform.TransformVector(cam.transform.forward);
+
+            var currentMazeDown = maze.transform.TransformVector(-maze.transform.forward);
+
+            return currentCamForward == currentMazeDown;
         }
 
         #region General calculations based on tile editor

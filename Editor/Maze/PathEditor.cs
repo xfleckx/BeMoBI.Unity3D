@@ -27,7 +27,6 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
         private bool showElements;
         private bool TilePositionIsValid = false;
-        private Vector3 hoveringDistance;
 
         public void OnEnable()
         {
@@ -139,7 +138,7 @@ namespace Assets.SNEED.EditorExtensions.Maze
                     RenderTurningDegree(
                         instance.PathAsLinkedList.Last.Previous.Value.Unit.transform.position,
                         instance.PathAsLinkedList.Last.Value.Unit.transform.position,
-                        editorState.MarkerPosition);
+                        editorState.MarkerPosition, 0.5f);
                 }
             }
 
@@ -150,13 +149,13 @@ namespace Assets.SNEED.EditorExtensions.Maze
             Gizmos.color = Color.blue;
         }
 
-        private void RenderTurningDegree(Vector3 lastUnitPosition, Vector3 currentUnitPosition, Vector3 nextUnitPosition)
+        private void RenderTurningDegree(Vector3 lastUnitPosition, Vector3 currentUnitPosition, Vector3 nextUnitPosition, float drawingYOffset)
         {
             var a = lastUnitPosition - currentUnitPosition;
             var b = currentUnitPosition - nextUnitPosition;
 
             var turningAngle = a.SignedAngle(b, Vector3.up);
-            var arcPosition = currentUnitPosition + hoveringDistance;
+            var arcPosition = new Vector3(currentUnitPosition.x, currentUnitPosition.y + drawingYOffset, currentUnitPosition.z);
 
             Handles.color = Color.cyan;
 
@@ -392,75 +391,13 @@ namespace Assets.SNEED.EditorExtensions.Maze
         protected void RenderEditorGizmos()
         {
             var maze = editorState.SelectedMaze;
-
-            var temp_handles_color = Handles.color;
-
+            
             if (!instance.enabled)
                 return;
 
-            if (instance.PathAsLinkedList.Count > 0)
-            {
-                hoveringDistance = new Vector3(0f, maze.RoomDimension.y, 0f);
+            var hoveringDistance = new Vector3(0, maze.RoomDimension.y + 0.1f, 0);
 
-                var start = instance.PathAsLinkedList.First.Value.Unit.transform;
-
-                Handles.color = Color.blue;
-
-                Handles.CubeCap(this.GetInstanceID(), start.position + hoveringDistance, start.rotation, 0.3f);
-
-
-                var iterator = instance.PathAsLinkedList.GetEnumerator();
-                MazeUnit last = null;
-
-                while (iterator.MoveNext())
-                {
-                    if (last == null)
-                    {
-                        last = iterator.Current.Unit;
-                        continue;
-                    }
-
-                    if (last == null || iterator.Current.Unit == null)
-                    {
-                        last = iterator.Current.Unit;
-                        continue;
-                    }
-
-                    Gizmos.DrawLine(last.transform.position + hoveringDistance, iterator.Current.Unit.transform.position + hoveringDistance);
-
-                    last = iterator.Current.Unit;
-                }
-
-                var lastElement = instance.PathAsLinkedList.Last.Value.Unit;
-                var endTransform = lastElement.transform;
-
-                var coneRotation = start.rotation;
-
-                switch (lastElement.WaysOpen)
-                {
-                    case OpenDirections.None:
-                        break;
-                    case OpenDirections.North:
-                        coneRotation.SetLookRotation(-endTransform.forward);
-                        break;
-                    case OpenDirections.South:
-                        coneRotation.SetLookRotation(endTransform.forward);
-                        break;
-                    case OpenDirections.East:
-                        coneRotation.SetLookRotation(-endTransform.right);
-                        break;
-                    case OpenDirections.West:
-                        coneRotation.SetLookRotation(endTransform.right);
-                        break;
-                    case OpenDirections.All:
-                        break;
-                    default:
-                        break;
-                }
-
-                Handles.ConeCap(this.GetInstanceID(), endTransform.position + hoveringDistance, coneRotation, 0.3f);
-                Handles.color = temp_handles_color;
-            }
+            PathEditorUtils.RenderPathElements(maze, instance, hoveringDistance);
         }
     }
 }
