@@ -169,7 +169,7 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
         internal void OnInspectorGetsDisabled()
         {
-            Debug.Log("Maze Inspector gets disabled");
+           // Debug.Log("Maze Inspector gets disabled");
         }
 
         private void Draw()

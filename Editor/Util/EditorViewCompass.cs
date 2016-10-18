@@ -76,6 +76,9 @@ public static class EditorViewCompass
 
     private static void renderCompassToSceneView(SceneView view)
     {
+        if (compass == null)
+            LoadTexture();
+
         var drawingPositionX = view.position.size.x - offsetToBorderX - sizeX ;
         var drawingPositionY = view.position.size.y - offsetToBorderY - sizeY;
 

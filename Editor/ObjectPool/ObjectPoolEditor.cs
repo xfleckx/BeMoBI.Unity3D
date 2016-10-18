@@ -66,7 +66,7 @@ namespace Assets.SNEED.EditorExtensions.ObjectsAndCategories
 
             list.onRemoveCallback += (l) =>
             {
-                var element = list.serializedProperty.GetArrayElementAtIndex(list.index);
+                //var element = list.serializedProperty.GetArrayElementAtIndex(list.index);
 
                 DestroyImmediate(instance.transform.GetChild(list.index).gameObject);
 
