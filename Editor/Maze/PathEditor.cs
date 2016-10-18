@@ -397,7 +397,7 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
             var hoveringDistance = new Vector3(0, maze.RoomDimension.y + 0.1f, 0);
 
-            PathEditorUtils.RenderPathElements(maze, instance, hoveringDistance);
+            PathEditorUtils.RenderPathElements(maze, instance, hoveringDistance, Color.blue);
         }
     }
 }

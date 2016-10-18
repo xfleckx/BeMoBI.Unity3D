@@ -56,10 +56,24 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
             if (pathController == null)
                 return;
-
+            
             foreach (var path in pathController.Paths)
             {
-                PathEditorUtils.RenderPathElements(maze, path, drawingOffset);
+                float localDrawingOffset = path.ID * 0.1f;
+
+                if (localDrawingOffset > 1)
+                    localDrawingOffset = 1 - localDrawingOffset;
+
+                Color drawingColor;
+
+                if (path.ID % 2 == 0)
+                    drawingColor = new Color(localDrawingOffset, (localDrawingOffset * 0.5f) + 0.5f, 1 - localDrawingOffset);
+                else
+                    drawingColor = new Color(localDrawingOffset, 1 - localDrawingOffset, (localDrawingOffset * 0.5f) + 0.5f);
+
+                var offset = drawingOffset + new Vector3(localDrawingOffset, 0, localDrawingOffset);
+
+                PathEditorUtils.RenderPathElements(maze, path, offset, drawingColor);
             }
 
         }

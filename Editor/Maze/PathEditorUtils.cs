@@ -9,19 +9,18 @@ namespace Assets.SNEED.EditorExtensions.Maze
 {
     public static class PathEditorUtils
     {
-        public static void RenderPathElements(beMobileMaze maze, PathInMaze instance, Vector3 drawingOffset)
+        public static void RenderPathElements(beMobileMaze maze, PathInMaze instance, Vector3 drawingOffset, Color color)
         {
-            var temp_handles_color = Handles.color;
+            var tempGizmoColor = Gizmos.color;
 
             if (instance.PathAsLinkedList.Count > 0)
             {
 
                 var start = instance.PathAsLinkedList.First.Value.Unit.transform;
+                
+                Gizmos.color = color;
 
-                Handles.color = Color.blue;
-
-                Handles.CubeCap(0, start.position + drawingOffset, start.rotation, 0.3f);
-
+                Gizmos.DrawCube(start.position + drawingOffset, Vector3.one * 0.3f);
 
                 var iterator = instance.PathAsLinkedList.GetEnumerator();
                 MazeUnit last = null;
@@ -71,9 +70,9 @@ namespace Assets.SNEED.EditorExtensions.Maze
                     default:
                         break;
                 }
+                Gizmos.DrawSphere(endTransform.position + drawingOffset, 0.15f);
 
-                Handles.ConeCap(0, endTransform.position + drawingOffset, coneRotation, 0.3f);
-                Handles.color = temp_handles_color;
+                Gizmos.color = tempGizmoColor;
             }
         }
     }

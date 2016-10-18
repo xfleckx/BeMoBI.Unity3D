@@ -10,6 +10,14 @@ public class PathControllerInspector : Editor
 {
     private PathController instance;
 
+    void OnEnable()
+    {
+
+        instance = target as PathController;
+
+        instance.ForcePathLookup();
+    }
+
     public override void OnInspectorGUI()
     {
         instance = target as PathController;
