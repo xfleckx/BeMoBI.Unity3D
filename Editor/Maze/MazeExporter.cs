@@ -126,7 +126,14 @@ namespace Assets.SNEED.EditorExtensions.Maze
                    },
                 (u, s) => {
 
-                    string content = "1";
+                    OpenDirections openDirectionsCode = u.WaysOpen;
+
+                    OpenDirections directions = ValidateOpenDirections(u);
+
+                    if (openDirectionsCode != directions)
+                        Debug.Log(u.GridID + "Has wrong directions code - Correct during export!");
+
+                    string content = ((int) openDirectionsCode).ToString();
 
                     mazeAsTextMatrix.Append(content);
 
@@ -171,6 +178,31 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
             mazeAsTextMatrix.Append(" ]");
             return mazeAsTextMatrix;
+        }
+
+        private OpenDirections ValidateOpenDirections(MazeUnit u)
+        {
+            var children = u.transform.AllChildren().Where(
+                go => !(go.Equals(MazeUnit.TOP) || go.Equals(MazeUnit.FLOOR)));
+
+            OpenDirections waysOpen = OpenDirections.None;
+
+            foreach (var item in children)
+            {
+                if (item.name.Equals(MazeUnit.NORTH) && !item.activeSelf)
+                    waysOpen |= OpenDirections.North;
+                
+                if (item.name.Equals(MazeUnit.SOUTH) && !item.activeSelf)
+                    waysOpen |= OpenDirections.South;
+
+                if (item.name.Equals(MazeUnit.WEST) && !item.activeSelf)
+                    waysOpen |= OpenDirections.West;
+
+                if (item.name.Equals(MazeUnit.EAST) && !item.activeSelf)
+                    waysOpen |= OpenDirections.East;
+            }
+
+            return waysOpen;
         }
 
         private StringBuilder AppendPathWithMatrix(beMobileMaze maze, PathInMaze path)
@@ -265,7 +297,6 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
             return pathAsTextMatrix;
         }
-
         
     }
 }
