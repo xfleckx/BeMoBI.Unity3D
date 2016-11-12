@@ -4,22 +4,29 @@ using System.Collections.Generic;
 using UnityEditor;
 using System.Linq;
 using System;
- 
+using Assets.SNEED.EditorExtensions.Maze;
+
 namespace Assets.SNEED.EditorExtensions.Maze
 {
     public class EditorState : ScriptableObject
     {
-        private static EditorState instance;
+        private static EditorState _instance;
         public static EditorState Instance
         {
             get
             {
-                if (instance != null)
-                    return instance;
+                if (_instance != null)
+                    return _instance;
                 else {
-                    
-                    instance = CreateInstance<EditorState>();
-                    return instance;
+
+                    _instance = FindObjectOfType<EditorState>();
+
+                    //var allInstances = FindObjectsOfType<EditorState>();
+
+                    if (_instance == null)
+                        _instance = CreateInstance<EditorState>();
+
+                    return _instance;
                 }
             }
         }

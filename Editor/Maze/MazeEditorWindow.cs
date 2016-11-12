@@ -7,6 +7,7 @@ using System.IO;
 using Assets.SNEED.EditorExtensions.Maze.UnitCreation;
 using System.Linq;
 
+
 namespace Assets.SNEED.EditorExtensions.Maze
 {
     public class MazeEditorWindow : EditorWindow
@@ -16,7 +17,7 @@ namespace Assets.SNEED.EditorExtensions.Maze
         private const string EDPREF_LASTUSEDPATHEXPORTMAZEDATA = "lastUsedPathToExportMazeData";
 
         private EditorState state;
-
+        
         private MazeBaker mazeBaker;
         private bool showExperimentalFeatures = false;
 
@@ -34,8 +35,7 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
             editorState.EditorWindowVisible = true;
         }
-
-
+        
         void OnGUI()
         {
             if (state == null) // the case that the Unity Editor remember the window
@@ -100,7 +100,7 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
                 if(GUILayout.Button("Shrink to \n minimal Rows/Cols"))
                 {
-                  var newMazeSize =  MazeEditorUtil.Shrink(state.SelectedMaze);
+                  MazeEditorUtil.Shrink(state.SelectedMaze);
                   
                   MazeEditorUtil.RebuildGrid(state.SelectedMaze);
 
@@ -328,6 +328,21 @@ namespace Assets.SNEED.EditorExtensions.Maze
             EditorGUILayout.EndHorizontal();
         }
 
+        public void OnSelectionChange()
+        {
+            if (Selection.activeGameObject == null)
+                return;
+
+            var newSelectedMaze = Selection.activeGameObject.GetComponent<beMobileMaze>();
+
+            if (newSelectedMaze == null)
+                return;
+
+            if(state.SelectedMaze != null && state.SelectedMaze != newSelectedMaze)
+                state.Initialize(newSelectedMaze);
+
+        }
+
         private void RenderEditorModeOptions()
         {
             state.EditingModeEnabled = GUILayout.Toggle(state.EditingModeEnabled, "Editing Mode");
@@ -361,6 +376,8 @@ namespace Assets.SNEED.EditorExtensions.Maze
         {
             if (state != null)
                 state.EditorWindowVisible = false;
+
+            
         }
     }
 }
