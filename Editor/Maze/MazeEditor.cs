@@ -180,24 +180,13 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
             GUILayout.BeginVertical(GUILayout.Width(200f));
 
-            GUILayout.Label(string.Format("Row   : {0}", Math.Floor(this.editorState.mouseHitPos.z)));
-            GUILayout.Label(string.Format("Column: {0}", Math.Floor(editorState.MarkerPosition.x)));
+            GUILayout.Label(string.Format("Row   : {0}", Math.Floor(editorState.currentTilePosition.y)));
+            GUILayout.Label(string.Format("Column: {0}", Math.Floor(editorState.currentTilePosition.x)));
 
             GUILayout.Label("Position in local Space of the maze");
             GUILayout.Label(string.Format("{0} {1} {2}", this.editorState.mouseHitPos.x, this.editorState.mouseHitPos.y, this.editorState.mouseHitPos.z));
             GUILayout.Label(string.Format("Marker: {0} {1} {2}", editorState.MarkerPosition.x, editorState.MarkerPosition.y, editorState.MarkerPosition.z));
-
-            //GUILayout.Space(10f);
-
-            //GUILayout.Space(10f);
-
-            //GUILayout.Label("Grid:");
-            //GUILayout.Space(3f);
-
-            string gridCode = RenderMazeGrid(editorState.SelectedMaze);
-
-            GUILayout.Label(gridCode);
-
+            
             GUILayout.EndVertical();
 
             Handles.EndGUI();
