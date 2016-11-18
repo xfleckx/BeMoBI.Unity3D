@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEditor;
 using System;
 using System.Linq;
+using Assets.SNEED.Mazes;
 
 namespace Assets.SNEED.EditorExtensions.Maze
 {
@@ -24,10 +25,10 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
             TileHighlightingOnMouseCursor();
 
-            RenderSceneViewUI();
+            //RenderSceneViewUI();
 
-            if (editorState.EditorWindowVisible && editorState.EditorModeProcessEvent != null)
-                editorState.EditorModeProcessEvent(Event.current);
+            //if (editorState.EditorWindowVisible && editorState.EditorModeProcessEvent != null)
+            //    editorState.EditorModeProcessEvent(Event.current);
         }
 
         protected void TileHighlightingOnMouseCursor()
@@ -93,7 +94,7 @@ namespace Assets.SNEED.EditorExtensions.Maze
         {
             var cam = Camera.current;
 
-            if (cameraIsATopDownView(cam, maze) && cam.orthographic)
+            if (GridEditingVisualUtils.CameraIsATopDownView(cam, maze.transform) && cam.orthographic)
             {
                 if (schemaRenderer == null)
                 {
@@ -131,14 +132,7 @@ namespace Assets.SNEED.EditorExtensions.Maze
             Gizmos.matrix = tempMatrix;
         }
 
-        private static bool cameraIsATopDownView(Camera cam, beMobileMaze maze)
-        {
-            var currentCamForward = cam.transform.TransformVector(cam.transform.forward);
-
-            var currentMazeDown = maze.transform.TransformVector(-maze.transform.forward);
-
-            return currentCamForward == currentMazeDown;
-        }
+       
 
         #region General calculations based on tile editor
 

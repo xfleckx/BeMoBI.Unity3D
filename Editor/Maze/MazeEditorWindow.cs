@@ -1,12 +1,12 @@
-﻿using UnityEngine;
-using UnityEditor;
+﻿using Assets.SNEED.EditorExtensions.Maze.UnitCreation;
+using Assets.SNEED.Mazes;
+using Assets.SNEED.Unity3D.EditorExtensions.Maze;
 using System;
 using System.Collections.Generic;
-using Assets.SNEED.Unity3D.EditorExtensions.Maze;
 using System.IO;
-using Assets.SNEED.EditorExtensions.Maze.UnitCreation;
 using System.Linq;
-
+using UnityEditor;
+using UnityEngine;
 
 namespace Assets.SNEED.EditorExtensions.Maze
 {
@@ -172,7 +172,7 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
             EditorGUILayout.LabelField("(4) Use selection to connect units!", EditorStyles.boldLabel);
 
-            state.SelectionModeEnabled = GUILayout.Toggle(state.SelectionModeEnabled, "Selection Mode");
+            state.SelectionModeEnabled = GUILayout.Toggle(state.SelectionModeEnabled, "Selection Mode", "Button");
 
             #region Selection Mode UI
 

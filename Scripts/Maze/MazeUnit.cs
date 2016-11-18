@@ -87,7 +87,7 @@ public class MazeUnit : MonoBehaviour {
     private Vector3 cubeGizmoSize = new Vector3(0.001f, 0.001f, 0.001f);
     void OnDrawGizmos()
     {
-        Gizmos.DrawCube(transform.position, cubeGizmoSize);
+        //Gizmos.DrawCube(transform.position, cubeGizmoSize);
     }
 
 }

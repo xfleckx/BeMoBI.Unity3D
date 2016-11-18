@@ -4,48 +4,48 @@ using System.Collections.Generic;
 using System;
 using System.Linq;
 
-[Serializable]
-public class beMobileMaze : MonoBehaviour
+namespace Assets.SNEED.Mazes
 {
-	#region replace this with readonly creation model
 
-    [SerializeField]
-    public string UnitNamePattern = "Unit_{0}_{1}";
-    [SerializeField]
-	public float MazeWidthInMeter = 6f;
-    [SerializeField]
-	public float MazeLengthInMeter = 10f;
-    [SerializeField]
-	public Vector3 RoomDimension = new Vector3(1.3f, 2, 1.3f);
-
-    public int Rows { get { return Grid != null ? Grid.GetLength(1) : 0; } }
-
-    public int Columns { get { return Grid != null ? Grid.GetLength(0) : 0; } }
-    
-	#endregion
-
-	public event Action<MazeUnitEvent> MazeUnitEventOccured;
-
-	[SerializeField]
-	public List<MazeUnit> Units = new List<MazeUnit>();
-    
-    [SerializeField]
-    public MazeUnit[,] Grid;
-    
-    public MazeUnit this[int col, int row]
-    {
-        get { return Grid[col, row]; }
-        set { Grid[col, row] = value; }
-    }
-
-	public void RecieveUnitEvent(MazeUnitEvent unitEvent)
+	[Serializable]
+	public class beMobileMaze : MonoBehaviour
 	{
-		if (MazeUnitEventOccured != null)
-			MazeUnitEventOccured(unitEvent);
+		#region replace this with readonly creation model
+
+		[SerializeField]
+		public string UnitNamePattern = "Unit_{0}_{1}";
+		[SerializeField]
+		public float MazeWidthInMeter = 6f;
+		[SerializeField]
+		public float MazeLengthInMeter = 10f;
+		[SerializeField]
+		public Vector3 RoomDimension = new Vector3(1.3f, 2, 1.3f);
+
+		public int Rows { get { return Grid != null ? Grid.GetLength(1) : 0; } }
+
+		public int Columns { get { return Grid != null ? Grid.GetLength(0) : 0; } }
+	
+		#endregion
+
+		public event Action<MazeUnitEvent> MazeUnitEventOccured;
+
+		[SerializeField]
+		public List<MazeUnit> Units = new List<MazeUnit>();
+	
+		[SerializeField]
+		public MazeUnit[,] Grid;
+	
+		public MazeUnit this[int col, int row]
+		{
+			get { return Grid[col, row]; }
+			set { Grid[col, row] = value; }
+		}
+
+		public void RecieveUnitEvent(MazeUnitEvent unitEvent)
+		{
+			if (MazeUnitEventOccured != null)
+				MazeUnitEventOccured(unitEvent);
+		}
 	}
 
-    void Reset()
-    {
-        Debug.Log("Reset on Maze"); 
-    }
 }

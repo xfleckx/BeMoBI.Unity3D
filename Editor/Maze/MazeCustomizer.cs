@@ -3,6 +3,7 @@ using UnityEditor;
 using System;
 using System.Linq;
 using Assets.SNEED.EditorExtensions.Util;
+using Assets.SNEED.Mazes;
 
 namespace Assets.SNEED.EditorExtensions
 {

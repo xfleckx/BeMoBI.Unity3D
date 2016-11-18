@@ -1,4 +1,5 @@
-﻿using Assets.SNEED.Mazes.Grid;
+﻿using Assets.SNEED.Mazes;
+using Assets.SNEED.Mazes.Grid;
 using System;
 using System.Collections.Generic;
 using System.IO;

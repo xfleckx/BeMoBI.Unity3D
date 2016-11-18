@@ -2,6 +2,7 @@
 using UnityEditor;
 using System.Collections.Generic;
 using System;
+using Assets.SNEED.Mazes;
 
 namespace Assets.SNEED.EditorExtensions.Maze.UnitCreation
 {

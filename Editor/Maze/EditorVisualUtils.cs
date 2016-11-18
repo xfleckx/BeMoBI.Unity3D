@@ -1,6 +1,7 @@
 ﻿using UnityEditor;
 using UnityEngine;
 using Assets.SNEED.EditorExtensions.Util;
+using Assets.SNEED.Mazes;
 
 namespace Assets.SNEED.EditorExtensions.Maze
 {

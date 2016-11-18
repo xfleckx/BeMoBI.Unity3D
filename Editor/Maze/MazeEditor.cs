@@ -2,6 +2,7 @@
 using UnityEditor;
 using System;
 using System.Text;
+using Assets.SNEED.Mazes;
 
 namespace Assets.SNEED.EditorExtensions.Maze
 {

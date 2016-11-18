@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using System.Linq;
 using System;
+using Assets.SNEED.Mazes;
 using Assets.SNEED.EditorExtensions.Maze;
 
 namespace Assets.SNEED.EditorExtensions.Maze

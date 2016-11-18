@@ -4,59 +4,66 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(beMobileMaze))]
-public class PathController : MonoBehaviour {
+namespace Assets.SNEED.Mazes
+{
+    [RequireComponent(typeof(beMobileMaze))]
+    public class PathController : MonoBehaviour
+    {
 
-	public List<PathInMaze> Paths = new List<PathInMaze>();
+        public List<PathInMaze> Paths = new List<PathInMaze>();
 
-	void Start()
-	{
-		ForcePathLookup();
-	}
-	
-	public void ForcePathLookup()
-	{
-		Paths.Clear();
+        void Start()
+        {
+            ForcePathLookup();
+        }
 
-		var existingPaths = GetComponents<PathInMaze>();
+        public void ForcePathLookup()
+        {
+            Paths.Clear();
 
-		Paths.AddRange(existingPaths);
-	}
+            var existingPaths = GetComponents<PathInMaze>();
 
-	public PathInMaze EnablePathContaining(int id)
-	{
-		PathInMaze result = null;
+            Paths.AddRange(existingPaths);
+        }
 
-		foreach (var item in Paths) 
-		{
-			if (item.ID == id){
-				item.enabled = true;
-				result = item;
-			}
-			else { 
-				item.enabled = false;
-			}
-		} 
+        public PathInMaze EnablePathContaining(int id)
+        {
+            PathInMaze result = null;
 
-		return result;
-	}
+            foreach (var item in Paths)
+            {
+                if (item.ID == id)
+                {
+                    item.enabled = true;
+                    result = item;
+                }
+                else
+                {
+                    item.enabled = false;
+                }
+            }
 
-	public int[] GetAvailablePathIDs()
-	{
-		var ids = Paths.Where(p => p.Available).Select(p => p.ID);
+            return result;
+        }
 
-		return ids.ToArray();
-	}
+        public int[] GetAvailablePathIDs()
+        {
+            var ids = Paths.Where(p => p.Available).Select(p => p.ID);
+
+            return ids.ToArray();
+        }
 
 #if UNITY_EDITOR
-	public Action EditorGizmoCallbacks;
+        public Action EditorGizmoCallbacks;
 #endif
 
-	public void OnDrawGizmos()
-	{ 
+        public void OnDrawGizmos()
+        {
 #if UNITY_EDITOR
-		if (EditorGizmoCallbacks != null)
-			EditorGizmoCallbacks();
+            if (EditorGizmoCallbacks != null)
+                EditorGizmoCallbacks();
 #endif
-	}
+        }
+    }
+
 }
