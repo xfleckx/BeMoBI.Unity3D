@@ -10,6 +10,83 @@ namespace Assets.SNEED.EditorExtensions.Maze
 {
     public static class PathEditorUtils
     {
+
+        public static PathElement GetElementType(PathElement element)
+        {
+            var u = element.Unit;
+
+            if (u.WaysOpen == (OpenDirections.East | OpenDirections.West) ||
+                u.WaysOpen == (OpenDirections.North | OpenDirections.South) ||
+                u.WaysOpen == OpenDirections.East ||
+                u.WaysOpen == OpenDirections.West ||
+                u.WaysOpen == OpenDirections.North ||
+                u.WaysOpen == OpenDirections.South)
+            {
+                element.Type = UnitType.I;
+            }
+
+            if (u.WaysOpen == OpenDirections.All)
+                element.Type = UnitType.X;
+
+            if (u.WaysOpen == (OpenDirections.West | OpenDirections.North | OpenDirections.East) ||
+               u.WaysOpen == (OpenDirections.West | OpenDirections.South | OpenDirections.East) ||
+               u.WaysOpen == (OpenDirections.West | OpenDirections.South | OpenDirections.North) ||
+                u.WaysOpen == (OpenDirections.East | OpenDirections.South | OpenDirections.North))
+            {
+                element.Type = UnitType.T;
+            }
+
+            if (u.WaysOpen == (OpenDirections.West | OpenDirections.North) ||
+               u.WaysOpen == (OpenDirections.West | OpenDirections.South) ||
+               u.WaysOpen == (OpenDirections.East | OpenDirections.South) ||
+                u.WaysOpen == (OpenDirections.East | OpenDirections.North))
+            {
+                element.Type = UnitType.L;
+            }
+
+            return element;
+        }
+
+        public static PathElement GetTurnType(PathElement current, PathElement last, PathElement sec2last)
+        {
+            var x0 = sec2last.Unit.GridID.x;
+            var y0 = sec2last.Unit.GridID.y;
+            //  var x1 = last.Unit.GridID.x; // why unused?
+            var y1 = last.Unit.GridID.y;
+            var x2 = current.Unit.GridID.x;
+            var y2 = current.Unit.GridID.y;
+
+            if ((x0 - x2) - (y0 - y2) == 0) // same sign
+            {
+                if (y0 != y1) // first change in y
+                {
+                    last.Turn = TurnType.RIGHT;
+                }
+                else
+                {
+                    last.Turn = TurnType.LEFT;
+                }
+            }
+            else // different sign
+            {
+                if (y0 != y1) // first change in y
+                {
+                    last.Turn = TurnType.LEFT;
+                }
+                else
+                {
+                    last.Turn = TurnType.RIGHT;
+                }
+            }
+
+            if (Math.Abs(x0 - x2) == 2 || Math.Abs(y0 - y2) == 2)
+            {
+                last.Turn = TurnType.STRAIGHT;
+            }
+
+            return current;
+        }
+
         public static void RenderPathElements(beMobileMaze maze, PathInMaze instance, Vector3 drawingOffset, Color color)
         {
             var tempGizmoColor = Gizmos.color;

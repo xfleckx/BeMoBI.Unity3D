@@ -54,15 +54,15 @@ namespace Assets.SNEED.EditorExtensions.Maze
             sceneViewUIStyle.normal.textColor = Color.blue;
         }
 
-        [DrawGizmo(GizmoType.Active | GizmoType.InSelectionHierarchy, typeof(beMobileMaze))]
-        static void DrawGizmosFor(beMobileMaze maze, GizmoType type)
-        {
-            var editorState = EditorState.Instance;
+        //[DrawGizmo(GizmoType.Active | GizmoType.InSelectionHierarchy, typeof(beMobileMaze))]
+        //static void DrawGizmosFor(beMobileMaze maze, GizmoType type)
+        //{
+        //    var editorState = EditorState.Instance;
 
-            RenderEditorGizmos(maze, editorState);
-            RenderTileHighlighting(maze, editorState, AMazeEditor.sceneViewUIStyle);
+        //    RenderEditorGizmos(maze, editorState);
+        //    RenderTileHighlighting(maze, editorState, AMazeEditor.sceneViewUIStyle);
 
-        }
+        //}
 
         private static void RenderTileHighlighting(beMobileMaze maze, EditorState editorState, GUIStyle sceneViewUIStyle)
         {

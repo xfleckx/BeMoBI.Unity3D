@@ -7,34 +7,31 @@ namespace Assets.SNEED.EditorExtension.Maze
 {
     public class MazeCreationWorkflow : EditorWindow
     {
+        const bool VERBOSE = true;
+
         private static void log(string message)
         {
             if (VERBOSE)
                 Debug.Log(message);
         }
 
-        // Add menu named "My Window" to the Window menu
+
         [MenuItem("SNEED/Maze Workflow")]
         static void Init()
         {
             // Get existing open window or if none, make a new one:
             var window = EditorWindow.GetWindow<MazeCreationWorkflow>();
 
-            var backend = FindOrCreateBackend();
-
-            window.Initialize(backend);
             window.titleContent = new GUIContent("Workflow");
 
             window.Show();
         }
 
-        const bool VERBOSE = true;
-
         private MazeCreationWorkflowBackEnd backend;
         
         static MazeCreationWorkflowBackEnd FindOrCreateBackend()
         {
-            var existingInstance = FindObjectOfType<MazeCreationWorkflowBackEnd>();
+            var existingInstance = ScriptableObject.FindObjectOfType<MazeCreationWorkflowBackEnd>();
 
             if (existingInstance != null) {
                 log("Using existing backend instance");
@@ -51,34 +48,60 @@ namespace Assets.SNEED.EditorExtension.Maze
             return newInstance;
         }
 
-        private void Initialize(MazeCreationWorkflowBackEnd currentBackend)
+        private void OnEnable()
         {
-            if (backend != currentBackend)
+            log("Workflow Enabled");
+
+            var availableBackend = FindOrCreateBackend();
+            
+            if (backend != null && backend.GetInstanceID() != availableBackend.GetInstanceID())
             {
+                log("Found old backend - destroy it...");
                 DestroyImmediate(backend);
-                backend = currentBackend;
+                backend = null;
             }
+
+            backend = availableBackend;
 
             backend.CheckCurrentSelection();
         }
 
+        private Vector2 scrollPosition;
+
         private void OnGUI()
         {
-            GUILayout.Label("Selected Maze: " + backend.getMazeName());
+            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
 
-            if (backend.selectedMazeHasAPrefab())
-            {
-                EditorGUILayout.HelpBox("It has a prefab!", MessageType.Info);
-            }
-
-            if (GUILayout.Button("Create new Maze"))
-            {
-
-            }
 
             if (backend.hasNoMazeSelected())
             {
+                backend.mazeCreationMode.Selected = GUILayout.Toggle(backend.mazeCreationMode.Selected, backend.mazeCreationMode.Name, "Button");
+                
+                if(backend.mazeCreationMode.Selected)
+                {
+                    backend.mazeCreationMode.OnGUI(backend);
+                }
+            }
+
+            if(backend.hasNoMazeSelected())
+            {
+                EditorGUILayout.HelpBox("Create or Select a Maze!", MessageType.Info, true);
+                EditorGUILayout.EndScrollView();
                 return;
+            }
+
+
+            GUILayout.Label("Selected Maze: " + backend.getMazeName());
+
+            if (backend.selectedMazeHasAPrefab() && GUILayout.Button("Select it's prefab"))
+            {
+                Selection.activeObject = backend.GetMazePrefab();
+            }
+            
+            if(GUILayout.Button("Create new Maze"))
+            {
+                backend.mazeCreationMode.Selected = true;
+                backend.mazeCreationMode.CreateNewPlainMaze();
             }
 
             GUILayout.Label("Edit your Maze: ", EditorStyles.largeLabel);
@@ -90,10 +113,15 @@ namespace Assets.SNEED.EditorExtension.Maze
                 if (mode.Selected && mode != backend.CurrentSelectedMode)
                     backend.ChangeEditorModeTo(mode);
 
-                if (mode.Selected)
-                    mode.OnGUI();
-            }
+                if (!mode.Selected && mode == backend.CurrentSelectedMode)
+                    backend.ResetCurrentEditorMode();
 
+                if (mode.Selected)
+                    mode.OnGUI(backend);
+
+                EditorGUILayout.Space();
+            }
+            
             EditorGUILayout.Space();
 
             if(GUILayout.Button("Save Prefab")){
@@ -110,6 +138,8 @@ namespace Assets.SNEED.EditorExtension.Maze
             {
 
             }
+
+            EditorGUILayout.EndScrollView();
         }
 
         private void OnSelectionChange()

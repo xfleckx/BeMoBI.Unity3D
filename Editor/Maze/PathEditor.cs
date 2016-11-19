@@ -42,8 +42,8 @@ namespace Assets.SNEED.EditorExtensions.Maze
             if (instance.PathAsLinkedList == null)
                 instance.PathAsLinkedList = new LinkedList<PathElement>();
 
-            instance.EditorGizmoCallbacks += RenderTileHighlighting;
-            instance.EditorGizmoCallbacks += RenderEditorGizmos;
+            //instance.EditorGizmoCallbacks += RenderTileHighlighting;
+            //instance.EditorGizmoCallbacks += RenderEditorGizmos;
         }
 
         public void OnDisable()
@@ -67,7 +67,7 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
             EditorGUILayout.BeginVertical();
 
-            PathCreationEnabled = GUILayout.Toggle(PathCreationEnabled, "Path creation");
+            //PathCreationEnabled = GUILayout.Toggle(PathCreationEnabled, "Path creation");
 
             showElements = EditorGUILayout.Foldout(showElements, "Show Elements");
 
@@ -282,7 +282,7 @@ namespace Assets.SNEED.EditorExtensions.Maze
         {
             var newElement = new PathElement(newUnit);
 
-            newElement = GetElementType(newElement);
+            newElement = PathEditorUtils.GetElementType(newElement);
 
             var nr_el = instance.PathAsLinkedList.Count; // count all elements in the path to get the second last for turning calculation
 
@@ -293,7 +293,7 @@ namespace Assets.SNEED.EditorExtensions.Maze
                 if (nr_el >= 2)
                 {
                     var secpreviousElement = instance.PathAsLinkedList.Last.Previous.Value;
-                    newElement = GetTurnType(newElement, previousElement, secpreviousElement);
+                    newElement = PathEditorUtils.GetTurnType(newElement, previousElement, secpreviousElement);
                 }
                 else
                 {
@@ -303,83 +303,7 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
             instance.PathAsLinkedList.AddLast(newElement);
         }
-
-        public static PathElement GetElementType(PathElement element)
-        {
-            var u = element.Unit;
-
-            if (u.WaysOpen == (OpenDirections.East | OpenDirections.West) ||
-                u.WaysOpen == (OpenDirections.North | OpenDirections.South) ||
-                u.WaysOpen == OpenDirections.East ||
-                u.WaysOpen == OpenDirections.West ||
-                u.WaysOpen == OpenDirections.North ||
-                u.WaysOpen == OpenDirections.South)
-            {
-                element.Type = UnitType.I;
-            }
-
-            if (u.WaysOpen == OpenDirections.All)
-                element.Type = UnitType.X;
-
-            if (u.WaysOpen == (OpenDirections.West | OpenDirections.North | OpenDirections.East) ||
-               u.WaysOpen == (OpenDirections.West | OpenDirections.South | OpenDirections.East) ||
-               u.WaysOpen == (OpenDirections.West | OpenDirections.South | OpenDirections.North) ||
-                u.WaysOpen == (OpenDirections.East | OpenDirections.South | OpenDirections.North))
-            {
-                element.Type = UnitType.T;
-            }
-
-            if (u.WaysOpen == (OpenDirections.West | OpenDirections.North) ||
-               u.WaysOpen == (OpenDirections.West | OpenDirections.South) ||
-               u.WaysOpen == (OpenDirections.East | OpenDirections.South) ||
-                u.WaysOpen == (OpenDirections.East | OpenDirections.North))
-            {
-                element.Type = UnitType.L;
-            }
-
-            return element;
-        }
-
-        public static PathElement GetTurnType(PathElement current, PathElement last, PathElement sec2last)
-        {
-            var x0 = sec2last.Unit.GridID.x;
-            var y0 = sec2last.Unit.GridID.y;
-            //  var x1 = last.Unit.GridID.x; // why unused?
-            var y1 = last.Unit.GridID.y;
-            var x2 = current.Unit.GridID.x;
-            var y2 = current.Unit.GridID.y;
-
-            if ((x0 - x2) - (y0 - y2) == 0) // same sign
-            {
-                if (y0 != y1) // first change in y
-                {
-                    last.Turn = TurnType.RIGHT;
-                }
-                else
-                {
-                    last.Turn = TurnType.LEFT;
-                }
-            }
-            else // different sign
-            {
-                if (y0 != y1) // first change in y
-                {
-                    last.Turn = TurnType.LEFT;
-                }
-                else
-                {
-                    last.Turn = TurnType.RIGHT;
-                }
-            }
-
-            if (Math.Abs(x0 - x2) == 2 || Math.Abs(y0 - y2) == 2)
-            {
-                last.Turn = TurnType.STRAIGHT;
-            }
-
-            return current;
-        }
-
+        
         private void Remove(MazeUnit unit)
         {
             var elementToRemove = instance.PathAsLinkedList.First(e => e.Unit.Equals(unit));

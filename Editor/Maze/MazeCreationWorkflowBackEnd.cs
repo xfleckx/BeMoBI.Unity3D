@@ -7,6 +7,7 @@ using System.Linq;
 using System.IO;
 using Assets.SNEED.EditorExtensions;
 using Assets.SNEED.EditorExtensions.Maze;
+using Assets.SNEED.EditorExtension.Maze.EditorModes;
 
 namespace Assets.SNEED.EditorExtension.Maze
 {
@@ -33,34 +34,26 @@ namespace Assets.SNEED.EditorExtension.Maze
 
         private void onSceneGUI(SceneView view)
         {
+            if (EditorApplication.isPlaying)
+                return;
+            
+            var currentEvent = Event.current;
+            
+            mazeCreationMode.OnSceneViewGUI(view, this, visual);
+
             if (hasNoMazeSelected())
                 return;
 
             visual.CalculateTilePosition(selectedMaze.transform, selectedMaze.RoomDimension, selectedMaze.Rows, selectedMaze.Columns);
-            
-            if (EditorApplication.isPlaying)
-                return;
 
             visual.renderDebugInfos();
-            
+
             if (CurrentSelectedMode != null)
                 CurrentSelectedMode.OnSceneViewGUI(view, this, visual);
-
-            var cam = Camera.current;
-
-            if (GridEditingVisualUtils.CameraIsATopDownView(cam, selectedMaze.transform) && cam.orthographic)
-            { 
-                // special case for Schematic view
-            }
-
-            var currentEvent = Event.current;
-
-            if(currentEvent.type == EventType.MouseUp) {
-                if(currentEvent.button == 0)
-                { 
-                    Debug.Log("klick");
-                }
-            }
+            
+            if (CurrentSelectedMode != null)
+                CurrentSelectedMode.ProcessEvent(Event.current, this, visual);
+            
         }
 
         private void onEditorApplicationUpdate()
@@ -90,12 +83,14 @@ namespace Assets.SNEED.EditorExtension.Maze
 
         internal beMobileMaze selectedMaze;
 
+        internal MazeCreationMode mazeCreationMode;
+
         internal List<IEditorMode> EditorModes;
 
         internal IEditorMode CurrentSelectedMode;
 
         internal Action<IEditorMode> OnEditorModeChange;
-        
+
         private GameObject referenceToPrefab;
         private UnityEngine.Object prefabOfSelectedMaze;
         private Vector3 lastMouseHit;
@@ -103,16 +98,24 @@ namespace Assets.SNEED.EditorExtension.Maze
 
         private void LoadEditorModeOptions()
         {
+            mazeCreationMode = new MazeCreationMode();
+
             EditorModes = new List<IEditorMode>();
 
             EditorModes.Add(new DrawingMode());
             EditorModes.Add(new MergeAndSeparateMode());
             EditorModes.Add(new PathCreationMode());
         }
-        
+
         internal void CheckCurrentSelection()
         {
-            var currentSelection = Selection.activeGameObject.GetComponent<beMobileMaze>();
+            var selectedObject = Selection.activeGameObject;
+
+            if (selectedObject == null) {
+                return;
+            }
+
+            var currentSelection = selectedObject.GetComponent<beMobileMaze>();
 
             if (currentSelection != null)
             {
@@ -132,6 +135,11 @@ namespace Assets.SNEED.EditorExtension.Maze
             string path = AssetDatabase.GetAssetPath(prefabOfSelectedMaze);
         }
 
+        internal UnityEngine.Object GetMazePrefab()
+        {
+            return prefabOfSelectedMaze;
+        }
+
         internal bool selectedMazeHasAPrefab()
         {
             return prefabOfSelectedMaze;
@@ -148,40 +156,6 @@ namespace Assets.SNEED.EditorExtension.Maze
         internal bool hasNoMazeSelected()
         {
             return selectedMaze == null;
-        }
-
-        internal void CheckModeSelection()
-        {
-            if (EditorModes.All(m => !m.Selected) )
-            {
-                if(CurrentSelectedMode != null) { 
-                    ResetEditorMode(CurrentSelectedMode);
-                    CurrentSelectedMode = null;
-                }
-
-                visual.CurrentHighlightingColor = Color.clear;
-
-                return;
-            }
-            
-            var selected = EditorModes.Where(m => m.Selected);
-
-            if (!selected.Any( m => m.Equals(CurrentSelectedMode) ))
-            {
-                // reset mode to none
-                ResetEditorMode(selected.First());
-            }
-
-            if(selected.Any(m => m.Equals(CurrentSelectedMode)))
-            {
-                var allNotSelectedMmodes = selected.Where(m => m.Equals(CurrentSelectedMode));
-
-                foreach (var item in allNotSelectedMmodes)
-                {
-                    ResetEditorMode(item);
-                }
-            }
-
         }
 
         internal void SaveToPrefab(string filePath)
@@ -206,7 +180,7 @@ namespace Assets.SNEED.EditorExtension.Maze
 
         internal void ChangeEditorModeTo(IEditorMode mode)
         {
-            ResetEditorMode(CurrentSelectedMode);
+            ResetCurrentEditorMode();
 
             var newSelectedMode = EditorModes.Where(m => m.Selected);
 
@@ -231,27 +205,42 @@ namespace Assets.SNEED.EditorExtension.Maze
         /// Remove all callbackes from mode
         /// </summary>
         /// <param name="mode"></param>
-        private void ResetEditorMode(IEditorMode mode = null)
+        internal void ResetCurrentEditorMode()
         {
-            if(mode == null)
+            if (CurrentSelectedMode != null)
             {
-                // Clear all callbacks and reset saved states of the modes
-                
-                return;
+                CurrentSelectedMode.Selected = false;
+                CurrentSelectedMode.Reset();
+                CurrentSelectedMode = null;
             }
-
-            mode.Selected = false;
         }
         
         [DrawGizmo(GizmoType.Active | GizmoType.InSelectionHierarchy, typeof(beMobileMaze))]
         static void DrawGizmosFor(beMobileMaze maze, GizmoType type)
         {
+            var editorBackend = Instance;
 
-            Instance.visual.RenderTileHighlighting(maze.transform, maze.RoomDimension * 1.1f);
+            if (editorBackend == null)
+                return;
 
+            editorBackend.visual.RenderTileHighlighting(maze.transform, maze.RoomDimension * 1.1f);
+            
+            var cam = Camera.current;
 
-            //RenderEditorGizmos(maze, editorState);
+            if (GridEditingVisualUtils.CameraIsATopDownView(cam, maze.transform) && cam.orthographic)
+            {
+                schemaRenderer = new SchematicMazeRenderer();
+                var offset = new Vector3(0, maze.RoomDimension.y + 1, 0);
+                schemaRenderer.Render(maze, offset);
+                schemaRenderer.RenderPaths(maze, offset);
 
+            }else
+            {
+                //RenderEditorGizmos(maze, editorState);
+            }
+
+            if(editorBackend.CurrentSelectedMode != null)
+                editorBackend.CurrentSelectedMode.GizmoDrawings(maze, type);
         }
     }
 }
