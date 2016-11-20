@@ -101,6 +101,13 @@ namespace Assets.SNEED.EditorExtension.Maze
                 Drag(evt, evt.button);
             }
 
+            if (evt.type == EventType.MouseUp)
+            {
+                if (dragging)
+                    DragEnds();
+
+                Click(evt, evt.button);
+            }
         }
 
         protected virtual void DragEnds()

@@ -66,11 +66,13 @@ namespace Assets.SNEED.EditorExtension.Maze.EditorModes
             if (GUILayout.Button("Remove Walls"))
             {
                 TryConnectingCurrentSelection();
+                backend.indicateChange();
             }
 
             if (GUILayout.Button("Add Walls"))
             {
                 TryDisconnectingCurrentSelection();
+                backend.indicateChange();
             }
             
             EditorGUILayout.EndHorizontal();

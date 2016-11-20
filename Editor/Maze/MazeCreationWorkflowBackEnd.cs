@@ -15,6 +15,8 @@ namespace Assets.SNEED.EditorExtension.Maze
     {
         public static MazeCreationWorkflowBackEnd Instance;
 
+        private const string EDPREF_LASTUSEDPATHEXPORTMAZEDATA = "lastUsedPathToExportMazeData";
+
         #region Unity Messages
         private void OnEnable()
         {
@@ -95,6 +97,10 @@ namespace Assets.SNEED.EditorExtension.Maze
         private UnityEngine.Object prefabOfSelectedMaze;
         private Vector3 lastMouseHit;
         private Vector3 MarkerPosition;
+        internal string pathToExportModelData;
+
+        private bool hasChangesToApply;
+        public bool HasChangesToApply { get { return hasChangesToApply; } }
 
         private void LoadEditorModeOptions()
         {
@@ -125,6 +131,24 @@ namespace Assets.SNEED.EditorExtension.Maze
                 }
             }
         }
+
+        internal bool mazeHasUnits()
+        {
+            if (selectedMaze == null)
+                return false;
+
+            return selectedMaze.Units.Any();
+        }
+
+        internal void indicateChange()
+        {
+            hasChangesToApply = true;
+        }
+
+        internal void ChangesApplied()
+        {
+            hasChangesToApply = false;
+        }
         #endregion
 
         private void InitializeWithMaze(beMobileMaze currentSelection)
@@ -153,6 +177,13 @@ namespace Assets.SNEED.EditorExtension.Maze
             return "none";
         }
 
+        internal void OverridePrefab()
+        {
+            prefabOfSelectedMaze = PrefabUtility.ReplacePrefab(selectedMaze.gameObject, prefabOfSelectedMaze);
+            ChangesApplied();
+            EditorUtility.SetDirty(prefabOfSelectedMaze);
+        }
+
         internal bool hasNoMazeSelected()
         {
             return selectedMaze == null;
@@ -160,13 +191,16 @@ namespace Assets.SNEED.EditorExtension.Maze
 
         internal void SaveToPrefab(string filePath)
         {
+            if (filePath == string.Empty)
+                return;
+
             if (File.Exists(filePath))
             {
                 var relativeFileName = filePath.Replace(Application.dataPath, "Assets");
 
                 referenceToPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(relativeFileName);
 
-                prefabOfSelectedMaze = PrefabUtility.ReplacePrefab(selectedMaze.gameObject, prefabOfSelectedMaze);
+                prefabOfSelectedMaze = PrefabUtility.ReplacePrefab(selectedMaze.gameObject, referenceToPrefab);
             }
             else
             {
@@ -176,6 +210,28 @@ namespace Assets.SNEED.EditorExtension.Maze
             }
 
             EditorUtility.SetDirty(prefabOfSelectedMaze);
+            ChangesApplied();
+        }
+
+        internal void ExportMazeData(Func<string, bool> onErrorOccured)
+        {
+            var exporter = new SimpleTextFileMazeExporter();
+
+            exporter.UnexpectedValuesFound += onErrorOccured;
+
+            var targetFileName = exporter.CreateTargetFileName(selectedMaze);
+
+            var targetFile = new FileInfo(
+                Path.Combine(pathToExportModelData, targetFileName));
+
+            exporter.Export(selectedMaze, targetFile);
+
+            EditorPrefs.SetString(EDPREF_LASTUSEDPATHEXPORTMAZEDATA, pathToExportModelData);
+        }
+
+        internal bool exportReady()
+        {
+           return Directory.Exists(pathToExportModelData) && selectedMaze != null;
         }
 
         internal void ChangeEditorModeTo(IEditorMode mode)
@@ -234,9 +290,6 @@ namespace Assets.SNEED.EditorExtension.Maze
                 schemaRenderer.Render(maze, offset);
                 schemaRenderer.RenderPaths(maze, offset);
 
-            }else
-            {
-                //RenderEditorGizmos(maze, editorState);
             }
 
             if(editorBackend.CurrentSelectedMode != null)

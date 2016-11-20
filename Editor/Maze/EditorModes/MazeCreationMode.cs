@@ -10,7 +10,6 @@ namespace Assets.SNEED.EditorExtension.Maze.EditorModes
 {
     public class MazeCreationMode : EditorMode
     {
-        beMobileMaze maze;
         private float MazeWidth;
         private float MazeLength;
 
@@ -27,21 +26,23 @@ namespace Assets.SNEED.EditorExtension.Maze.EditorModes
             return Color.clear;
         }
 
-        internal void CreateNewPlainMaze()
+        internal void CreateNewPlainMaze(MazeCreationWorkflowBackEnd backend)
         {
-            maze = new GameObject().AddComponent<beMobileMaze>();
-
+            backend.selectedMaze = new GameObject().AddComponent<beMobileMaze>();
+            backend.selectedMaze.gameObject.AddComponent<PathController>();
         }
 
         public override void OnGUI(MazeCreationWorkflowBackEnd backend)
         {
-            if(maze == null && GUILayout.Button("New"))
+            if(backend.selectedMaze == null && GUILayout.Button("New"))
             {
-                CreateNewPlainMaze();
+                CreateNewPlainMaze(backend);
             }
 
-            if (maze == null)
+            if (backend.selectedMaze == null)
                 return;
+
+            var maze = backend.selectedMaze;
 
             maze.name = EditorGUILayout.TextField("Name", maze.name);
 
@@ -53,7 +54,9 @@ namespace Assets.SNEED.EditorExtension.Maze.EditorModes
 
             var gridSize = MazeEditorUtil.CalcGridSize(maze);
 
-            EditorGUILayout.Vector2Field("Grid:", gridSize, null);
+            MazeEditorUtil.RebuildGrid2(maze);
+
+            EditorGUILayout.Vector2Field("Grid Cols(x) Rows(y):", gridSize, null);
 
             if (GUILayout.Button("Create"))
             {
@@ -64,12 +67,7 @@ namespace Assets.SNEED.EditorExtension.Maze.EditorModes
 
         public override void OnSceneViewGUI(SceneView view, MazeCreationWorkflowBackEnd backend, EditorViewGridVisualisation visual)
         {
-
-
             base.OnSceneViewGUI(view, backend, visual);
-
-            if(maze != null)
-                EditorVisualUtils.HandlesDrawGrid(maze);
 
             if (backend.selectedMaze != null)
                 EditorVisualUtils.HandlesDrawGrid(backend.selectedMaze);

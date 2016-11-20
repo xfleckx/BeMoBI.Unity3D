@@ -28,31 +28,52 @@ namespace Assets.SNEED.EditorExtension.Maze.EditorModes
 
         public override void OnGUI(MazeCreationWorkflowBackEnd backend)
         {
-            var pathController = backend.selectedMaze.GetComponent<PathController>();
+            var selectedMaze = backend.selectedMaze;
+            var pathController = selectedMaze.GetComponent<PathController>();
+
+            if(pathController == null)
+            {
+                pathController = selectedMaze.gameObject.AddComponent<PathController>();
+            }
+
             var pathIds = pathController.GetAvailablePathIDs();
-            var options = pathIds.Select(i => string.Format("{0} - Path", i)).ToArray();
 
-            selected = EditorGUILayout.Popup(selected, options);
+            if (pathIds.Any())
+            {
+                var options = pathIds.Select(i => string.Format("{0} - Path", i)).ToArray();
 
-            pathToEdit = pathController.Paths.First(p => p.ID == selected);
+                selected = EditorGUILayout.Popup(selected, options);
 
-            pathToEdit = EditorGUILayout.ObjectField("Edit: ", pathToEdit, typeof(PathInMaze), allowSceneObjects:true) as PathInMaze;
+                pathToEdit = pathController.Paths.First(p => p.ID == pathIds[selected]);
 
+                pathToEdit = EditorGUILayout.ObjectField("Edit: ", pathToEdit, typeof(PathInMaze), allowSceneObjects: true) as PathInMaze;
+
+                pathToEdit.ID = EditorGUILayout.IntField("ID: ", pathToEdit.ID);
+
+            }
+            
+            if(GUILayout.Button("Add new Path"))
+            {
+               var newPath = selectedMaze.gameObject.AddComponent<PathInMaze>();
+               newPath.ID = pathController.GetAvailablePathIDs().Max() + 1;
+               pathController.Paths.Add(newPath);
+            }
+
+            if (GUILayout.Button("Remove Selected Path"))
+            {
+                pathController.Paths.Remove(pathToEdit);
+                Editor.DestroyImmediate(pathToEdit);
+                pathToEdit = null;
+                selected = 0;
+            }
         }
 
         public override void OnSceneViewGUI(SceneView view, MazeCreationWorkflowBackEnd backend, EditorViewGridVisualisation visual)
         {
+            if (pathToEdit == null)
+                return;
+
             tilePositionIsValid = CheckIfTileIsValidPathElement(backend, visual);
-
-            //if (!tilePositionIsValid)
-            //{
-            //    visual.pushHandleColor();
-
-            //    Handles.color = Color.red;
-            //    Handles.DrawWireCube(backend.visual.MarkerPosition + , backend.selectedMaze.RoomDimension * 0.8f);
-
-            //    visual.popHandleColor();
-            //}
         }
 
         private bool CheckIfTileIsValidPathElement(MazeCreationWorkflowBackEnd backend, EditorViewGridVisualisation visual)
@@ -126,6 +147,13 @@ namespace Assets.SNEED.EditorExtension.Maze.EditorModes
         public override void GizmoDrawings(beMobileMaze maze, GizmoType type)
         {
             var pathController = backend.selectedMaze.GetComponent<PathController>();
+
+            if (!pathController.Paths.Any())
+                return;
+
+            if (!pathController.Paths.Any(p => p.ID == selected))
+                return;
+
             var pathToRender = pathController.Paths.First(p => p.ID == selected);
 
             var hoveringDistance = new Vector3(0, maze.RoomDimension.y * 0.9f, 0);
@@ -149,6 +177,20 @@ namespace Assets.SNEED.EditorExtension.Maze.EditorModes
 
         protected override void Click(Event evt, int button)
         {
+            var maze = backend.selectedMaze;
+            var pos = backend.visual.currentTilePosition;
+            
+            if (tilePositionIsValid && evt.type == EventType.MouseUp)
+            {
+                var targetUnit = maze.Units.Where(u => u.GridID == pos).First();
+
+                if (evt.button == 0)
+                    Add(targetUnit);
+                else
+                    Remove(targetUnit);
+            } 
+
+            Consume(evt);
         }
 
         protected override void Drag(Event evt, int button)

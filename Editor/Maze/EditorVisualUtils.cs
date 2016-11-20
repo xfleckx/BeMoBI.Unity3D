@@ -117,10 +117,7 @@ namespace Assets.SNEED.EditorExtensions.Maze
             }
 
             var zeroField = new Vector3(position.x + (maze.RoomDimension.x / 2), 0, position.x + (maze.RoomDimension.x / 2));
-
-            Handles.color = new Color(Color.green.r, Color.green.g, Color.green.b, 0.1f);
-
-            Handles.RectangleCap(-1, zeroField, Quaternion.identity, 0.5f);
+            
         }
     }
     

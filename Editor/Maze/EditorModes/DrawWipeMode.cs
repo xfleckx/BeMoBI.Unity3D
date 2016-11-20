@@ -103,11 +103,15 @@ namespace Assets.SNEED.EditorExtension.Maze.EditorModes
 
             bool hasAUnitOnThisPosition = maze.Units.Any((u) => u.GridID.x == pos.x && u.GridID.y == pos.y);
 
-            if (unitPrefab != null && !hasAUnitOnThisPosition && addMode)
+            if (unitPrefab != null && !hasAUnitOnThisPosition && addMode) { 
                 AddANewUnit(maze, pos, backend);
+                backend.indicateChange();
+            }
 
-            if (hasAUnitOnThisPosition && removeMode)
+            if (hasAUnitOnThisPosition && removeMode) { 
                 RemoveAUnit(maze, pos, backend);
+                backend.indicateChange();
+            }
 
             Consume(evt);
         }
