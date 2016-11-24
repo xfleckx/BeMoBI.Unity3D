@@ -218,6 +218,7 @@ namespace Assets.SNEED.EditorExtension.Maze
             }
 
             EditorUtility.SetDirty(prefabOfSelectedMaze);
+            EditorApplication.delayCall += AssetDatabase.SaveAssets;
             ChangesApplied();
         }
 

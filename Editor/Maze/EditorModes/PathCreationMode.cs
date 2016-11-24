@@ -69,6 +69,11 @@ namespace Assets.SNEED.EditorExtension.Maze.EditorModes
                 pathController.Paths.Add(newPath);
             }
 
+            if (backend.selectedMazeHasAPrefab() && GUILayout.Button("Save Path"))
+            {
+                backend.indicateChange();
+            }
+
             if (GUILayout.Button("Remove Selected Path"))
             {
                 pathController.Paths.Remove(pathToEdit);
