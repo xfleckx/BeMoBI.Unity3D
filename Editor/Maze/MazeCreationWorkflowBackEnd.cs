@@ -293,6 +293,7 @@ namespace Assets.SNEED.EditorExtension.Maze
 
             editorBackend.visual.RenderTileHighlighting(maze.transform, maze.RoomDimension * 1.1f);
             
+
             var cam = Camera.current;
 
             if (GridEditingVisualUtils.CameraIsATopDownView(cam, maze.transform) && cam.orthographic)
@@ -304,12 +305,13 @@ namespace Assets.SNEED.EditorExtension.Maze
 
             }
 
-            if(editorBackend.CurrentSelectedMode != null) {
+
+            if (editorBackend.CurrentSelectedMode != null)
+            {
 
                 editorBackend.CurrentSelectedMode.GizmoDrawings(maze, type);
 
             }
-
 
             editorBackend.visual.popGizmoMatrix();
 

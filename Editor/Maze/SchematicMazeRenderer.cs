@@ -20,7 +20,7 @@ namespace Assets.SNEED.EditorExtensions.Maze
             foreach (var unit in maze.Units)
             {
                 Gizmos.color = Color.white;
-                Gizmos.DrawCube(unit.transform.position, schematicUnitSize);
+                Gizmos.DrawCube(unit.transform.localPosition, schematicUnitSize);
 
                 Gizmos.color = Color.black;
                 foreach (var child in unit.transform.AllChildren())
@@ -31,7 +31,7 @@ namespace Assets.SNEED.EditorExtensions.Maze
                     if (child.name == "Top")
                         continue;
 
-                    var position = child.transform.position;
+                    var position = child.transform.localPosition;
 
                     if (child.name == "West" || child.name == "East")
                     {

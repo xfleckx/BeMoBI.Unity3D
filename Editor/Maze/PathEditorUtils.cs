@@ -10,7 +10,6 @@ namespace Assets.SNEED.EditorExtensions.Maze
 {
     public static class PathEditorUtils
     {
-
         public static PathElement GetElementType(PathElement element)
         {
             var u = element.Unit;
@@ -87,6 +86,13 @@ namespace Assets.SNEED.EditorExtensions.Maze
             return current;
         }
 
+        /// <summary>
+        /// TODO: Local position must be used when matrix has been set to maze.transform.localToWorldMatrix
+        /// </summary>
+        /// <param name="maze"></param>
+        /// <param name="instance"></param>
+        /// <param name="drawingOffset"></param>
+        /// <param name="color"></param>
         public static void RenderPathElements(beMobileMaze maze, PathInMaze instance, Vector3 drawingOffset, Color color)
         {
             var tempGizmoColor = Gizmos.color;
@@ -98,7 +104,7 @@ namespace Assets.SNEED.EditorExtensions.Maze
                 
                 Gizmos.color = color;
 
-                Gizmos.DrawCube(start.position + drawingOffset, Vector3.one * 0.3f);
+                Gizmos.DrawCube(start.localPosition + drawingOffset, Vector3.one * 0.3f);
 
                 var iterator = instance.PathAsLinkedList.GetEnumerator();
                 MazeUnit last = null;
@@ -117,7 +123,7 @@ namespace Assets.SNEED.EditorExtensions.Maze
                         continue;
                     }
 
-                    Gizmos.DrawLine(last.transform.position + drawingOffset, iterator.Current.Unit.transform.position + drawingOffset);
+                    Gizmos.DrawLine(last.transform.localPosition + drawingOffset, iterator.Current.Unit.transform.localPosition + drawingOffset);
 
                     last = iterator.Current.Unit;
                 }
@@ -125,7 +131,7 @@ namespace Assets.SNEED.EditorExtensions.Maze
                 var lastElement = instance.PathAsLinkedList.Last.Value.Unit;
                 var endTransform = lastElement.transform;
 
-                var coneRotation = start.rotation;
+                var coneRotation = start.localRotation;
 
                 switch (lastElement.WaysOpen)
                 {
@@ -148,7 +154,7 @@ namespace Assets.SNEED.EditorExtensions.Maze
                     default:
                         break;
                 }
-                Gizmos.DrawSphere(endTransform.position + drawingOffset, 0.15f);
+                Gizmos.DrawSphere(endTransform.localPosition + drawingOffset, 0.15f);
 
                 Gizmos.color = tempGizmoColor;
             }
