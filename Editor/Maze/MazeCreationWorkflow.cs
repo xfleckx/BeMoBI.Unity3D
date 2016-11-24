@@ -19,7 +19,7 @@ namespace Assets.SNEED.EditorExtension.Maze
 
 
         [MenuItem("SNEED/Maze/Creation Workflow")]
-        static void Init()
+        public static void Init()
         {
             // Get existing open window or if none, make a new one:
             var window = EditorWindow.GetWindow<MazeCreationWorkflow>();

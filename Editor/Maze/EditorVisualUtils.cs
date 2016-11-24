@@ -65,6 +65,12 @@ namespace Assets.SNEED.EditorExtensions.Maze
             Gizmos.DrawCube(zeroField, new Vector3(maze.RoomDimension.x - 0.1f, 0, maze.RoomDimension.z - 0.1f));
         }
 
+        /// <summary>
+        /// This draws the grid using Handles.
+        /// Only valid during OnSceneGUI events!
+        /// Make sure to set Handles.matrix to maze.transform.localToWorldMatrix
+        /// </summary>
+        /// <param name="maze"></param>
         public static void HandlesDrawGrid(beMobileMaze maze)
         {
             // store map width, height and position
@@ -115,9 +121,6 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
                 Handles.DrawLine(lineStart, lineEnde);
             }
-
-            var zeroField = new Vector3(position.x + (maze.RoomDimension.x / 2), 0, position.x + (maze.RoomDimension.x / 2));
-            
         }
     }
     

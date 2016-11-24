@@ -14,9 +14,7 @@ namespace Assets.SNEED.EditorExtension.Maze
     public class MazeCreationWorkflowBackEnd : ScriptableObject
     {
         public static MazeCreationWorkflowBackEnd Instance;
-
-        private const string EDPREF_LASTUSEDPATHEXPORTMAZEDATA = "lastUsedPathToExportMazeData";
-
+        
         #region Unity Messages
         private void OnEnable()
         {
@@ -38,9 +36,6 @@ namespace Assets.SNEED.EditorExtension.Maze
         {
             if (EditorApplication.isPlaying)
                 return;
-            
-            var currentEvent = Event.current;
-
 
             if (hasNoMazeSelected())
                 return;
@@ -100,6 +95,8 @@ namespace Assets.SNEED.EditorExtension.Maze
 
         private GameObject referenceToPrefab;
         private UnityEngine.Object prefabOfSelectedMaze;
+        private string pathToPrefab = "";
+
         private Vector3 lastMouseHit;
         private Vector3 MarkerPosition;
         internal string pathToExportModelData;
@@ -161,13 +158,19 @@ namespace Assets.SNEED.EditorExtension.Maze
             selectedMaze = currentSelection;
 
             prefabOfSelectedMaze = PrefabUtility.GetPrefabParent(currentSelection);
-            string path = AssetDatabase.GetAssetPath(prefabOfSelectedMaze);
+            pathToPrefab = AssetDatabase.GetAssetPath(prefabOfSelectedMaze);
         }
 
         internal UnityEngine.Object GetMazePrefab()
         {
             return prefabOfSelectedMaze;
         }
+
+        internal string getPathToPrefab()
+        {
+            return pathToPrefab;
+        }
+
 
         internal bool selectedMazeHasAPrefab()
         {
@@ -231,7 +234,7 @@ namespace Assets.SNEED.EditorExtension.Maze
 
             exporter.Export(selectedMaze, targetFile);
 
-            EditorPrefs.SetString(EDPREF_LASTUSEDPATHEXPORTMAZEDATA, pathToExportModelData);
+            SNEEDPreferences.DefaultExportDirectory = pathToExportModelData;
         }
 
         internal bool exportReady()
