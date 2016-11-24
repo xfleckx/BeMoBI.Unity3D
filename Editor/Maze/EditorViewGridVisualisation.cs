@@ -33,9 +33,10 @@ namespace Assets.SNEED.EditorExtensions
             Handles.color = handleColors.Pop();
         }
 
-        public void pushHandleMatrix()
+        public void pushHandleMatrix(Matrix4x4 localToWorldMatrix)
         {
             handleMatrix.Push(Handles.matrix);
+            Handles.matrix = localToWorldMatrix;
         }
 
         public void popHandleMatrix()
@@ -57,20 +58,17 @@ namespace Assets.SNEED.EditorExtensions
                 currentTilePosition = GridEditingVisualUtils.ConstrainTilePosition(currentTilePosition, rows, columns);
 
                 MarkerPosition = GridEditingVisualUtils.RecalculateMarkerPosition(currentTilePosition, tileSize);
-
-                //SceneView.currentDrawingSceneView.Repaint();
+                
             }
         }
 
         internal void RenderTileHighlighting(Transform target, Vector3 size)
         {
             var pos = MarkerPosition + new Vector3(0, size.y / 2, 0);
-            pushHandleMatrix();
+            pushHandleMatrix(target.localToWorldMatrix);
 
             pushHandleColor();
-
-            Handles.matrix = target.localToWorldMatrix;
-
+            
             Handles.color = CurrentHighlightingColor;
 
             Handles.DrawWireCube(pos, size);
@@ -99,37 +97,6 @@ namespace Assets.SNEED.EditorExtensions
 
             Handles.EndGUI();
         }
-
-        public void RenderEditorGizmos(beMobileMaze maze)
-        {
-
-            var tempMatrix = Gizmos.matrix;
-
-            Gizmos.matrix = maze.transform.localToWorldMatrix;
-
-            var temp = Handles.matrix;
-            Handles.matrix = Gizmos.matrix;
-
-            //if (editorState.EditorWindowVisible || !maze.Units.Any())
-            //    EditorVisualUtils.DrawFloorGrid(maze);
-
-            Gizmos.color = Color.blue;
-
-            // this is a custom  feature for selecting multiple MazeUnits
-            //if (editorState.EditorWindowVisible && editorState.CurrentSelection != null)
-            //{
-            //    foreach (var item in editorState.CurrentSelection)
-            //    {
-            //        var pos = item.transform.localPosition + new Vector3(0, maze.RoomDimension.y / 2, 0);
-            //        Gizmos.DrawCube(pos, new Vector3(maze.RoomDimension.x, maze.RoomDimension.y, maze.RoomDimension.z));
-            //    }
-            //}
-
-            Handles.matrix = temp;
-            Gizmos.matrix = tempMatrix;
-        }
-
-
-
+        
     }
 }
