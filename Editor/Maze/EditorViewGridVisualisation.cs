@@ -16,7 +16,9 @@ namespace Assets.SNEED.EditorExtensions
 
         private Stack<Color> handleColors = new Stack<Color>();
 
-        private Stack<Matrix4x4> handleMatrix = new Stack<Matrix4x4>();
+        private Stack<Matrix4x4> handleMatrices = new Stack<Matrix4x4>();
+
+        private Stack<Matrix4x4> gizmoMatrices = new Stack<Matrix4x4>();
 
         public Color CurrentHighlightingColor { get; internal set; }
 
@@ -35,16 +37,16 @@ namespace Assets.SNEED.EditorExtensions
 
         public void pushHandleMatrix(Matrix4x4 localToWorldMatrix)
         {
-            handleMatrix.Push(Handles.matrix);
+            handleMatrices.Push(Handles.matrix);
             Handles.matrix = localToWorldMatrix;
         }
 
         public void popHandleMatrix()
         {
-            if (!handleMatrix.Any())
+            if (!handleMatrices.Any())
                 return;
 
-            Handles.matrix = handleMatrix.Pop();
+            Handles.matrix = handleMatrices.Pop();
         }
 
         internal void CalculateTilePosition(Transform target, Vector3 tileSize, int rows, int columns)
@@ -65,19 +67,12 @@ namespace Assets.SNEED.EditorExtensions
         internal void RenderTileHighlighting(Transform target, Vector3 size)
         {
             var pos = MarkerPosition + new Vector3(0, size.y / 2, 0);
-            pushHandleMatrix(target.localToWorldMatrix);
 
-            pushHandleColor();
-            
             Handles.color = CurrentHighlightingColor;
 
             Handles.DrawWireCube(pos, size);
 
-            Handles.Label(pos, string.Format("{0}.{1}", currentTilePosition.x, currentTilePosition.y));
-
-            popHandleColor();
-
-            popHandleMatrix();
+            Handles.Label(pos, string.Format("{0}.{1}", currentTilePosition.x, currentTilePosition.y)); 
         }
 
         internal void renderDebugInfos()
@@ -97,6 +92,19 @@ namespace Assets.SNEED.EditorExtensions
 
             Handles.EndGUI();
         }
-        
+
+        internal void pushGizmoMatrix(Matrix4x4 localToWorldMatrix)
+        {
+            gizmoMatrices.Push(Gizmos.matrix);
+            Gizmos.matrix = localToWorldMatrix;
+        }
+
+        internal void popGizmoMatrix()
+        {
+            if (!gizmoMatrices.Any())
+                return;
+
+            Gizmos.matrix = gizmoMatrices.Pop();
+        }
     }
 }

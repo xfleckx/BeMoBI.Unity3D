@@ -287,6 +287,10 @@ namespace Assets.SNEED.EditorExtension.Maze
             if (editorBackend == null)
                 return;
 
+            editorBackend.visual.pushHandleMatrix(maze.transform.localToWorldMatrix);
+
+            editorBackend.visual.pushGizmoMatrix(maze.transform.localToWorldMatrix);
+
             editorBackend.visual.RenderTileHighlighting(maze.transform, maze.RoomDimension * 1.1f);
             
             var cam = Camera.current;
@@ -301,12 +305,15 @@ namespace Assets.SNEED.EditorExtension.Maze
             }
 
             if(editorBackend.CurrentSelectedMode != null) {
-                editorBackend.visual.pushHandleMatrix(maze.transform.localToWorldMatrix);
-                
+
                 editorBackend.CurrentSelectedMode.GizmoDrawings(maze, type);
 
-                editorBackend.visual.popHandleMatrix();
             }
+
+
+            editorBackend.visual.popGizmoMatrix();
+
+            editorBackend.visual.popHandleMatrix();
         }
     }
 }

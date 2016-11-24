@@ -91,7 +91,7 @@ namespace Assets.SNEED.EditorExtensions.Maze
         {
             var tempGizmoColor = Gizmos.color;
 
-            if (instance.PathAsLinkedList.Count > 0)
+            if (instance.PathAsLinkedList != null && instance.PathAsLinkedList.Count > 0)
             {
 
                 var start = instance.PathAsLinkedList.First.Value.Unit.transform;

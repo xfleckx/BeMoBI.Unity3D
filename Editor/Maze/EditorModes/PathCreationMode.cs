@@ -20,7 +20,7 @@ namespace Assets.SNEED.EditorExtension.Maze.EditorModes
                 return "Edit Paths";
             }
         }
-        
+
         public override Color GetPrimaryColor()
         {
             return Color.yellow;
@@ -31,7 +31,7 @@ namespace Assets.SNEED.EditorExtension.Maze.EditorModes
             var selectedMaze = backend.selectedMaze;
             var pathController = selectedMaze.GetComponent<PathController>();
 
-            if(pathController == null)
+            if (pathController == null)
             {
                 pathController = selectedMaze.gameObject.AddComponent<PathController>();
             }
@@ -51,12 +51,22 @@ namespace Assets.SNEED.EditorExtension.Maze.EditorModes
                 pathToEdit.ID = EditorGUILayout.IntField("ID: ", pathToEdit.ID);
 
             }
-            
-            if(GUILayout.Button("Add new Path"))
+
+            if (GUILayout.Button("Add new Path"))
             {
-               var newPath = selectedMaze.gameObject.AddComponent<PathInMaze>();
-               newPath.ID = pathController.GetAvailablePathIDs().Max() + 1;
-               pathController.Paths.Add(newPath);
+                var newPath = selectedMaze.gameObject.AddComponent<PathInMaze>();
+
+                if (pathController.Paths.Count() > 0)
+                {
+                    var availableIds = pathController.GetAvailablePathIDs();
+                    newPath.ID = availableIds.Max() + 1;
+                }
+                else
+                {
+                    newPath.ID = 0;
+                }
+
+                pathController.Paths.Add(newPath);
             }
 
             if (GUILayout.Button("Remove Selected Path"))
@@ -83,7 +93,7 @@ namespace Assets.SNEED.EditorExtension.Maze.EditorModes
             if (!backend.selectedMaze.Units.Any((u) => u.GridID.Equals(tilePosition)))
                 return false;
 
-            if (pathToEdit.PathAsLinkedList.Count == 0)
+            if (pathToEdit.PathAsLinkedList != null && pathToEdit.PathAsLinkedList.Count == 0)
                 return true;
 
             var lastElement = pathToEdit.PathAsLinkedList.Last;
@@ -157,17 +167,17 @@ namespace Assets.SNEED.EditorExtension.Maze.EditorModes
             var pathToRender = pathController.Paths.First(p => p.ID == selected);
 
             var hoveringDistance = new Vector3(0, maze.RoomDimension.y * 0.9f, 0);
-             
+
             var temp = Gizmos.color;
 
             Gizmos.color = tilePositionIsValid ? Color.green : Color.red;
 
             Gizmos.DrawCube(
-                backend.visual.MarkerPosition + new Vector3(0, maze.RoomDimension.y * 0.5f, 0), 
+                backend.visual.MarkerPosition + new Vector3(0, maze.RoomDimension.y * 0.5f, 0),
                 maze.RoomDimension * 0.4f);
 
             Gizmos.color = temp;
-            
+
             PathEditorUtils.RenderPathElements(maze, pathToRender, hoveringDistance, GetPrimaryColor());
         }
 
@@ -179,7 +189,7 @@ namespace Assets.SNEED.EditorExtension.Maze.EditorModes
         {
             var maze = backend.selectedMaze;
             var pos = backend.visual.currentTilePosition;
-            
+
             if (tilePositionIsValid && evt.type == EventType.MouseUp)
             {
                 var targetUnit = maze.Units.Where(u => u.GridID == pos).First();
@@ -188,7 +198,7 @@ namespace Assets.SNEED.EditorExtension.Maze.EditorModes
                     Add(targetUnit);
                 else
                     Remove(targetUnit);
-            } 
+            }
 
             Consume(evt);
         }
