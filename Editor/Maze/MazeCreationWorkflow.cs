@@ -8,6 +8,9 @@ namespace Assets.SNEED.EditorExtension.Maze
 {
     public class MazeCreationWorkflow : EditorWindow
     {
+
+        private const string URL_WIKI = "https://github.com/xfleckx/SNEED/wiki/Create-a-Maze";
+
         private static void log(string message)
         {
             if (SNEEDPreferences.debugVerbosity)
@@ -15,7 +18,7 @@ namespace Assets.SNEED.EditorExtension.Maze
         }
 
 
-        [MenuItem("SNEED/Maze Workflow")]
+        [MenuItem("SNEED/Maze/Creation Workflow")]
         static void Init()
         {
             // Get existing open window or if none, make a new one:
@@ -71,8 +74,7 @@ namespace Assets.SNEED.EditorExtension.Maze
         private void OnGUI()
         {
             scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
-
-
+            
             if (backend.hasNoMazeSelected())
             {
                 backend.mazeCreationMode.Selected = GUILayout.Toggle(backend.mazeCreationMode.Selected, backend.mazeCreationMode.Name, "Button");
