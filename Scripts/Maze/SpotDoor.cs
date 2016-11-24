@@ -1,11 +1,14 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class SpotDoor : MonoBehaviour
+namespace Assets.SNEED.Mazes
 {
-    public void OnTriggerEnter(Collider other)
+    public class SpotDoor : MonoBehaviour
     {
-        SendMessageUpwards("DoorStepEntered", other, SendMessageOptions.RequireReceiver);
-    }
+        public void OnTriggerEnter(Collider other)
+        {
+            SendMessageUpwards("DoorStepEntered", other, SendMessageOptions.RequireReceiver);
+        }
 
+    }
 }

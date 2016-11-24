@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using UnityEditor;
-using System;
+using Assets.SNEED.Mazes;
 
 namespace Assets.SNEED.EditorExtensions.CustomInspectors
 {

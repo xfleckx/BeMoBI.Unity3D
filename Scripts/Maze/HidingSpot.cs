@@ -2,126 +2,129 @@
 using System.Collections;
 using System;
 
-public class HidingSpot : MonoBehaviour
+namespace Assets.SNEED.Mazes
 {
-    public enum Direction { Vertical, Horizontal }
-
-    public float revealSpeedFactor = 1f;
-
-    public GameObject DoorA;
-    public GameObject DoorB;
-    public Vector3 roomSize;
-
-    public GameObject Socket;
-
-    public Direction DoorMovingDirection = Direction.Vertical;
-
-    private const float DIRECTION_HIDE = 1f;
-    private const float DIRECTION_REVEAL = -1f;
-
-    private float direction = -1f;
-    public float HIDDEN = 1f; // equal to start scaling
-    public float REVEALING = 0; // equal to scaled to invisibility
-
-    // should between 0 1;
-    private float currentState = 1f;
-    private float targetState = 0;
-    
-    public void RevealImmediately()
+    public class HidingSpot : MonoBehaviour
     {
-        DoorA.SetActive(false);
-        DoorB.SetActive(false);
-        Socket.SetActive(true);
-    }
+        public enum Direction { Vertical, Horizontal }
 
-    public void Reveal()
-    {
-        if (currentState == REVEALING)
-            return;
-        
-        direction = DIRECTION_REVEAL;
-        targetState = REVEALING;
+        public float revealSpeedFactor = 1f;
 
-        StartCoroutine(MoveDoorComponents());
-    }
+        public GameObject DoorA;
+        public GameObject DoorB;
+        public Vector3 roomSize;
 
-    public void Hide()
-    {
-        if (currentState == HIDDEN)
-            return;
+        public GameObject Socket;
 
-        direction = DIRECTION_HIDE;
-        targetState = HIDDEN;
+        public Direction DoorMovingDirection = Direction.Vertical;
 
-        StartCoroutine(MoveDoorComponents());
-    }
+        private const float DIRECTION_HIDE = 1f;
+        private const float DIRECTION_REVEAL = -1f;
 
-    IEnumerator MoveDoorComponents()
-    {
-        var topTransform = Vector3.one;
+        private float direction = -1f;
+        public float HIDDEN = 1f; // equal to start scaling
+        public float REVEALING = 0; // equal to scaled to invisibility
 
-        while (TargetStateNotReached(currentState += direction * revealSpeedFactor * Time.deltaTime))
+        // should between 0 1;
+        private float currentState = 1f;
+        private float targetState = 0;
+
+        public void RevealImmediately()
         {
-            yield return new WaitForFixedUpdate();
-
-            var newScaleState = Vector3.one;
-
-            switch (DoorMovingDirection)
-            {
-                case Direction.Vertical:
-                    newScaleState = new Vector3(topTransform.x, currentState, topTransform.z);
-                    break;
-                case Direction.Horizontal:
-                    newScaleState = new Vector3(currentState, topTransform.y, topTransform.z);
-                    break;
-                default:
-                    break;
-            }
-
-            DoorA.transform.localScale = newScaleState;
-            DoorB.transform.localScale = newScaleState;
+            DoorA.SetActive(false);
+            DoorB.SetActive(false);
+            Socket.SetActive(true);
         }
 
-        currentState = targetState;
+        public void Reveal()
+        {
+            if (currentState == REVEALING)
+                return;
 
-        yield return null;
-    }
+            direction = DIRECTION_REVEAL;
+            targetState = REVEALING;
 
-    private bool TargetStateNotReached(float state)
-    {
-        if (direction == DIRECTION_HIDE && state <= targetState)
-            return true;
+            StartCoroutine(MoveDoorComponents());
+        }
 
-        if (direction == DIRECTION_REVEAL && state >= targetState)
-            return true;
+        public void Hide()
+        {
+            if (currentState == HIDDEN)
+                return;
 
-        return false;
-    }
+            direction = DIRECTION_HIDE;
+            targetState = HIDDEN;
 
-    public Action<HidingSpot, GameObject> HidingSpotEntered;
-    private void OnHidingSpotEntered(HidingSpot spot, GameObject entered)
-    {
-        if(HidingSpotEntered != null)
-            HidingSpotEntered(spot, entered);
-    }
-    
-    public void DoorStepEntered(Collider collider)
-    {
-        OnHidingSpotEntered(this, collider.gameObject);
-    }
-    
-    public Transform GetSocket()
-    {
-        if (Socket != null)
-            return Socket.transform;
+            StartCoroutine(MoveDoorComponents());
+        }
 
-        Debug.Log("Socket GameObject reference missing!");
+        IEnumerator MoveDoorComponents()
+        {
+            var topTransform = Vector3.one;
 
-        return null;
-    }
+            while (TargetStateNotReached(currentState += direction * revealSpeedFactor * Time.deltaTime))
+            {
+                yield return new WaitForFixedUpdate();
 
-    void OnDrawGizmos()
-    {
-        Gizmos.DrawWireCube(new Vector3(transform.position.x, roomSize.y / 2, transform.position.z), roomSize);
+                var newScaleState = Vector3.one;
+
+                switch (DoorMovingDirection)
+                {
+                    case Direction.Vertical:
+                        newScaleState = new Vector3(topTransform.x, currentState, topTransform.z);
+                        break;
+                    case Direction.Horizontal:
+                        newScaleState = new Vector3(currentState, topTransform.y, topTransform.z);
+                        break;
+                    default:
+                        break;
+                }
+
+                DoorA.transform.localScale = newScaleState;
+                DoorB.transform.localScale = newScaleState;
+            }
+
+            currentState = targetState;
+
+            yield return null;
+        }
+
+        private bool TargetStateNotReached(float state)
+        {
+            if (direction == DIRECTION_HIDE && state <= targetState)
+                return true;
+
+            if (direction == DIRECTION_REVEAL && state >= targetState)
+                return true;
+
+            return false;
+        }
+
+        public Action<HidingSpot, GameObject> HidingSpotEntered;
+        private void OnHidingSpotEntered(HidingSpot spot, GameObject entered)
+        {
+            if (HidingSpotEntered != null)
+                HidingSpotEntered(spot, entered);
+        }
+
+        public void DoorStepEntered(Collider collider)
+        {
+            OnHidingSpotEntered(this, collider.gameObject);
+        }
+
+        public Transform GetSocket()
+        {
+            if (Socket != null)
+                return Socket.transform;
+
+            Debug.Log("Socket GameObject reference missing!");
+
+            return null;
+        }
+
+        void OnDrawGizmos()
+        {
+            Gizmos.DrawWireCube(new Vector3(transform.position.x, roomSize.y / 2, transform.position.z), roomSize);
+        }
     }
 }
