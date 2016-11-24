@@ -101,6 +101,26 @@ namespace Assets.SNEED.EditorExtensions
 
             EditorGUILayout.Space();
 
+            if (GUILayout.Button("Close Maze Roof"))
+            {
+                foreach (var unit in selectedMaze.Units)
+                {
+                    var topTransform = unit.transform.FindChild("Top");
+                    if (topTransform != null)
+                        topTransform.gameObject.SetActive(true);
+                }
+            }
+
+            if (GUILayout.Button("Open Maze Roof"))
+            {
+                foreach (var unit in selectedMaze.Units)
+                {
+                    var topTransform = unit.transform.FindChild("Top");
+                    if (topTransform != null)
+                        topTransform.gameObject.SetActive(false);
+                }
+            }
+
             EditorGUILayout.LabelField("Compatibility options - (these might be removed in later versions)");
 
             EditorGUILayout.Separator();
