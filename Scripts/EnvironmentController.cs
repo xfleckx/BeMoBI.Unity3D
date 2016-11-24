@@ -1,20 +1,18 @@
 ﻿using UnityEngine;
-using System.Collections;
 
-public class EnvironmentController : MonoBehaviour {
-
-	public string Title = "Name of the Environment";
-
-	void Awake()
-	{
-		Title = gameObject.name;
-	}
-
+namespace Assets.SNEED.Scripts
+{
     /// <summary>
-    /// Just an idea of how this controller Script could make sense...
+    /// A semantic component to mark a toplevel game object as a
+    /// environment.
     /// </summary>
-    public void DisableIllumination()
+    public class EnvironmentController : MonoBehaviour
     {
+        public string Title = "Name of the Environment";
 
+        void Awake()
+        {
+            Title = gameObject.name;
+        }
     }
 }
