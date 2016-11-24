@@ -4,110 +4,114 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-public enum UnitType { I, L, T, X, UNKNOWN }
-public enum TurnType { STRAIGHT, LEFT, RIGHT }
 
-[RequireComponent(typeof(PathController))]
-public class PathInMaze : MonoBehaviour, ISerializationCallbackReceiver
+namespace Assets.SNEED.Mazes
 {
-	public bool Available = true;
-    
-    public LinkedList<PathElement> PathAsLinkedList;
-    
-	private bool inverse = false;
+    public enum UnitType { I, L, T, X, UNKNOWN }
+    public enum TurnType { STRAIGHT, LEFT, RIGHT }
 
-	public bool Inverse
-	{
-		get { return inverse; } 
-	}
+    [RequireComponent(typeof(PathController))]
+    public class PathInMaze : MonoBehaviour, ISerializationCallbackReceiver
+    {
+        public bool Available = true;
 
-	public int ID = -1;
+        public LinkedList<PathElement> PathAsLinkedList;
 
-	public void OnEnable()
-	{
-		InitEmptys();
-	}
-    
-	void Awake()
-	{
-		InitEmptys();
-	}
+        private bool inverse = false;
 
-	void InitEmptys()
-	{
-        if (PathAsLinkedList == null)
+        public bool Inverse
         {
-            PathAsLinkedList = new LinkedList<PathElement>();
-            Debug.Log("Creating empty Linked List");
+            get { return inverse; }
+        }
+
+        public int ID = -1;
+
+        public void OnEnable()
+        {
+            InitEmptys();
+        }
+
+        void Awake()
+        {
+            InitEmptys();
+        }
+
+        void InitEmptys()
+        {
+            if (PathAsLinkedList == null)
+            {
+                PathAsLinkedList = new LinkedList<PathElement>();
+                Debug.Log("Creating empty Linked List");
+            }
+        }
+
+        public void InvertPath()
+        {
+            PathAsLinkedList = new LinkedList<PathElement>(PathAsLinkedList.Reverse());
+            inverse = !inverse;
+        }
+
+        #region Serialization
+
+        [HideInInspector]
+        [SerializeField]
+        private List<PathElement> Elements;
+
+        public void OnBeforeSerialize()
+        {
+            if (Elements != null)
+                Elements.Clear();
+            else
+                Elements = new List<PathElement>();
+
+            foreach (var pathElement in PathAsLinkedList)
+            {
+                Elements.Add(pathElement);
+            }
+        }
+
+        public void OnAfterDeserialize()
+        {
+            PathAsLinkedList = new LinkedList<PathElement>(Elements);
+        }
+
+        #endregion
+
+#if UNITY_EDITOR
+        public Action EditorGizmoCallbacks;
+#endif
+
+        public void OnDrawGizmos()
+        {
+#if UNITY_EDITOR
+            if (EditorGizmoCallbacks != null)
+                EditorGizmoCallbacks();
+#endif
         }
     }
 
-    public void InvertPath()
-	{
-        PathAsLinkedList = new LinkedList<PathElement>( PathAsLinkedList.Reverse() );
-		inverse = !inverse;
-	}
+    [Serializable]
+    public class PathElement
+    {
+        [SerializeField]
+        public MazeUnit Unit;
 
-	#region Serialization
-     
-	[HideInInspector]
-	[SerializeField]
-	private List<PathElement> Elements;
-    
-	public void OnBeforeSerialize()
-	{
-        if (Elements != null)
-            Elements.Clear();
-        else
-            Elements = new List<PathElement>();
+        [SerializeField]
+        public UnitType Type;
 
-		foreach (var pathElement in PathAsLinkedList)
-		{
-			Elements.Add(pathElement);
-		}
-	}
-    
-	public void OnAfterDeserialize()
-	{
-        PathAsLinkedList = new LinkedList<PathElement>(Elements);
-	}
+        [SerializeField]
+        public TurnType Turn;
 
-	#endregion 
+        public PathElement()
+        {
 
-#if UNITY_EDITOR
-	public Action EditorGizmoCallbacks;
-#endif
+        }
 
-	public void OnDrawGizmos()
-	{
-#if UNITY_EDITOR
-		if (EditorGizmoCallbacks != null)
-			EditorGizmoCallbacks();
-#endif
-	}
-}
-
-[Serializable]
-public class PathElement
-{
-	[SerializeField]
-	public MazeUnit Unit;
-
-	[SerializeField]
-	public UnitType Type;
-
-	[SerializeField]
-	public TurnType Turn;
-
-	public PathElement()
-	{
-
-	}
-
-	public PathElement(MazeUnit unit, UnitType type = UnitType.I, TurnType turn = TurnType.STRAIGHT) 
-	{ 
-		Type = type;
-		Turn = turn;
-		Unit = unit;
-	}
+        public PathElement(MazeUnit unit, UnitType type = UnitType.I, TurnType turn = TurnType.STRAIGHT)
+        {
+            Type = type;
+            Turn = turn;
+            Unit = unit;
+        }
+    }
 }

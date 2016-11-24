@@ -1,27 +1,31 @@
 ﻿using UnityEngine;
 using UnityEditor;
+using Assets.SNEED.Mazes;
 
-[CustomEditor(typeof(HidingSpot))]
-public class HidingSpotInspector : Editor
+namespace Assets.SNEED.EditorExtensions.CustomInspectors
 {
-    public override void OnInspectorGUI()
+    [CustomEditor(typeof(HidingSpot))]
+    public class HidingSpotInspector : Editor
     {
-        var instance = target as HidingSpot;
-
-        base.OnInspectorGUI();
-
-        EditorGUILayout.BeginHorizontal();
-
-        if(GUILayout.Button("Reveal"))
+        public override void OnInspectorGUI()
         {
-            instance.Reveal();
-        }
+            var instance = target as HidingSpot;
 
-        if (GUILayout.Button("Hide"))
-        {
-            instance.Hide();
-        }
+            base.OnInspectorGUI();
 
-        EditorGUILayout.EndHorizontal();
+            EditorGUILayout.BeginHorizontal();
+
+            if (GUILayout.Button("Reveal"))
+            {
+                instance.Reveal();
+            }
+
+            if (GUILayout.Button("Hide"))
+            {
+                instance.Hide();
+            }
+
+            EditorGUILayout.EndHorizontal();
+        }
     }
 }

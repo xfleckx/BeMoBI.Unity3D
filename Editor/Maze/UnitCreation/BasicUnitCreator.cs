@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Assets.SNEED.Mazes;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -20,7 +21,8 @@ namespace Assets.SNEED.EditorExtensions.Maze.UnitCreation
 		public bool useUVTestMaterial { get; set; }
 
 		const string UV_TEST_MATERIAL_NAME = "uvColoredCheckerBoard.mat";
-		
+		private bool doNotCreateVisualStructure;
+
 		public Material uv_material { get; set; }
 
 		public override string CreatorName
@@ -53,29 +55,35 @@ namespace Assets.SNEED.EditorExtensions.Maze.UnitCreation
 
 				addBoxCollider = EditorGUILayout.ToggleLeft("Add Box Collider", addBoxCollider);
 
-				createFromPrimitivePlanes = EditorGUILayout.ToggleLeft("Create from primitives", createFromPrimitivePlanes);
+				doNotCreateVisualStructure = EditorGUILayout.ToggleLeft("Don't create visual structure", doNotCreateVisualStructure);
 
-				createAsWholeMesh = EditorGUILayout.ToggleLeft("Create as whole Mesh", createAsWholeMesh);
+				if (!doNotCreateVisualStructure)
+				{ 
+					createFromPrimitivePlanes = EditorGUILayout.ToggleLeft("Create from primitives", createFromPrimitivePlanes);
 
-				useUVTestMaterial = EditorGUILayout.ToggleLeft("Use UV Test material", useUVTestMaterial);
+					createAsWholeMesh = EditorGUILayout.ToggleLeft("Create as whole Mesh", createAsWholeMesh);
 
-				if (GUILayout.Button("Create new Maze Unit (Room)", GUILayout.Height(35f)))
-				{
-					if (expectedChildComponents == null)
-						Initialize();
+					useUVTestMaterial = EditorGUILayout.ToggleLeft("Use UV Test material", useUVTestMaterial);
 
-					var resizeModel = new UnitMeshModificationModel(roomDimension, pivotOrigin, useCenterAsOrigin);
-					constructedUnit = ConstructUnit(resizeModel);
+
 				}
 
-				if (GUILayout.Button("Resize Unit (Room)"))
-				{
-					var resizeModel = new UnitMeshModificationModel(roomDimension, pivotOrigin, useCenterAsOrigin);
+			    if (GUILayout.Button("Create new Maze Unit (Room)", GUILayout.Height(35f)))
+			    {
+				    if (expectedChildComponents == null)
+					    Initialize();
 
-					MazeEditorUtil.ResizeUnitByMeshModification(constructedUnit.gameObject, resizeModel);
-				}
+				    var resizeModel = new UnitMeshModificationModel(roomDimension, pivotOrigin, useCenterAsOrigin);
+				    constructedUnit = ConstructUnit(resizeModel);
+			    }
 
-				constructedUnit = EditorGUILayout.ObjectField("Created Unit", constructedUnit, typeof(GameObject), true) as MazeUnit;
+			    if (GUILayout.Button("Resize Unit (Room)"))
+			    {
+				    var resizeModel = new UnitMeshModificationModel(roomDimension, pivotOrigin, useCenterAsOrigin);
+
+				    MazeEditorUtil.ResizeUnitByMeshModification(constructedUnit.gameObject, resizeModel);
+			    }
+			    constructedUnit = EditorGUILayout.ObjectField("Created Unit", constructedUnit, typeof(GameObject), true) as MazeUnit;
 
 				EditorGUILayout.Space();
 
@@ -99,25 +107,28 @@ namespace Assets.SNEED.EditorExtensions.Maze.UnitCreation
 			boxCollider.center = new Vector3(0, roomDimension.y / 2, 0);
 
 			boxCollider.size = roomDimension;
-			
-			Material material;
 
-			if (useUVTestMaterial)
-				material = GetUVTestMaterial();
-			else
-				material = GetPrototypeMaterial();
-
-			if (createFromPrimitivePlanes)
+			if (!doNotCreateVisualStructure)
 			{
-				CreateFromQuadPrimitives(newUnit, creationModel, material);
-			}
-			else
-			{
-				if (!createAsWholeMesh)
-					CreateAsSeparatedMeshes(newUnit, creationModel, material);
+				Material material;
 
-				if (createAsWholeMesh)
-					CreateAsAWhole(newUnit, creationModel, material);
+				if (useUVTestMaterial)
+					material = GetUVTestMaterial();
+				else
+					material = GetPrototypeMaterial();
+
+				if (createFromPrimitivePlanes)
+				{
+					CreateFromQuadPrimitives(newUnit, creationModel, material);
+				}
+				else
+				{
+					if (!createAsWholeMesh)
+						CreateAsSeparatedMeshes(newUnit, creationModel, material);
+
+					if (createAsWholeMesh)
+						CreateAsAWhole(newUnit, creationModel, material);
+				}
 			}
 			
 			return mazeUnit;

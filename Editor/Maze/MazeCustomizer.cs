@@ -3,6 +3,7 @@ using UnityEditor;
 using System;
 using System.Linq;
 using Assets.SNEED.EditorExtensions.Util;
+using Assets.SNEED.Mazes;
 
 namespace Assets.SNEED.EditorExtensions
 {
@@ -99,6 +100,26 @@ namespace Assets.SNEED.EditorExtensions
             EditorGUILayout.Space();
 
             EditorGUILayout.Space();
+
+            if (GUILayout.Button("Close Maze Roof"))
+            {
+                foreach (var unit in selectedMaze.Units)
+                {
+                    var topTransform = unit.transform.FindChild("Top");
+                    if (topTransform != null)
+                        topTransform.gameObject.SetActive(true);
+                }
+            }
+
+            if (GUILayout.Button("Open Maze Roof"))
+            {
+                foreach (var unit in selectedMaze.Units)
+                {
+                    var topTransform = unit.transform.FindChild("Top");
+                    if (topTransform != null)
+                        topTransform.gameObject.SetActive(false);
+                }
+            }
 
             EditorGUILayout.LabelField("Compatibility options - (these might be removed in later versions)");
 
@@ -424,7 +445,7 @@ namespace Assets.SNEED.EditorExtensions
 
             selectedMaze.RoomDimension = combinedBounds.size;
 
-            var gridDim = MazeEditorUtil.CalcGridSize(selectedMaze);
+            var gridDim = beMobileMaze.CalcGridSize(selectedMaze);
 
             MazeEditorUtil.ReconfigureGrid(selectedMaze, gridDim.x, gridDim.y);
 
