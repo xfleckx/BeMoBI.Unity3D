@@ -40,11 +40,16 @@ namespace Assets.SNEED.EditorExtension.Maze
                 return;
             
             var currentEvent = Event.current;
-            
-            mazeCreationMode.OnSceneViewGUI(view, this, visual);
+
 
             if (hasNoMazeSelected())
                 return;
+
+            visual.pushHandleMatrix(selectedMaze.transform.localToWorldMatrix);
+            
+            mazeCreationMode.OnSceneViewGUI(view, this, visual);
+
+            visual.popHandleMatrix();
 
             visual.CalculateTilePosition(selectedMaze.transform, selectedMaze.RoomDimension, selectedMaze.Rows, selectedMaze.Columns);
 
@@ -292,8 +297,13 @@ namespace Assets.SNEED.EditorExtension.Maze
 
             }
 
-            if(editorBackend.CurrentSelectedMode != null)
+            if(editorBackend.CurrentSelectedMode != null) {
+                editorBackend.visual.pushHandleMatrix(maze.transform.localToWorldMatrix);
+                
                 editorBackend.CurrentSelectedMode.GizmoDrawings(maze, type);
+
+                editorBackend.visual.popHandleMatrix();
+            }
         }
     }
 }
