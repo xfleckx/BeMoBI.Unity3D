@@ -1,54 +1,57 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System;
+using System.Linq; 
 
-public class VirtualRealityManager : MonoBehaviour {
+namespace Assets.SNEED.Scripts
+{
+    public class VirtualRealityManager : MonoBehaviour
+    {
 
-	//VR Real World Dimension for MoCap Systems
-	public float HighQualityZoneWidth = 8f;
-	public float HighQualityZoneLength = 12f;
-	public float BorderZoneWidth = 1f;
-	
-	[SerializeField]
-	public List<EnvironmentController> AvailableEnvironments = new List<EnvironmentController>();
-	
-	/// <summary>
-	/// Change the whole world to exactly one environment
-	/// </summary>
-	/// <param name="worldName"></param>
-	public EnvironmentController ChangeWorld(string worldName)
-	{
-		AvailableEnvironments.ForEach((e) => e.gameObject.SetActive(false)); 
+        //VR Real World Dimension for MoCap Systems
+        public float HighQualityZoneWidth = 8f;
+        public float HighQualityZoneLength = 12f;
+        public float BorderZoneWidth = 1f;
 
-		if (AvailableEnvironments.Any((i) => i.Title.Equals(worldName))) {
-		   
-			var enabledEnvironment = AvailableEnvironments.First((i) => i.Title.Equals(worldName));
+        [SerializeField]
+        public List<EnvironmentController> AvailableEnvironments = new List<EnvironmentController>();
 
-			if(enabledEnvironment != null)
-				enabledEnvironment.gameObject.SetActive(true);
+        /// <summary>
+        /// Change the whole world to exactly one environment
+        /// </summary>
+        /// <param name="worldName"></param>
+        public EnvironmentController ChangeWorld(string worldName)
+        {
+            AvailableEnvironments.ForEach((e) => e.gameObject.SetActive(false));
 
-			return enabledEnvironment;
-		}
+            if (AvailableEnvironments.Any((i) => i.Title.Equals(worldName)))
+            {
 
-		return null;
-	}
+                var enabledEnvironment = AvailableEnvironments.First((i) => i.Title.Equals(worldName));
 
-	/// <summary>
-	/// Combine multiple environments
-	/// </summary>
-	/// <param name="names"></param>
-	public void CombineEnvironments(params string[] names)
-	{
-		AvailableEnvironments.ForEach((e) => e.gameObject.SetActive(false)); 
+                if (enabledEnvironment != null)
+                    enabledEnvironment.gameObject.SetActive(true);
 
-		foreach (var item in names)
-		{
-			var environment = this.AvailableEnvironments.First((i) => i.Title.Equals(item));
-			if(environment != null)
-				environment.gameObject.SetActive(true);
-		}
-	}
+                return enabledEnvironment;
+            }
 
+            return null;
+        }
+
+        /// <summary>
+        /// Combine multiple environments
+        /// </summary>
+        /// <param name="names"></param>
+        public void CombineEnvironments(params string[] names)
+        {
+            AvailableEnvironments.ForEach((e) => e.gameObject.SetActive(false));
+
+            foreach (var item in names)
+            {
+                var environment = this.AvailableEnvironments.First((i) => i.Title.Equals(item));
+                if (environment != null)
+                    environment.gameObject.SetActive(true);
+            }
+        }
+
+    }
 }

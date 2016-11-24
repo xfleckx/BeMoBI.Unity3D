@@ -8,7 +8,7 @@ namespace Assets.SNEED.Scripts
 {
     [ExecuteInEditMode]
     [RequireComponent(typeof(LineRenderer))]
-    public class NavigationAssistent : beMoBIBase
+    public class NavigationAssistent : MonoBehaviour
     {
 
         public List<GameObject> Waypoints = new List<GameObject>();
@@ -18,8 +18,6 @@ namespace Assets.SNEED.Scripts
 
         void Awake()
         {
-            base.Initialize();
-
             lineRenderer = GetComponent<LineRenderer>();
         }
         
