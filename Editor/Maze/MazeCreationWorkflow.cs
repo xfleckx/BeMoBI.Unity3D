@@ -8,11 +8,9 @@ namespace Assets.SNEED.EditorExtension.Maze
 {
     public class MazeCreationWorkflow : EditorWindow
     {
-        const bool VERBOSE = true;
-
         private static void log(string message)
         {
-            if (VERBOSE)
+            if (SNEEDPreferences.debugVerbosity)
                 Debug.Log(message);
         }
 
