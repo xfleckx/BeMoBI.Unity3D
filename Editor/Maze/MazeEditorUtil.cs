@@ -36,22 +36,14 @@ namespace Assets.SNEED.EditorExtensions
 
             return !hasPaths;
         }
-
+        
         public static void RebuildGrid(beMobileMaze maze)
         {
             CacheUnitsIn(maze);
 
-            var GridDim = CalcGridSize(maze);
+            var GridDim = beMobileMaze.CalcGridSize(maze);
 
-            maze.Grid = FillGridWith(maze.Units, Mathf.CeilToInt(GridDim.x), Mathf.CeilToInt(GridDim.y));
-        }
-        public static void RebuildGrid2(beMobileMaze maze)
-        {
-            CacheUnitsIn(maze);
-
-            var GridDim = CalcGridSize(maze);
-
-            maze.Grid = FillGridWith(maze.Units, Mathf.FloorToInt(GridDim.x), Mathf.FloorToInt(GridDim.y));
+            maze.Grid = beMobileMaze.FillGridWith(maze.Units, Mathf.FloorToInt(GridDim.x), Mathf.FloorToInt(GridDim.y));
         }
 
         public static MazeUnit InitializeUnit(beMobileMaze maze, Vector2 tilePos, float unitFloorOffset, GameObject unit)
@@ -99,27 +91,6 @@ namespace Assets.SNEED.EditorExtensions
 
         }
 
-        public static MazeUnit[,] FillGridWith(IEnumerable<MazeUnit> existingUnits, int columns, int rows)
-        {
-            var grid = new MazeUnit[columns, rows];
-
-            foreach (var unit in existingUnits)
-            {
-                var x = (int) unit.GridID.x;
-                var y = (int) unit.GridID.y;
-                grid[x, y] = unit;
-            }
-
-            return grid;
-        }
-
-        public static Vector2 CalcGridSize(beMobileMaze maze)
-        {
-            int columns = Mathf.FloorToInt(maze.MazeWidthInMeter / maze.RoomDimension.x) + 1;
-            int rows = Mathf.FloorToInt(maze.MazeLengthInMeter / maze.RoomDimension.z) + 1;
-
-            return new Vector2(columns, rows);
-        }
 
         internal static Vector2 Shrink(beMobileMaze selectedMaze)
         {

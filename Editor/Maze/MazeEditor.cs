@@ -4,6 +4,7 @@ using System;
 using System.Text;
 using Assets.SNEED.Mazes;
 using Assets.SNEED.EditorExtension.Maze;
+using System.Linq;
 
 namespace Assets.SNEED.EditorExtensions.Maze
 {
@@ -12,6 +13,24 @@ namespace Assets.SNEED.EditorExtensions.Maze
     [CustomEditor(typeof(beMobileMaze))]
     public class MazeInspector : Editor 
     {
+
+        private void OnEnable()
+        {
+            var maze = target as beMobileMaze;
+            
+            if(maze.transform.childCount > 0 && !maze.Units.Any())
+            {
+                MazeEditorUtil.CacheUnitsIn(maze);
+                EditorUtility.SetDirty(maze);
+            }
+
+            if(maze.Grid == null)
+            {
+               MazeEditorUtil.RebuildGrid(maze);
+               EditorUtility.SetDirty(maze);
+            }
+        }
+
         public override void OnInspectorGUI()
         {
             var maze = target as beMobileMaze;
@@ -43,8 +62,7 @@ namespace Assets.SNEED.EditorExtensions.Maze
 
             if (GUILayout.Button("Open Editor", GUILayout.MinWidth(120), GUILayout.Height(40)))
             {
-                var window = EditorWindow.GetWindow<MazeCreationWorkflow>();
-                window.Show();
+                MazeCreationWorkflow.Init();
             }
 
             EditorGUILayout.EndHorizontal();

@@ -52,9 +52,9 @@ namespace Assets.SNEED.EditorExtension.Maze.EditorModes
             
             maze.RoomDimension = EditorGUILayout.Vector3Field("Room WxHxL (m):", maze.RoomDimension, null);
 
-            var gridSize = MazeEditorUtil.CalcGridSize(maze);
+            var gridSize = beMobileMaze.CalcGridSize(maze);
 
-            MazeEditorUtil.RebuildGrid2(maze);
+            MazeEditorUtil.RebuildGrid(maze);
 
             EditorGUILayout.Vector2Field("Grid Cols(x) Rows(y):", gridSize, null);
 

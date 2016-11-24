@@ -445,7 +445,7 @@ namespace Assets.SNEED.EditorExtensions
 
             selectedMaze.RoomDimension = combinedBounds.size;
 
-            var gridDim = MazeEditorUtil.CalcGridSize(selectedMaze);
+            var gridDim = beMobileMaze.CalcGridSize(selectedMaze);
 
             MazeEditorUtil.ReconfigureGrid(selectedMaze, gridDim.x, gridDim.y);
 

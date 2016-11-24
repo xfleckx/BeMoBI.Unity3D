@@ -1,14 +1,11 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
-using System;
-using System.Linq;
+using UnityEngine;
 
 namespace Assets.SNEED.Mazes
 {
-
 	[Serializable]
-	public class beMobileMaze : MonoBehaviour
+	public class beMobileMaze : MonoBehaviour, ISerializationCallbackReceiver
 	{
 		#region replace this with readonly creation model
 
@@ -46,6 +43,43 @@ namespace Assets.SNEED.Mazes
 			if (MazeUnitEventOccured != null)
 				MazeUnitEventOccured(unitEvent);
 		}
+
+		#region Serialization logic to rebuild the grid 
+		public void OnBeforeSerialize()
+		{ 
+			// does nothing in this case
+		}
+
+		public void OnAfterDeserialize()
+		{
+			var gridSize = CalcGridSize(this);
+
+			Grid = FillGridWith(Units, (int) gridSize.x, (int) gridSize.y);
+		}
+
+		public static Vector2 CalcGridSize(beMobileMaze maze)
+		{
+			int columns = Mathf.FloorToInt(maze.MazeWidthInMeter / maze.RoomDimension.x) + 1;
+			int rows = Mathf.FloorToInt(maze.MazeLengthInMeter / maze.RoomDimension.z) + 1;
+
+			return new Vector2(columns, rows);
+		}
+
+		public static MazeUnit[,] FillGridWith(IEnumerable<MazeUnit> existingUnits, int columns, int rows)
+		{
+			var grid = new MazeUnit[columns, rows];
+
+			foreach (var unit in existingUnits)
+			{
+				var x = (int)unit.GridID.x;
+				var y = (int)unit.GridID.y;
+				grid[x, y] = unit;
+			}
+
+			return grid;
+		}
+
+		#endregion
 	}
 
 }
