@@ -384,7 +384,7 @@ namespace Assets.SNEED.EditorExtensions.Maze.UnitCreation
 			mesh.SetUVs(0, uvs);
 
 			mesh.RecalculateBounds();
-			mesh.Optimize();
+			;
 
 			return mesh;
 		}
@@ -428,7 +428,7 @@ namespace Assets.SNEED.EditorExtensions.Maze.UnitCreation
 			mesh.SetUVs(0, uvs);
 
 			mesh.RecalculateBounds();
-			mesh.Optimize();
+			;
 
 			return mesh;
 		}
@@ -479,7 +479,7 @@ namespace Assets.SNEED.EditorExtensions.Maze.UnitCreation
 			mesh.SetUVs(0, uvs);
 
 			mesh.RecalculateBounds();
-			mesh.Optimize();
+			;
 
 			return mesh;
 		}
@@ -531,7 +531,7 @@ namespace Assets.SNEED.EditorExtensions.Maze.UnitCreation
 			mesh.SetUVs(0, uvs);
 
 			mesh.RecalculateBounds();
-			mesh.Optimize();
+			;
 
 			return mesh;
 		}
@@ -582,7 +582,7 @@ namespace Assets.SNEED.EditorExtensions.Maze.UnitCreation
 			mesh.SetUVs(0, uvs);
 
 			mesh.RecalculateBounds();
-			mesh.Optimize();
+			;
 
 			return mesh;
 		}
@@ -632,7 +632,7 @@ namespace Assets.SNEED.EditorExtensions.Maze.UnitCreation
 			mesh.SetUVs(0, uvs);
 
 			mesh.RecalculateBounds();
-			mesh.Optimize();
+			;
 
 
 			return mesh;
@@ -804,7 +804,7 @@ namespace Assets.SNEED.EditorExtensions.Maze.UnitCreation
 			mesh.triangles = triangles;
 
 			mesh.RecalculateBounds();
-			mesh.Optimize();
+			;
 
 			var meshFilter = newUnit.AddComponent<MeshFilter>();
 			var meshRenderer = newUnit.AddComponent<MeshRenderer>();

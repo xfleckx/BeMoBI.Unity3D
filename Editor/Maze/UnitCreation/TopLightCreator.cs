@@ -228,7 +228,7 @@ namespace Assets.SNEED.EditorExtensions.Maze.UnitCreation
             mesh.SetUVs(0, uvs);
 
             mesh.RecalculateBounds();
-            mesh.Optimize();
+            ;
 
             return mesh;
         }

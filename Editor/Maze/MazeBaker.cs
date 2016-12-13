@@ -77,7 +77,7 @@ namespace Assets.SNEED.Unity3D.EditorExtensions.Maze
 
             meshFilter.sharedMesh.CombineMeshes(combineInstances.ToArray(), MERGE_SUBMESHES, USE_MATRICES);
 
-            meshFilter.sharedMesh.Optimize();
+            ;
 
             meshFilter.sharedMesh.RecalculateNormals();
 
