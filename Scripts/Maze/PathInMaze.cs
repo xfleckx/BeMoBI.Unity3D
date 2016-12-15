@@ -64,6 +64,9 @@ namespace Assets.SNEED.Mazes
             else
                 Elements = new List<PathElement>();
 
+            if (PathAsLinkedList == null)
+                PathAsLinkedList = new LinkedList<PathElement>();
+
             foreach (var pathElement in PathAsLinkedList)
             {
                 Elements.Add(pathElement);
